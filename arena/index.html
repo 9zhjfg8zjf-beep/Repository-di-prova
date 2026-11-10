@@ -18,7 +18,7 @@
   :root { --px: 'Press Start 2P', ui-monospace, monospace; --ink: #10182b; --cy: #38e8ff; --mg: #ff5ad6;
     --st: env(safe-area-inset-top, 0px); --sr: env(safe-area-inset-right, 0px); --sb: env(safe-area-inset-bottom, 0px); --sl: env(safe-area-inset-left, 0px); }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; height: 100%; overflow: hidden; background: #0c1220; color: #fff;
+  html, body { margin: 0; height: 100%; width: 100%; overflow: hidden; position: fixed; inset: 0; overscroll-behavior: none; background: #0c1220; color: #fff;
     font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; user-select: none; -webkit-user-select: none; touch-action: none; }
   #c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
   .hidden { display: none !important; }
@@ -143,7 +143,7 @@
 <div id="start" class="overlay">
   <div class="card">
     <h1>Arena dei Mattoncini</h1>
-    <div class="sub">VERSIONE 0.4 · RICETTA: ELETTRICITA + IPNOSI</div>
+    <div class="sub">VERSIONE 0.5 · RICETTA: ELETTRICITA + IPNOSI</div>
     <p id="startMsg">Cinque mattoncini, un personaggio, ondate di nemici. Vedi fin dove arrivi.</p>
     <div id="rot">GIRA IL TELEFONO IN ORIZZONTALE: E PENSATO COSI</div>
     <ul id="recipe"></ul>
@@ -800,6 +800,11 @@ if (typeof module !== 'undefined') module.exports = Core;
   canvas.addEventListener('wheel', (e) => { dist = Math.max(9, Math.min(24, dist + Math.sign(e.deltaY) * 1.2)); e.preventDefault(); }, { passive: false });
   for (let i = 0; i < 5; i++) $('b' + i).addEventListener('pointerdown', (e) => { e.preventDefault(); if (running) press(i); });
   document.addEventListener('contextmenu', (e) => e.preventDefault());
+  // Il trascinamento non deve mai spostare, ricaricare o chiudere la pagina: solo le schede di testo scorrono.
+  const inCard = (t) => !!(t && t.closest && t.closest('.overlay'));
+  document.addEventListener('touchmove', (e) => { if (!inCard(e.target)) e.preventDefault(); }, { passive: false });
+  canvas.addEventListener('touchstart', (e) => { if (running) e.preventDefault(); }, { passive: false });
+  for (const ev of ['gesturestart', 'gesturechange', 'dblclick']) document.addEventListener(ev, (e) => e.preventDefault(), { passive: false });
 
   const inp = { mx: 0, mz: 0, cast: [false, false, false, false, false] };
   function readInput() {
