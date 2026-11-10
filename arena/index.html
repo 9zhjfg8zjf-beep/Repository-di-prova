@@ -73,7 +73,7 @@
   #bPos { right: 14px; bottom: 104px; width: 64px; height: 64px; font-size: 9px; } #bPos.ready { opacity: 1; color: #fff; border-color: var(--am); box-shadow: 0 0 18px rgba(255,178,58,.8), inset 0 0 14px rgba(255,178,58,.35); }
   .ab.act { opacity: 1; color: #fff; border-style: dashed; animation: actp 1s ease-in-out infinite alternate; } #bHyp.act { border-color: var(--mg); } #bPos.act { border-color: var(--cy); }
   @keyframes actp { from { box-shadow: 0 0 4px rgba(255,255,255,.3); } to { box-shadow: 0 0 16px rgba(255,255,255,.75); } }
-  .ab.go { animation: shakeb .25s; } @keyframes shakeb { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+  .ab.nope { animation: shakeb .25s; } @keyframes shakeb { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
 
   #joy { position: fixed; display: none; width: 104px; height: 104px; margin: -52px 0 0 -52px; border: 2px solid rgba(255,255,255,.4); border-radius: 50%; background: rgba(10,6,8,.25); pointer-events: none; }
   #knob { position: absolute; left: 50%; top: 50%; width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,.75); border: 2px solid #000; transform: translate(-50%, -50%); }
@@ -139,7 +139,7 @@
 <div id="start" class="overlay">
   <div class="card">
     <h1>DITE</h1>
-    <div class="sub">LA CITTA BASSA · VERSIONE 1.1</div>
+    <div class="sub">LA CITTA BASSA · VERSIONE 1.2</div>
     <div id="rot">GIRA IL TELEFONO IN ORIZZONTALE</div>
     <div class="cols">
       <ul class="pw">
@@ -2301,10 +2301,16 @@ const Core = (() => {
         }
         s.events.push({ type: 'zap', pts });
       }
+      // Ipnosi e possessione funzionano da interruttore: premi per attivare, ripremi per togliere.
       if (!p.ride && inp.hyp) {
-        const hostile = (e) => !e.dead && e.spawn <= 0 && e.charm <= 0 && !ENEMY[e.kind].heavy;
-        let targets = [], cast = false;
-        if (p.cd.hyp <= 0) {
+        const ch = s.enemies.filter((e) => !e.dead && e.charm > 0);
+        if (ch.length) {
+          let left = 0; for (const e of ch) { left = Math.max(left, e.charm); e.charm = 0; e.stun = Math.max(e.stun, 1.0); }
+          p.cd.hyp = Math.max(1.5, p.cd.hyp - P.hypCd * 0.6 * Math.min(1, left / (p.hypDur || P.hypDur)));
+          s.stats.rels++; s.events.push({ type: 'release', what: 'hyp', ids: ch.map((e) => e.id) });
+        } else if (p.cd.hyp <= 0) {
+          const hostile = (e) => !e.dead && e.spawn <= 0 && e.charm <= 0 && !ENEMY[e.kind].heavy;
+          let targets = [];
           if (h.screen >= 0) {
             const sc = SCREENS[h.screen];
             targets = s.enemies.filter((e) => hostile(e) && Math.hypot(e.x - sc.x, e.z - sc.z) < sc.r + 2).slice(0, 8);
@@ -2315,35 +2321,27 @@ const Core = (() => {
               .sort((a, b) => a.d - b.d).slice(0, 4).map((o) => o.e);
           }
           if (targets.length) {
-            const dur = p.oc > 0 ? 10 : P.hypDur; p.hypDur = dur; cast = true;
+            const dur = p.oc > 0 ? 10 : P.hypDur; p.hypDur = dur;
             for (const e of targets) { e.charm = dur; e.stun = 0; }
             p.cd.hyp = P.hypCd * (p.oc > 0 ? 0.5 : 1); s.stats.hyps++;
             s.events.push({ type: 'hyp', ids: targets.map((e) => e.id), screen: targets.length > 3 || h.screen >= 0 ? h.screen : -1 });
             gainAsc(s, 3 * targets.length, 'hyp');
-          }
-        }
-        if (!cast) { // premuto di nuovo: rilascia chi e' sotto ipnosi e recupera parte della ricarica
-          const ch = s.enemies.filter((e) => !e.dead && e.charm > 0);
-          if (ch.length) {
-            let left = 0; for (const e of ch) { left = Math.max(left, e.charm); e.charm = 0; e.stun = Math.max(e.stun, 1.0); }
-            if (p.cd.hyp > 0) p.cd.hyp = Math.max(1.5, p.cd.hyp - P.hypCd * 0.6 * Math.min(1, left / (p.hypDur || P.hypDur)));
-            s.stats.rels++; s.events.push({ type: 'release', what: 'hyp', ids: ch.map((e) => e.id) });
-          } else if (p.cd.hyp <= 0) s.events.push({ type: 'fizzle', what: 'hyp' });
+          } else s.events.push({ type: 'fizzle', what: 'hyp' });
         }
       }
       if (!p.ride && inp.pos) {
-        if (p.cd.pos <= 0 && h.turret >= 0) {
-          const t = s.turrets[h.turret];
-          t.state = 'owned'; t.timer = t.dur = p.oc > 0 ? 20 : P.posDur; t.stun = 0; t.atk = 0.2;
-          p.cd.pos = P.posCd * (p.oc > 0 ? 0.5 : 1); s.stats.poss++;
-          s.events.push({ type: 'possess', id: t.id }); gainAsc(s, 5, 'pos');
-        } else {
-          const own = s.turrets.filter((t) => t.state === 'owned');
-          if (own.length) {
-            let f = 0; for (const t of own) { f = Math.max(f, t.timer / (t.dur || P.posDur)); t.state = 'reboot'; t.timer = 2; }
-            if (p.cd.pos > 0) p.cd.pos = Math.max(1.5, p.cd.pos - P.posCd * 0.6 * Math.min(1, f));
-            s.stats.rels++; s.events.push({ type: 'release', what: 'pos', ids: own.map((t) => t.id) });
-          } else if (p.cd.pos <= 0) s.events.push({ type: 'fizzle', what: 'pos' });
+        const own = s.turrets.filter((t) => t.state === 'owned');
+        if (own.length) {
+          let f = 0; for (const t of own) { f = Math.max(f, t.timer / (t.dur || P.posDur)); t.state = 'reboot'; t.timer = 2; }
+          p.cd.pos = Math.max(1.5, p.cd.pos - P.posCd * 0.6 * Math.min(1, f));
+          s.stats.rels++; s.events.push({ type: 'release', what: 'pos', ids: own.map((t) => t.id) });
+        } else if (p.cd.pos <= 0) {
+          if (h.turret >= 0) {
+            const t = s.turrets[h.turret];
+            t.state = 'owned'; t.timer = t.dur = p.oc > 0 ? 20 : P.posDur; t.stun = 0; t.atk = 0.2;
+            p.cd.pos = P.posCd * (p.oc > 0 ? 0.5 : 1); s.stats.poss++;
+            s.events.push({ type: 'possess', id: t.id }); gainAsc(s, 5, 'pos');
+          } else s.events.push({ type: 'fizzle', what: 'pos' });
         }
       }
     }
@@ -3445,7 +3443,7 @@ G.start = function () {
         case 'turretFree': { const t = s.turrets[ev.id]; G.burst(t.x, 1.7, t.z, 12, 0xffb23a, 4, 2, 0.5, 0.08); tone('free', 'square', 700, 200, 0.2, 0.08); break; }
         case 'turretShot': { const t = s.turrets[ev.id]; G.flash(t.x + Math.sin(t.yaw) * 1.2, 1.7, t.z + Math.cos(t.yaw) * 1.2, t.state === 'owned' ? 0x6ff0ff : 0xff6a20, 0.6, 1.8, 0.08); tone('tshot', 'square', t.state === 'owned' ? 700 : 260, 140, 0.05, 0.05, 60); break; }
         case 'shotEnd': G.burst(ev.x, 1.5, ev.z, 4, ev.owner === 'a' ? 0x6ff0ff : 0xff8a30, 3, 1.5, 0.3, 0.07); break;
-        case 'fizzle': tone('fz', 'square', 140, 100, 0.08, 0.05, 150); pulse(ev.what === 'hyp' ? 'bHyp' : 'bPos'); break;
+        case 'fizzle': { tone('fz', 'square', 140, 100, 0.08, 0.05, 150); const be = $(ev.what === 'hyp' ? 'bHyp' : 'bPos'); be.classList.remove('nope'); void be.offsetWidth; be.classList.add('nope'); if (ev.what === 'hyp') buf.hyp = 0; else buf.pos = 0; break; }
         case 'asc': break;
         case 'ocStart': banner('SOVRACCARICO', 'ascolti al 100%', 'cy'); boom(1.0, 0.8, 1600); tone('oc', 'sawtooth', 110, 880, 0.7, 0.2); flashSky = 1; shake = Math.max(shake, 0.7); pulse('rideFlash'); break;
         case 'ocEnd': tone('oce', 'sawtooth', 600, 80, 0.5, 0.12); break;
@@ -3497,10 +3495,10 @@ G.start = function () {
     const h = s.hint;
     $('bCable').classList.toggle('ready', riding || h.node >= 0); $('lCable').textContent = riding ? 'SCENDI' : 'CAVI';
     $('cCable').style.height = (riding ? 0 : Math.max(0, p.cd.cable) / C.P.cableCd) * 100 + '%';
-    const aH = s.act.hyp > 0 && p.cd.hyp > 0, aP = s.act.pos > 0 && !(p.cd.pos <= 0 && h.turret >= 0);
-    $('bHyp').classList.toggle('ready', p.cd.hyp <= 0 && !riding); $('bHyp').classList.toggle('air', h.screen >= 0 && p.cd.hyp <= 0); $('bHyp').classList.toggle('act', aH && !riding);
+    const aH = s.act.hyp > 0, aP = s.act.pos > 0;
+    $('bHyp').classList.toggle('ready', p.cd.hyp <= 0 && !riding && !aH); $('bHyp').classList.toggle('air', h.screen >= 0 && p.cd.hyp <= 0 && !aH); $('bHyp').classList.toggle('act', aH && !riding);
     $('cHyp').style.height = (aH ? 0 : Math.max(0, p.cd.hyp) / C.P.hypCd) * 100 + '%'; setTxt('lHyp', aH ? 'RILASCIA' : 'IPNOSI');
-    $('bPos').classList.toggle('ready', p.cd.pos <= 0 && h.turret >= 0); $('bPos').classList.toggle('act', aP && !riding);
+    $('bPos').classList.toggle('ready', p.cd.pos <= 0 && h.turret >= 0 && !aP); $('bPos').classList.toggle('act', aP && !riding);
     $('cPos').style.height = (aP ? 0 : Math.max(0, p.cd.pos) / C.P.posCd) * 100 + '%'; setTxt('lPos', aP ? 'RILASCIA' : 'POSSIEDI');
     bZap.classList.toggle('ready', !riding && !!s.aim.kind); bZap.classList.toggle('held', inp.fire && !riding);
     $('ride').style.opacity = rideK; $('ocfx').style.opacity = ocK;
