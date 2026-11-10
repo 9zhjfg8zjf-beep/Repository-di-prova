@@ -58,16 +58,21 @@
   .dmg::before { content: ''; position: absolute; left: 50%; top: 0; margin-left: -22px; border: 22px solid transparent; border-bottom: 16px solid rgba(255,50,30,.9); border-top: 0; filter: drop-shadow(0 0 6px #ff2a18); }
   .dmg.go { animation: fade .9s ease-out; }
 
-  #btns { position: absolute; right: calc(max(var(--sr), 6px) + 8px); bottom: calc(max(var(--sb), 4px) + 8px); width: 196px; height: 150px; pointer-events: none; }
+  #btns { position: absolute; right: calc(max(var(--sr), 6px) + 8px); bottom: calc(max(var(--sb), 4px) + 8px); width: 214px; height: 172px; pointer-events: none; }
   .ab { position: absolute; pointer-events: auto; border-radius: 50%; border: 2px solid rgba(255,255,255,.28); background: radial-gradient(circle at 35% 30%, #2a1a22, #0c0609); color: #cfc6cc; padding: 0; overflow: hidden; cursor: pointer; touch-action: none; opacity: .62;
-    font: 700 10px var(--ui); letter-spacing: 1.5px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
-  .ab svg { width: 44%; height: 44%; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+    font: 700 10px var(--ui); letter-spacing: 1.2px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
+  .ab svg { width: 42%; height: 42%; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
   .ab .cd { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: rgba(0,0,0,.66); }
-  .ab .key { position: absolute; top: 9px; font-size: 9px; opacity: 0; } .desk .ab .key { opacity: .7; }
-  #bCable { right: 0; bottom: 0; width: 92px; height: 92px; font-size: 12px; } #bCable.ready { opacity: 1; color: #fff; border-color: var(--cy); box-shadow: 0 0 18px rgba(63,233,255,.8), inset 0 0 18px rgba(63,233,255,.35); }
-  #bHyp { right: 104px; bottom: 4px; width: 68px; height: 68px; } #bHyp.ready { opacity: 1; color: #fff; border-color: var(--mg); box-shadow: 0 0 10px rgba(255,63,208,.5); }
+  .ab .key { position: absolute; top: 8px; font-size: 9px; opacity: 0; } .desk .ab .key { opacity: .7; }
+  #bZap { right: 0; bottom: 0; width: 94px; height: 94px; font-size: 12px; opacity: .8; border-color: rgba(160,235,255,.5); }
+  #bZap.ready { opacity: 1; color: #fff; border-color: var(--cy); box-shadow: 0 0 16px rgba(63,233,255,.7), inset 0 0 16px rgba(63,233,255,.3); }
+  #bZap.held { background: radial-gradient(circle at 50% 50%, #1f6f86, #0c1a22); opacity: 1; color: #fff; }
+  #bCable { right: 104px; bottom: 0; width: 76px; height: 76px; font-size: 11px; } #bCable.ready { opacity: 1; color: #fff; border-color: var(--cy); box-shadow: 0 0 16px rgba(63,233,255,.8), inset 0 0 14px rgba(63,233,255,.35); }
+  #bHyp { right: 96px; bottom: 86px; width: 64px; height: 64px; font-size: 9px; } #bHyp.ready { opacity: 1; color: #fff; border-color: var(--mg); box-shadow: 0 0 10px rgba(255,63,208,.5); }
   #bHyp.air { box-shadow: 0 0 22px var(--mg), inset 0 0 18px rgba(255,63,208,.5); animation: blink .5s steps(2) infinite; }
-  #bPos { right: 62px; bottom: 82px; width: 68px; height: 68px; } #bPos.ready { opacity: 1; color: #fff; border-color: var(--am); box-shadow: 0 0 18px rgba(255,178,58,.8), inset 0 0 14px rgba(255,178,58,.35); }
+  #bPos { right: 14px; bottom: 104px; width: 64px; height: 64px; font-size: 9px; } #bPos.ready { opacity: 1; color: #fff; border-color: var(--am); box-shadow: 0 0 18px rgba(255,178,58,.8), inset 0 0 14px rgba(255,178,58,.35); }
+  .ab.act { opacity: 1; color: #fff; border-style: dashed; animation: actp 1s ease-in-out infinite alternate; } #bHyp.act { border-color: var(--mg); } #bPos.act { border-color: var(--cy); }
+  @keyframes actp { from { box-shadow: 0 0 4px rgba(255,255,255,.3); } to { box-shadow: 0 0 16px rgba(255,255,255,.75); } }
   .ab.go { animation: shakeb .25s; } @keyframes shakeb { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
 
   #joy { position: fixed; display: none; width: 104px; height: 104px; margin: -52px 0 0 -52px; border: 2px solid rgba(255,255,255,.4); border-radius: 50%; background: rgba(10,6,8,.25); pointer-events: none; }
@@ -124,28 +129,29 @@
     <canvas id="mini" width="128" height="128"></canvas>
   </div>
   <div id="btns">
-    <button class="ab" id="bPos" type="button"><span class="key">F</span><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/><circle cx="12" cy="12" r="2"/></svg>POSSIEDI<span class="cd" id="cPos"></span></button>
-    <button class="ab" id="bHyp" type="button"><span class="key">Q</span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>IPNOSI<span class="cd" id="cHyp"></span></button>
-    <button class="ab" id="bCable" type="button"><span class="key">E</span><svg viewBox="0 0 24 24"><path d="M13 2 5 13h6l-1 9 9-12h-6z"/></svg><span id="lCable">CAVI</span><span class="cd" id="cCable"></span></button>
+    <button class="ab" id="bPos" type="button"><span class="key">F</span><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/><circle cx="12" cy="12" r="2"/></svg><span id="lPos">POSSIEDI</span><span class="cd" id="cPos"></span></button>
+    <button class="ab" id="bHyp" type="button"><span class="key">Q</span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><span id="lHyp">IPNOSI</span><span class="cd" id="cHyp"></span></button>
+    <button class="ab" id="bCable" type="button"><span class="key">E</span><svg viewBox="0 0 24 24"><path d="M4 21V5M20 21V5M2 7h4M18 7h4M4 8c5 6 11 6 16 0"/></svg><span id="lCable">CAVI</span><span class="cd" id="cCable"></span></button>
+    <button class="ab" id="bZap" type="button"><span class="key">CLIC</span><svg viewBox="0 0 24 24"><path d="M13 2 5 13h6l-1 9 9-12h-6z"/></svg>SCARICA</button>
   </div>
 </div>
 
 <div id="start" class="overlay">
   <div class="card">
     <h1>DITE</h1>
-    <div class="sub">LA CITTA BASSA · VERSIONE 1.0</div>
+    <div class="sub">LA CITTA BASSA · VERSIONE 1.1</div>
     <div id="rot">GIRA IL TELEFONO IN ORIZZONTALE</div>
     <div class="cols">
       <ul class="pw">
-        <li><b>Scarica</b> Parte da sola su chi hai nel mirino e salta ai nemici vicini.</li>
+        <li><b>Scarica</b> Tieni premuto per colpire chi hai nel mirino. Salta ai nemici vicini.</li>
         <li><b>Cavi</b> Entra nella rete elettrica, corri sopra la citta, scendi come una folgore.</li>
-        <li><b>Ipnosi</b> I nemici combattono per te. Vicino a uno schermo va IN ONDA su tutti.</li>
-        <li><b>Possessione</b> Le torrette Cerbero sparano a te, finche non le prendi tu.</li>
+        <li><b>Ipnosi</b> I nemici combattono per te. Vicino a uno schermo va IN ONDA. Ripremi per rilasciare.</li>
+        <li><b>Possessione</b> Le torrette Cerbero sparano a te, finche non le prendi tu. Ripremi per rilasciare.</li>
         <li><b>Ascolti</b> Ogni colpo riuscito li alza. Al 100% scatta il Sovraccarico.</li>
       </ul>
       <div>
         <p id="startMsg">Sei un segnale con le mani. La citta di Dite e piena di schermi, di cavi e di Malebranche che vogliono spegnerti.</p>
-        <p class="how"><b>Telefono:</b> pollice sinistro per camminare, trascina a destra per guardare, tre pulsanti per i poteri.<br><b>Computer:</b> clic per agganciare il mouse, WASD, E o spazio per i cavi, Q ipnosi, F possessione.</p>
+        <p class="how"><b>Telefono:</b> pollice sinistro per camminare, trascina a destra per guardare. Tenendo premuto SCARICA puoi continuare a mirare con lo stesso dito.<br><b>Computer:</b> clic per agganciare il mouse e per la scarica, WASD, E o spazio per i cavi, Q ipnosi, F possessione.</p>
         <button id="play" class="go-btn" type="button">ENTRA</button>
       </div>
     </div>
@@ -2003,8 +2009,8 @@ const Core = (() => {
       turrets: TURRETS.map((t, id) => ({ id, x: t.x, z: t.z, r: 1.0, yaw: 0, state: 'hostile', timer: 0, stun: 0, atk: 1 })),
       wave: 0, waveT: 2.5, pending: true, kills: 0, over: false, events: [], nextId: 1,
       flow: new Int16Array(N * N).fill(32767), flowT: 0,
-      aim: { kind: '', id: -1 }, hint: { node: -1, turret: -1, screen: -1 },
-      stats: { zaps: 0, rides: 0, strikes: 0, hyps: 0, poss: 0, ocs: 0, dmgTaken: 0, killsBy: { zap: 0, strike: 0, ally: 0, turret: 0 } },
+      aim: { kind: '', id: -1 }, hint: { node: -1, turret: -1, screen: -1 }, act: { hyp: 0, pos: 0 },
+      stats: { miss: 0, zaps: 0, rides: 0, strikes: 0, hyps: 0, poss: 0, rels: 0, ocs: 0, dmgTaken: 0, killsBy: { zap: 0, strike: 0, ally: 0, turret: 0 } },
     };
   }
 
@@ -2273,7 +2279,8 @@ const Core = (() => {
         p.ride = { phase: 'in', a: h.node, b: -1, t: 0, time: 0, sx: p.x, sz: p.z, sy: EYE, wantExit: false };
         s.stats.rides++; s.events.push({ type: 'ride', node: h.node });
       }
-      if (!p.ride && aim.kind && p.cd.zap <= 0) {
+      if (!p.ride && inp.fire && !aim.kind && p.cd.zap <= 0) { p.cd.zap = P.zapCd; s.stats.miss++; s.events.push({ type: 'zapMiss' }); }
+      if (!p.ride && inp.fire && aim.kind && p.cd.zap <= 0) {
         const oc = p.oc > 0; p.cd.zap = oc ? 0.2 : P.zapCd; s.stats.zaps++;
         const dmg = oc ? 22 : P.zapDmg, pts = [];
         if (aim.kind === 't') { const t = s.turrets[aim.id]; t.stun = 2.5; pts.push({ x: t.x, z: t.z, t: t.id }); }
@@ -2294,33 +2301,50 @@ const Core = (() => {
         }
         s.events.push({ type: 'zap', pts });
       }
-      if (!p.ride && inp.hyp && p.cd.hyp <= 0) {
+      if (!p.ride && inp.hyp) {
         const hostile = (e) => !e.dead && e.spawn <= 0 && e.charm <= 0 && !ENEMY[e.kind].heavy;
-        let targets = [];
-        if (h.screen >= 0) {
-          const sc = SCREENS[h.screen];
-          targets = s.enemies.filter((e) => hostile(e) && Math.hypot(e.x - sc.x, e.z - sc.z) < sc.r + 2).slice(0, 8);
+        let targets = [], cast = false;
+        if (p.cd.hyp <= 0) {
+          if (h.screen >= 0) {
+            const sc = SCREENS[h.screen];
+            targets = s.enemies.filter((e) => hostile(e) && Math.hypot(e.x - sc.x, e.z - sc.z) < sc.r + 2).slice(0, 8);
+          }
+          if (!targets.length) {
+            targets = s.enemies.filter(hostile).map((e) => ({ e, d: Math.hypot(e.x - p.x, e.z - p.z) }))
+              .filter((o) => o.d < 11 && angTo(p, o.e.x, o.e.z) < 1.0 && los(p.x, p.z, o.e.x, o.e.z))
+              .sort((a, b) => a.d - b.d).slice(0, 4).map((o) => o.e);
+          }
+          if (targets.length) {
+            const dur = p.oc > 0 ? 10 : P.hypDur; p.hypDur = dur; cast = true;
+            for (const e of targets) { e.charm = dur; e.stun = 0; }
+            p.cd.hyp = P.hypCd * (p.oc > 0 ? 0.5 : 1); s.stats.hyps++;
+            s.events.push({ type: 'hyp', ids: targets.map((e) => e.id), screen: targets.length > 3 || h.screen >= 0 ? h.screen : -1 });
+            gainAsc(s, 3 * targets.length, 'hyp');
+          }
         }
-        if (!targets.length) {
-          targets = s.enemies.filter(hostile).map((e) => ({ e, d: Math.hypot(e.x - p.x, e.z - p.z) }))
-            .filter((o) => o.d < 11 && angTo(p, o.e.x, o.e.z) < 1.0 && los(p.x, p.z, o.e.x, o.e.z))
-            .sort((a, b) => a.d - b.d).slice(0, 4).map((o) => o.e);
+        if (!cast) { // premuto di nuovo: rilascia chi e' sotto ipnosi e recupera parte della ricarica
+          const ch = s.enemies.filter((e) => !e.dead && e.charm > 0);
+          if (ch.length) {
+            let left = 0; for (const e of ch) { left = Math.max(left, e.charm); e.charm = 0; e.stun = Math.max(e.stun, 1.0); }
+            if (p.cd.hyp > 0) p.cd.hyp = Math.max(1.5, p.cd.hyp - P.hypCd * 0.6 * Math.min(1, left / (p.hypDur || P.hypDur)));
+            s.stats.rels++; s.events.push({ type: 'release', what: 'hyp', ids: ch.map((e) => e.id) });
+          } else if (p.cd.hyp <= 0) s.events.push({ type: 'fizzle', what: 'hyp' });
         }
-        if (targets.length) {
-          const dur = p.oc > 0 ? 10 : P.hypDur;
-          for (const e of targets) { e.charm = dur; e.stun = 0; }
-          p.cd.hyp = P.hypCd * (p.oc > 0 ? 0.5 : 1); s.stats.hyps++;
-          s.events.push({ type: 'hyp', ids: targets.map((e) => e.id), screen: targets.length > 3 || h.screen >= 0 ? h.screen : -1 });
-          gainAsc(s, 3 * targets.length, 'hyp');
-        } else s.events.push({ type: 'fizzle', what: 'hyp' });
       }
-      if (!p.ride && inp.pos && p.cd.pos <= 0) {
-        if (h.turret >= 0) {
+      if (!p.ride && inp.pos) {
+        if (p.cd.pos <= 0 && h.turret >= 0) {
           const t = s.turrets[h.turret];
-          t.state = 'owned'; t.timer = p.oc > 0 ? 20 : P.posDur; t.stun = 0; t.atk = 0.2;
+          t.state = 'owned'; t.timer = t.dur = p.oc > 0 ? 20 : P.posDur; t.stun = 0; t.atk = 0.2;
           p.cd.pos = P.posCd * (p.oc > 0 ? 0.5 : 1); s.stats.poss++;
           s.events.push({ type: 'possess', id: t.id }); gainAsc(s, 5, 'pos');
-        } else s.events.push({ type: 'fizzle', what: 'pos' });
+        } else {
+          const own = s.turrets.filter((t) => t.state === 'owned');
+          if (own.length) {
+            let f = 0; for (const t of own) { f = Math.max(f, t.timer / (t.dur || P.posDur)); t.state = 'reboot'; t.timer = 2; }
+            if (p.cd.pos > 0) p.cd.pos = Math.max(1.5, p.cd.pos - P.posCd * 0.6 * Math.min(1, f));
+            s.stats.rels++; s.events.push({ type: 'release', what: 'pos', ids: own.map((t) => t.id) });
+          } else if (p.cd.pos <= 0) s.events.push({ type: 'fizzle', what: 'pos' });
+        }
       }
     }
 
@@ -2383,7 +2407,7 @@ const Core = (() => {
         collide(e, e.r, s); continue;
       }
       if (e.charm > 0) {
-        e.charm -= dt; if (!anyHostile) e.charm = 0;
+        e.charm -= dt;
         let tg = null, td = 40;
         for (const o of s.enemies) {
           if (o === e || o.dead || o.charm > 0 || o.spawn > 0) continue;
@@ -2395,6 +2419,9 @@ const Core = (() => {
           e.fx = dx; e.fz = dz;
           if (td > def.reach + tg.r) { e.x += dx * sp * 1.25; e.z += dz * sp * 1.25; e.moving = true; }
           else if (e.atk <= 0) { e.atk = def.atkCd * 0.7; s.events.push({ type: 'enemyAtk', id: e.id }); applyHit(s, tg, { dmg: def.dmg * 1.7, knock: 4, fx: e.x, fz: e.z, src: 'ally' }); }
+        } else { // nessun bersaglio: resta accanto al giocatore finche' l'ipnosi dura o viene rilasciata
+          const dx = p.x - e.x, dz = p.z - e.z, d = Math.hypot(dx, dz) || 1; e.fx = dx / d; e.fz = dz / d;
+          if (d > 4) { e.x += (dx / d) * sp; e.z += (dz / d) * sp; e.moving = true; }
         }
         if (e.charm <= 0) { e.charm = 0; s.events.push({ type: 'uncharm', id: e.id }); }
       } else {
@@ -2450,6 +2477,10 @@ const Core = (() => {
     }
     s.shots = s.shots.filter((sh) => sh.life > 0 || (s.events.push({ type: 'shotEnd', id: sh.id, x: sh.x, z: sh.z, owner: sh.owner }), false));
     s.enemies = s.enemies.filter((e) => !e.dead);
+
+    // Effetti attivi (per l'interfaccia): quanto resta di ipnosi e possessione
+    s.act.hyp = 0; for (const e of s.enemies) if (e.charm > s.act.hyp) s.act.hyp = e.charm;
+    s.act.pos = 0; for (const t of s.turrets) if (t.state === 'owned' && t.timer > s.act.pos) s.act.pos = t.timer;
 
     // Ascolti e sovraccarico
     if (p.oc > 0) {
@@ -3264,7 +3295,7 @@ G.start = function () {
   let s = null, running = false, acc = 0, last = 0, hitStop = 0, shake = 0, overT = 0, yaw = Math.PI, pitch = 0, fov = 72, bobT = 0, rideK = 0, flashSky = 0, ocK = 0;
   const keys = new Set(), buf = { cable: 0, hyp: 0, pos: 0 };
   const joy = { id: null, ox: 0, oy: 0, x: 0, y: 0 }, look = { id: null, x: 0, y: 0 };
-  let W = 0, Hh = 0, locked = false;
+  let W = 0, Hh = 0, locked = false, fireBtn = false, fireMouse = false; const zp = { id: null, x: 0, y: 0 };
   const press = (k) => { buf[k] = performance.now(); };
   const KEYMAP = { Space: 'cable', KeyE: 'cable', KeyQ: 'hyp', KeyF: 'pos' };
   window.addEventListener('keydown', (e) => { if (e.repeat) return; keys.add(e.code); if (running && KEYMAP[e.code]) { press(KEYMAP[e.code]); e.preventDefault(); } if (e.code.startsWith('Arrow')) e.preventDefault(); });
@@ -3274,7 +3305,7 @@ G.start = function () {
   const turn = (dx, dy, k) => { yaw -= dx * k; pitch = Math.max(-1.25, Math.min(1.25, pitch - dy * k)); };
   canvas.addEventListener('pointerdown', (e) => {
     if (!running) return;
-    if (e.pointerType === 'mouse') { if (!locked && canvas.requestPointerLock) { try { const r = canvas.requestPointerLock(); if (r && r.catch) r.catch(() => {}); } catch (err) { /* resta il trascinamento */ } } }
+    if (e.pointerType === 'mouse') { if (e.button === 0) fireMouse = true; if (!locked && canvas.requestPointerLock) { try { const r = canvas.requestPointerLock(); if (r && r.catch) r.catch(() => {}); } catch (err) { /* resta il trascinamento */ } } }
     const wantJoy = e.pointerType !== 'mouse' && e.clientX < W * 0.42 && joy.id === null;
     if (wantJoy) { joy.id = e.pointerId; joy.ox = e.clientX; joy.oy = e.clientY; joy.x = joy.y = 0; joyEl.style.left = e.clientX + 'px'; joyEl.style.top = e.clientY + 'px'; joyEl.style.display = 'block'; knob.style.transform = 'translate(-50%,-50%)'; }
     else if (look.id === null) { look.id = e.pointerId; look.x = e.clientX; look.y = e.clientY; } else return;
@@ -3287,10 +3318,18 @@ G.start = function () {
     if (d > R) { dx = (dx / d) * R; dy = (dy / d) * R; }
     joy.x = dx / R; joy.y = dy / R; knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
   });
-  const ptrEnd = (e) => { if (e.pointerId === look.id) look.id = null; if (e.pointerId === joy.id) { joy.id = null; joy.x = joy.y = 0; joyEl.style.display = 'none'; } };
+  const ptrEnd = (e) => { if (e.pointerType === 'mouse') fireMouse = false; if (e.pointerId === look.id) look.id = null; if (e.pointerId === joy.id) { joy.id = null; joy.x = joy.y = 0; joyEl.style.display = 'none'; } };
   canvas.addEventListener('pointerup', ptrEnd); canvas.addEventListener('pointercancel', ptrEnd);
   document.addEventListener('pointerlockchange', () => { locked = document.pointerLockElement === canvas; });
   document.addEventListener('mousemove', (e) => { if (locked && running) turn(e.movementX, e.movementY, 0.0024); });
+  document.addEventListener('mousedown', (e) => { if (locked && e.button === 0) fireMouse = true; });
+  document.addEventListener('mouseup', (e) => { if (e.button === 0) fireMouse = false; });
+  // Pulsante della scarica: si tiene premuto per sparare e, trascinando lo stesso dito, si continua a mirare.
+  const bZap = $('bZap');
+  bZap.addEventListener('pointerdown', (e) => { e.preventDefault(); if (!running) return; fireBtn = true; zp.id = e.pointerId; zp.x = e.clientX; zp.y = e.clientY; try { bZap.setPointerCapture(e.pointerId); } catch (err) { /* ignora */ } });
+  bZap.addEventListener('pointermove', (e) => { if (e.pointerId !== zp.id) return; turn(e.clientX - zp.x, e.clientY - zp.y, 0.0062); zp.x = e.clientX; zp.y = e.clientY; });
+  const zapEnd = (e) => { if (e.pointerId === zp.id) { zp.id = null; fireBtn = false; } };
+  bZap.addEventListener('pointerup', zapEnd); bZap.addEventListener('pointercancel', zapEnd); bZap.addEventListener('lostpointercapture', zapEnd);
   for (const [id, k] of [['bCable', 'cable'], ['bHyp', 'hyp'], ['bPos', 'pos']]) $(id).addEventListener('pointerdown', (e) => { e.preventDefault(); if (running) press(k); });
   document.addEventListener('contextmenu', (e) => e.preventDefault());
   const inCard = (t) => !!(t && t.closest && t.closest('.overlay'));
@@ -3298,13 +3337,13 @@ G.start = function () {
   canvas.addEventListener('touchstart', (e) => { if (running) e.preventDefault(); }, { passive: false });
   for (const ev of ['gesturestart', 'gesturechange', 'dblclick']) document.addEventListener(ev, (e) => e.preventDefault(), { passive: false });
 
-  const inp = { mx: 0, my: 0, yaw: 0, cable: false, hyp: false, pos: false };
+  const inp = { mx: 0, my: 0, yaw: 0, fire: false, cable: false, hyp: false, pos: false };
   function readInput() {
     let mx = joy.x, my = -joy.y;
     if (keys.has('KeyA') || keys.has('ArrowLeft')) mx -= 1; if (keys.has('KeyD') || keys.has('ArrowRight')) mx += 1;
     if (keys.has('KeyW') || keys.has('ArrowUp')) my += 1; if (keys.has('KeyS') || keys.has('ArrowDown')) my -= 1;
     const now = performance.now();
-    inp.mx = mx; inp.my = my; inp.yaw = yaw;
+    inp.mx = mx; inp.my = my; inp.yaw = yaw; inp.fire = fireBtn || fireMouse || keys.has('KeyJ') || !!window.__dite.autoFire;
     inp.cable = now - buf.cable < 220; inp.hyp = now - buf.hyp < 220; inp.pos = now - buf.pos < 220;
     return inp;
   }
@@ -3359,6 +3398,20 @@ G.start = function () {
           tone('zap', 'sawtooth', oc ? 1300 : 980, 180, 0.09, 0.07, 50); boom(0.07, 0.12, 5200, true);
           break;
         }
+        case 'zapMiss': {
+          G.hands.zap = 0.16; G.handWorld(hw, cam);
+          const fx = -Math.sin(yaw) * Math.cos(pitch), fy = Math.sin(pitch), fz = -Math.cos(yaw) * Math.cos(pitch); let d = 2;
+          while (d < 15 && !C.solidAt(p.x + fx * d, p.z + fz * d) && 1.7 + fy * d > 0.1) d += 1;
+          G.bolt(hw.x, hw.y, hw.z, p.x + fx * d, 1.7 + fy * d, p.z + fz * d, 0.1, 0.11, 0x3fc8ff); G.flash(p.x + fx * d, 1.7 + fy * d, p.z + fz * d, 0x7fdcff, 0.6, 1.8, 0.14); G.burst(p.x + fx * d, 1.7 + fy * d, p.z + fz * d, 4, 0xbfefff, 3, 1, 0.25, 0.06, 0.6);
+          tone('zapm', 'sawtooth', 700, 160, 0.07, 0.04, 50); boom(0.05, 0.07, 5200, true);
+          break;
+        }
+        case 'release': {
+          if (ev.what === 'hyp') { for (const id of ev.ids) { const e = s.enemies.find((o) => o.id === id); if (e) { G.enemyPos(e, ep); G.flash(ep.x, ep.y, ep.z, 0xff9fe8, 2.5, 0.6, 0.3); G.burst(ep.x, ep.y, ep.z, 6, 0xff7fe0, 3, 1, 0.4, 0.07, 0.3); } } buf.hyp = 0; }
+          else { for (const id of ev.ids) { const t = s.turrets[id]; G.flash(t.x, 1.7, t.z, 0xffb23a, 3, 0.8, 0.3); G.burst(t.x, 1.7, t.z, 10, 0xffb23a, 4, 2, 0.5, 0.08); } buf.pos = 0; }
+          tone('rel', 'triangle', 900, 300, 0.18, 0.1);
+          break;
+        }
         case 'hit': { const v = G.enemyViews.get(ev.id); if (v) { v.flash = 0.08; number(ev.x, v.g.position.y + v.h * 0.6, ev.z, Math.round(ev.dmg), ev.dmg >= 40 ? 'big' : ev.src === 'zap' ? '' : 'ally'); } shake = Math.max(shake, ev.src === 'zap' ? 0.05 : 0); tone('hit', 'square', 210, 90, 0.05, 0.05, 40); break; }
         case 'kill': {
           const big = ev.kind === 'malacoda', y = big ? 2.4 : ev.kind === 'alichino' ? 2.7 : 1.4;
@@ -3405,7 +3458,8 @@ G.start = function () {
   }
 
   // ---------- Fotogramma ----------
-  const nodeMark = $('nodeMark'), hintEl = $('hint'), xh = $('xh');
+  const nodeMark = $('nodeMark'), hintEl = $('hint'), xh = $('xh'), txtCache = {};
+  const setTxt = (id, t) => { if (txtCache[id] !== t) { txtCache[id] = t; $(id).textContent = t; } };
   function updateView(dt, t) {
     const p = s.player, riding = !!p.ride;
     rideK += ((riding ? 1 : 0) - rideK) * Math.min(1, dt * 9); ocK += ((p.oc > 0 ? 1 : 0) - ocK) * Math.min(1, dt * 5);
@@ -3443,8 +3497,12 @@ G.start = function () {
     const h = s.hint;
     $('bCable').classList.toggle('ready', riding || h.node >= 0); $('lCable').textContent = riding ? 'SCENDI' : 'CAVI';
     $('cCable').style.height = (riding ? 0 : Math.max(0, p.cd.cable) / C.P.cableCd) * 100 + '%';
-    $('bHyp').classList.toggle('ready', p.cd.hyp <= 0 && !riding); $('bHyp').classList.toggle('air', h.screen >= 0 && p.cd.hyp <= 0); $('cHyp').style.height = (Math.max(0, p.cd.hyp) / C.P.hypCd) * 100 + '%';
-    $('bPos').classList.toggle('ready', p.cd.pos <= 0 && h.turret >= 0); $('cPos').style.height = (Math.max(0, p.cd.pos) / C.P.posCd) * 100 + '%';
+    const aH = s.act.hyp > 0 && p.cd.hyp > 0, aP = s.act.pos > 0 && !(p.cd.pos <= 0 && h.turret >= 0);
+    $('bHyp').classList.toggle('ready', p.cd.hyp <= 0 && !riding); $('bHyp').classList.toggle('air', h.screen >= 0 && p.cd.hyp <= 0); $('bHyp').classList.toggle('act', aH && !riding);
+    $('cHyp').style.height = (aH ? 0 : Math.max(0, p.cd.hyp) / C.P.hypCd) * 100 + '%'; setTxt('lHyp', aH ? 'RILASCIA' : 'IPNOSI');
+    $('bPos').classList.toggle('ready', p.cd.pos <= 0 && h.turret >= 0); $('bPos').classList.toggle('act', aP && !riding);
+    $('cPos').style.height = (aP ? 0 : Math.max(0, p.cd.pos) / C.P.posCd) * 100 + '%'; setTxt('lPos', aP ? 'RILASCIA' : 'POSSIEDI');
+    bZap.classList.toggle('ready', !riding && !!s.aim.kind); bZap.classList.toggle('held', inp.fire && !riding);
     $('ride').style.opacity = rideK; $('ocfx').style.opacity = ocK;
     xh.className = riding ? 'ride' : s.aim.kind ? 'lock' : '';
     let txt = '';
@@ -3511,6 +3569,7 @@ G.start = function () {
     initAudio();
     for (const id of [...G.enemyViews.keys()]) G.dropEnemy(id); G.clearShots();
     s = Core.create((Math.random() * 1e9) | 0);
+    fireBtn = fireMouse = false; zp.id = null;
     yaw = Math.PI; pitch = 0.04; acc = 0; hitStop = 0; shake = 0; overT = 0; buf.cable = buf.hyp = buf.pos = 0; joy.id = null; joy.x = joy.y = 0; look.id = null;
     $('start').classList.add('hidden'); $('over').classList.add('hidden'); $('ui').classList.remove('hidden');
     running = true;
