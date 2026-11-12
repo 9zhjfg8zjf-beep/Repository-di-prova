@@ -134,6 +134,7 @@
   #fDesc { width: 100%; font: 500 16px var(--ui); color: #fff; background: rgba(0,0,0,.5); border: 1px solid rgba(63,233,255,.5); padding: 6px 8px; border-radius: 0; resize: none; height: 52px; user-select: text; -webkit-user-select: text; }
   .chip { font: 700 11px var(--ui); letter-spacing: 1px; color: #fff; background: rgba(255,255,255,.07); border: 1px solid var(--c, rgba(255,255,255,.3)); padding: 5px 8px; cursor: pointer; text-transform: uppercase; }
   .chip.mon { background: var(--gd); color: #120608; border-color: var(--gd); }
+  #fFind { width: 100%; font: 500 16px var(--ui); color: #fff; background: rgba(0,0,0,.5); border: 1px solid rgba(255,210,74,.6); padding: 7px 8px; border-radius: 0; margin-bottom: 5px; user-select: text; -webkit-user-select: text; }
   .slot { display: grid; grid-template-columns: 40px 1fr auto; gap: 8px; align-items: center; padding: 5px 7px; margin-top: 5px; background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.14); border-left: 3px solid var(--c); cursor: pointer; }
   .slot.sel { border-color: var(--am); background: rgba(255,178,58,.12); }
   .slot .ic { width: 38px; height: 38px; border: 2px solid var(--c); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; } .slot .ic svg { width: 56%; height: 56%; }
@@ -194,7 +195,7 @@
 <div id="home" class="overlay">
   <div class="card">
     <h1>DITE</h1>
-    <div class="sub">MOTORE DI MATTONCINI · VERSIONE 2.1</div>
+    <div class="sub">MOTORE DI MATTONCINI · VERSIONE 3.0</div>
     <div id="rot">GIRA IL TELEFONO IN ORIZZONTALE</div>
     <div class="cols">
       <div>
@@ -205,7 +206,7 @@
         <div class="row" style="margin-top:6px"><button class="btn2" id="newCity" type="button" style="flex:1">Genera un'altra pianta</button><button class="btn2" id="mute" type="button">Audio si</button></div>
       </div>
       <div>
-        <p id="homeMsg">Scegli i poteri, entra in citta. Chi ha un <b style="color:var(--gd)">!</b> sopra la testa ti da una missione: ogni missione alza la Fama, la Fama sblocca punti per mattoncini migliori. Nelle arene dormono tre boss: i loro colpi si vedono a terra prima di cadere.</p>
+        <p id="homeMsg">Mille meccaniche scritte a mano, da comporre in officina. Scegli i poteri, entra in citta. Chi ha un <b style="color:var(--gd)">!</b> sopra la testa ti da una missione: ogni missione alza la Fama, la Fama sblocca punti per mattoncini migliori. Nelle arene dormono tre boss: i loro colpi si vedono a terra prima di cadere.</p>
         <p class="how"><b>Telefono:</b> pollice sinistro per camminare, trascina a destra per guardare. Il tasto grande si tiene premuto e puoi mirare con lo stesso dito. I poteri a terra cadono dove guardi.<br><b>Computer:</b> clic per agganciare il mouse e colpire, WASD, spazio, Q, E, R per i poteri, F per parlare.</p>
         <button id="play" class="go-btn" type="button">ENTRA</button>
       </div>
@@ -2007,6 +2008,7 @@
 (() => {
 'use strict';
 const G = {};
+'use strict';
 // MOTORE - libreria dei mattoncini. Solo dati: un personaggio e' una ricetta che pesca da qui.
 const Bricks = (() => {
   // Elementi: colore, effetto che lasciano su chi colpiscono, parole chiave per il generatore da descrizione.
@@ -2129,10 +2131,49 @@ const Bricks = (() => {
   };
   const MODS = Object.keys(MOD);
   const ARCH = {}; for (const a of A) ARCH[a.id] = a;
+  // ---------- Linguaggio dei poteri: una meccanica e' un piccolo programma scritto a mano ----------
+  function splitTop(src, sep) { const out = []; let d = 0, cur = ''; for (const ch of src) { if (ch === '(') d++; else if (ch === ')') d--; if (ch === sep && d === 0) { out.push(cur); cur = ''; } else cur += ch; } out.push(cur); return out; }
+  const num = (t) => (t.indexOf('/') > 0 ? t.split('/').map(Number) : Number(t));
+  function parseProg(src) {
+    const out = [];
+    for (const st of splitTop(src, ';')) {
+      const toks = splitTop(st.trim(), ' ').filter(Boolean); if (!toks.length) continue; const o = { op: toks[0] };
+      for (let i = 1; i < toks.length; i++) {
+        const t = toks[i], pi = t.indexOf('(');
+        if (pi > 0 && t[t.length - 1] === ')') { o[t.slice(0, pi)] = parseProg(t.slice(pi + 1, -1)); continue; }
+        if (t[0] === '@') { o.at = t.slice(1); continue; }
+        const m = /^([a-z]+?)(-?\.?\d[\d.]*(?:\/-?\.?\d[\d.]*)*)(?::(-?\.?\d[\d.\/]*))?$/.exec(t);
+        if (m) { o[m[1]] = num(m[2]); if (m[3] !== undefined) o[m[1] + '2'] = num(m[3]); } else o[t] = true;
+      }
+      out.push(o);
+    }
+    return out;
+  }
+  const tierOf = (v, t) => (Array.isArray(v) ? (typeof v[0] === 'number' ? v[Math.min(v.length, t) - 1] : v.map((x) => tierOf(x, t))) : v && typeof v === 'object' ? Object.keys(v).reduce((o, k) => { o[k] = tierOf(v[k], t); return o; }, {}) : v);
+  const ICOP = { circ: 'ring', cone: 'cone', line: 'beam', ring: 'ring', tgt: 'mark', near: 'mark', shot: 'orb', zone: 'zone', sum: 'summon', dash: 'dash', blink: 'blink', leap: 'leap', buff: 'shield', trig: 'crown', chain: 'bolt', pop: 'strike', rep: 'wave', heal: 'heal', cost: 'drain', if: 'eye', nth: 'orb', mem: 'mark', freeze: 'bubble', res: 'crown', cdr: 'speed', ret: 'blink' };
+  const COSTS = { a: [1, 2, 3], b: [2, 3, 4], c: [3, 4, 5] }, SIG = {};
+  const slug = (n) => n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  const STOP = { della: 1, dello: 1, delle: 1, degli: 1, nella: 1, sulla: 1, dalla: 1, quello: 1, quelli: 1, questo: 1, tutti: 1, tutto: 1, dove: 1, dopo: 1, prima: 1, verso: 1, ogni: 1, loro: 1, anche: 1, mentre: 1, quando: 1, molto: 1, poco: 1, sono: 1, come: 1, intorno: 1, attorno: 1, davanti: 1, nemico: 1, nemici: 1, colpo: 1, colpi: 1, secondi: 1, punto: 1, guardi: 1 };
+  const errors = [];
+  function load(text) { // una riga per meccanica: SLOT|Nome|costo|ricarica|Descrizione|programma
+    for (const raw of text.split('\n')) {
+      const line = raw.trim(); if (!line || line[0] === '#') continue;
+      const f = line.split('|'); if (f.length !== 6) { errors.push('campi: ' + line.slice(0, 50)); continue; }
+      const [slot, nome, co, cd, desc, src] = f.map((x) => x.trim()), id = slug(nome);
+      if (ARCH[id]) { errors.push('nome doppio: ' + nome); continue; }
+      let prog; try { prog = parseProg(src); } catch (e) { errors.push('programma: ' + nome); continue; }
+      if (!prog.length || !COSTS[co] || !'PMSU'.includes(slot)) { errors.push('riga non valida: ' + nome); continue; }
+      const sig = slot + ':' + src.replace(/-?\.?\d[\d.\/:]*/g, '#');
+      if (SIG[sig]) { errors.push('stessa struttura di ' + SIG[sig] + ': ' + nome); continue; } SIG[sig] = nome;
+      const kw = (nome + ' ' + desc).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(/[^a-z]+/).filter((w) => w.length > 3 && !STOP[w]).map((w) => (w.length > 6 ? w.slice(0, 6) : w));
+      const a = { id, nome, slot, kind: 'x', ic: ICOP[prog[0].op] || 'orb', cost: COSTS[co], cd: slot === 'U' ? 1 : num(cd), p: {}, prog, src, desc, kw: Array.from(new Set(kw)) };
+      A.push(a); ARCH[id] = a;
+    }
+  }
   const SLOTS = ['P', 'M', 'S', 'S', 'U'], SLOT_NAME = { P: 'Primario', M: 'Mobilita', S: 'Abilita', U: 'Suprema' };
   const val = (v, t) => (Array.isArray(v) ? v[t - 1] : v);
   // parametri effettivi di un mattoncino al suo grado
-  function params(b) { const a = ARCH[b.id], o = { cd: val(a.cd, b.t) }; for (const k in a.p) o[k] = val(a.p[k], b.t); return o; }
+  function params(b) { const a = ARCH[b.id], o = { cd: val(a.cd, b.t) }; for (const k in a.p) o[k] = val(a.p[k], b.t); if (a.prog) o.prog = tierOf(a.prog, b.t); return o; }
   const cost = (r) => r.slots.reduce((s, b) => s + ARCH[b.id].cost[b.t - 1] + (b.m ? 1 : 0), 0);
   const budgetFor = (level) => Math.min(24, 12 + 2 * level);
   const FAME_STEPS = [0, 25, 60, 110, 170, 240, 320];
@@ -2237,9 +2278,994 @@ const Bricks = (() => {
       fasi: [{ fino: 0.6, seq: ['picchiata', 'pozze', 'coda', 'picchiata'], pausa: 1.4 }, { fino: 0.3, seq: ['picchiata', 'spirale', 'pozze', 'coda'], pausa: 1.1 }, { fino: 0, seq: ['picchiata', 'pioggia', 'spirale', 'pozze', 'picchiata'], pausa: 0.8 }] },
   };
 
-  return { ELEM, ARCH, MOD, MODS, LIST: A, SLOTS, SLOT_NAME, PRESETS, ATK, BOSSES, FAME_STEPS, params, cost, budgetFor, levelFor, fit, upgrade, fromText, randomRecipe, valid };
+  return { ELEM, ARCH, MOD, MODS, load, parseProg, errors, LIST: A, SLOTS, SLOT_NAME, PRESETS, ATK, BOSSES, FAME_STEPS, params, cost, budgetFor, levelFor, fit, upgrade, fromText, randomRecipe, valid };
 })();
 
+Bricks.load(String.raw`
+# ===== PRIMARI: proiettili =====
+P|Spillo|a|0.22|Un ago rapidissimo che passa attraverso tutti.|shot d6/7.5/9 v46 pierce
+P|Chiodo rovente|a|0.4|Un colpo che lascia il bersaglio in fiamme.|shot d9/11/13 v34 burn5
+P|Dardo gelido|a|0.4|Ogni colpo raffredda: al quarto il nemico si congela.|shot d9/11/13 v34 chill1
+P|Spina tossica|a|0.38|Ogni colpo aggiunge una dose di veleno.|shot d7/9/11 v34 pois1
+P|Dardo fiacco|a|0.42|Chi viene colpito picchia meno forte.|shot d9/11/13 v32 weak3
+P|Segnatore|a|0.5|Marchia il bersaglio: tutto gli fa piu male.|shot d8/10/12 v36 mark1.2:4
+P|Bolas|b|0.7|Un colpo che inchioda al suolo per un attimo.|shot d12/15/18 v28 root.8
+P|Zavorra|a|0.45|Rallenta chi colpisce.|shot d9/11/13 v30 slow.4:2
+P|Colpo di maglio a distanza|b|0.8|Un proiettile pesante che spinge indietro.|shot d16/20/24 v26 r.7 push9
+P|Arpione corto|b|0.9|Colpisce e tira il nemico verso di te.|shot d14/18/22 v34 yank
+P|Doppietta|a|0.42|Due colpi affiancati.|shot n2 sp.06 d6/7.5/9 v36
+P|Ventaglio di lame|b|0.7|Cinque lame larghe che attraversano tutti.|shot n5 sp.16 d5/6/7 v30 pierce
+P|Stormo|b|0.6|Quattro colpi sparsi che cercano il bersaglio.|shot n4 sp.3 d5/6/7 v20 hom jit.1
+P|Cerca-calore|b|0.55|Un colpo solo, ma ti segue il nemico dietro gli angoli.|shot d13/16/19 v18 hom t2.2
+P|Grandine|b|0.16|Colpi minuscoli e imprecisi, a pioggia.|shot d3.4/4.1/4.8 v38 jit.12
+P|Palla da biliardo|b|0.5|Rimbalza sui muri e buca i nemici.|shot d9/11/13 v30 bnc4 pierce t2.4
+P|Granata a mano|b|0.9|Esplode dove tocca.|shot d22/27/32 v20 boom3.2
+P|Granata a grappolo|c|1.1|Esplode e si divide in schegge.|shot d18/22/26 v20 boom3 split5
+P|Seme esplosivo|b|0.85|Dove arriva nasce una chiazza che brucia.|shot d10/12/14 v24 then(zone r2.4 t3 dps9/11/13)
+P|Lancia-mine|b|1|Il colpo si ferma e scoppia dopo un attimo.|shot d6 v22 t.6 then(circ r3.2 d24/30/36 in.5)
+P|Sfera gravitazionale|c|1.2|Lenta: tira a se chi le passa vicino.|shot d4/5/6 v7 aura3 t3.5 pull6
+P|Sfera di brina|c|1.3|Lenta: rallenta e raffredda tutto attorno.|shot d4/5/6 v7 aura3 t3.5 slow.4:1 chill.3
+P|Disco tagliente|b|0.75|Va, taglia, torna.|shot d9/11/13 v26 back t.55 wide r1.2
+P|Falce lunare|b|0.8|Una mezzaluna larga che attraversa tutto.|shot d13/16/19 v28 wide r2 t.7
+P|Onda fredda|b|0.85|Una mezzaluna che rallenta chi tocca.|shot d11/14/17 v24 wide r2 t.7 slow.5:2
+P|Scheggia che si divide|b|0.6|Alla fine della corsa si apre in tre.|shot d10/12/14 v32 t.5 split3
+P|Colpo a catena|b|0.5|Dal punto d'impatto parte una scarica verso i vicini.|shot d8/10/12 v36 then(chain n2/3/4 d7/9/11 r7)
+P|Proiettile ombra|b|0.6|Dove colpisce, un secondo colpo parte verso un altro nemico.|shot d10/12/14 v34 then(shot d8/10/12 v30 skip)
+P|Colpo che fiorisce|c|0.9|All'impatto sboccia in sei spine.|shot d10/12/14 v30 then(shot n6 ringall d5/6/7 v22 t.4)
+P|Dardo vampiro|b|0.45|Ogni colpo ti rende un po di vita.|shot d9/11/13 v34 then(heal v1/1.3/1.6)
+P|Colpo risonante|b|0.5|Ogni colpo carica la Risonanza.|shot d8/10/12 v34 then(res v.8/1/1.2)
+P|Pallottola pesante|b|0.95|Lenta da ricaricare, fa malissimo.|shot d34/42/50 v44 r.5
+P|Spara-chiodi|a|0.3|Chiodi corti: poca gittata, tanto ritmo.|shot d8/10/12 v36 t.3
+P|Sputo acido|b|0.6|Avvelena e indebolisce.|shot d6/8/10 v24 pois2 weak2
+P|Scintilla nervosa|b|0.36|Rimbalza una volta e stordisce un istante.|shot d7/9/11 v34 bnc1 stun.15
+P|Freccia tripla in fila|b|0.9|Tre colpi uno dietro l'altro.|rep n3 ev.09 do(shot d8/10/12 v38)
+P|Raffica a ventaglio|c|1|Due salve di tre colpi.|rep n2 ev.15 do(shot n3 sp.16 d6/7/8 v32)
+P|Colpo e contraccolpo|b|0.7|Spari avanti e una scheggia parte anche dietro.|shot d13/16/19 v34; shot d6/8/10 v30 ringall n2
+P|Lanciadardi a corona|b|0.9|Otto dardi tutt'attorno a te.|shot n8 ringall d7/9/11 v26 t.5
+P|Stella rotante|c|1.1|Dodici schegge in cerchio che rimbalzano.|shot n12 ringall d5/6/7 v22 t.9 bnc1
+P|Colpo ad arco lento|b|1|Una bomba lenta che esplode largo.|shot d8 v12 t1.1 then(circ r4.5 d28/35/42)
+P|Bengala|b|0.9|Marchia tutti quelli vicino al punto d'impatto.|shot d8/10/12 v30 then(circ r4 mark1.25:5)
+P|Rete|b|1.1|All'impatto blocca tutti nel raggio.|shot d5 v24 then(circ r3.5 root1/1.3/1.6)
+P|Globo instabile|c|1.2|Viaggia lento bruciando, poi esplode.|shot d4/5/6 v8 aura2.6 t2.5 then(circ r4 d26/32/38)
+P|Lama boomerang doppia|c|1|Due lame che vanno e tornano allargandosi.|shot n2 sp.5 d8/10/12 v24 back t.5 wide r1
+P|Colpo perforante marchiante|b|0.7|Attraversa una fila intera e la marchia.|shot d9/11/13 v40 pierce mark1.15:3
+P|Proiettile che spaventa|b|0.8|Chi viene preso scappa per un attimo.|shot d10/12/14 v30 fear.8
+# ===== PRIMARI: colpi istantanei e mischia =====
+P|Rotaia|b|0.8|Una linea istantanea che trapassa tutto.|line l26 w1 d18/22/26
+P|Taglio largo|a|0.45|Un fendente davanti a te.|cone r3.6 h1.1 d17/21/25
+P|Spazzata bassa|b|0.7|Colpisce tutto attorno a te.|circ r3.8 d16/20/24
+P|Pugno pesante|b|0.75|Un colpo corto che scaraventa via.|cone r3 h.8 d20/25/30 push14
+P|Morso|a|0.45|Un colpo corto che ti cura.|cone r3 h.7 d14/17/20 ls.12
+P|Artiglio avvelenato|a|0.4|Fendente che avvelena.|cone r3.4 h1 d12/15/18 pois1
+P|Lama ardente|a|0.45|Fendente che incendia.|cone r3.4 h1 d12/15/18 burn6
+P|Lama di ghiaccio|a|0.45|Fendente che raffredda.|cone r3.4 h1 d12/15/18 chill1
+P|Mazzata stordente|b|0.95|Lenta: stordisce chi prende.|cone r3.4 h.9 d30/37/44 stun.5
+P|Colpo esecutore|b|0.5|Fa molto piu male ai nemici quasi finiti.|cone r3.4 h.9 d13/16/19 ex2.2
+P|Colpo ravvicinato|a|0.35|Piu sei vicino, piu fa male.|line l9 w1 d8/10/12 close2.2
+P|Tiro lungo|b|0.7|Piu il bersaglio e lontano, piu fa male.|line l30 w.8 d12/15/18 far2.2
+P|Frustata che avvicina|b|0.6|Colpo lungo che tira a te.|line l9 w1.2 d11/14/17 pull9
+P|Calcio rotante|b|0.6|Colpisce attorno e allontana.|circ r3.4 d13/16/19 push9
+P|Anello tagliente|b|0.7|Colpisce solo chi sta a media distanza, non chi ti sta addosso.|ring r7 i3 d18/22/26
+P|Dito puntato|a|0.4|Colpisce all'istante chi stai mirando, senza proiettile.|tgt d11/13/15
+P|Dito che brucia|b|0.5|Colpo istantaneo sul bersaglio mirato, che prende fuoco.|tgt d9/11/13 burn7
+P|Tocco che consuma|b|0.5|Toglie una parte della vita che resta al bersaglio.|tgt d4 hpc.03/.04/.05
+P|Sguardo che pesa|b|0.6|Il bersaglio mirato rallenta e si indebolisce.|tgt d8/10/12 slow.4:2 weak2
+P|Auto-mira|b|0.5|Colpisce da solo il nemico piu vicino.|near r14 d9/11/13
+P|Scossa di prossimita|b|0.45|Colpisce il piu vicino e lo stordisce un istante.|near r9 d8/10/12 stun.15
+P|Arco voltaico|b|0.5|Una scarica che salta tra piu nemici.|chain n3/4/5 d10/12/14 fall.75
+P|Arco gelido|b|0.6|Una catena che raffredda tutti quelli che tocca.|chain n3/4/5 d8/10/12 chill1
+P|Arco velenoso|b|0.6|Una catena che avvelena.|chain n4/5/6 d6/8/10 pois1 fall.85
+P|Contagio di fiamme|b|0.65|Una catena che incendia.|chain n3/4/5 d7/9/11 burn6 r9
+P|Colpo tellurico|b|0.9|Dopo un attimo il suolo scoppia dove guardi.|circ @aim g18 r3 d24/30/36 in.45
+P|Colonna di fuoco|b|1|Una colonna cade dove guardi e incendia.|circ @aim g18 r2.6 d18/23/28 in.5 burn8
+P|Geyser|b|1|Solleva in aria chi sta dove guardi.|circ @aim g16 r2.6 d10/13/16 in.5 lift1.2:14
+P|Schianto di punta|b|0.9|Colpo a terra davanti a te con onda d'urto.|circ @fwd4 r3.2 d20/25/30 push7
+P|Fendente doppio|b|0.6|Due tagli rapidi uno dopo l'altro.|rep n2 ev.14 do(cone r3.4 h1 d9/11/13)
+P|Taglio a croce|b|0.75|Una linea avanti e una spazzata attorno.|line l8 w1.4 d12/15/18; circ r3 d8/10/12
+P|Colpo e scheggia|b|0.6|Fendente; se colpisce, parte una scheggia.|cone r3.4 h1 d12/15/18 then(shot d8/10/12 v30 skip)
+P|Fendente che risuona|b|0.55|Ogni nemico colpito carica la Risonanza.|cone r3.6 h1.1 d12/15/18 res.6
+P|Lama che protegge|b|0.6|Ogni nemico colpito ti da un po di scudo.|cone r3.6 h1.1 d12/15/18 sh2/2.5/3
+P|Lama frenetica|b|0.55|Ogni nemico colpito accorcia le tue ricariche.|cone r3.6 h1.1 d12/15/18 cdr.12
+P|Colpo di scudo|b|0.8|Spinge via e ti copre un poco.|cone r3 h1 d12/15/18 push12 sh3
+# ===== PRIMARI: ritmo e condizioni =====
+P|Tre tempi|b|0.4|Due colpi normali, il terzo esplode.|nth3 do(shot d14/17/20 v30 boom3) else(shot d9/11/13 v34)
+P|Quarto colpo perforante|b|0.36|Ogni quarto colpo trapassa tutto.|nth4 do(line l24 w1 d20/25/30) else(shot d8/10/12 v36)
+P|Combo di lama|b|0.42|Taglio, taglio, poi una spazzata tutt'attorno.|nth3 do(circ r4.2 d20/25/30) else(cone r3.4 h1 d12/15/18)
+P|Uno-due|a|0.38|Alterna un colpo lungo e uno largo.|nth2 do(cone r3.2 h1.2 d13/16/19) else(line l7 w1 d13/16/19)
+P|Sinistro destro montante|c|0.4|Il terzo pugno solleva in aria.|nth3 do(cone r3 h.8 d16/20/24 lift1:12) else(cone r3 h.8 d11/14/17)
+P|Lama e pistola|b|0.45|Da vicino tagli, da lontano spari.|if near4 do(cone r3.4 h1 d16/20/24) else(shot d10/12/14 v34)
+P|Fucile a baionetta|b|0.5|Da vicino affondi e spingi, da lontano spari un colpo perforante.|if near3.5 do(line l5 w1.4 d18/22/26 push8) else(shot d10/12/14 v38 pierce)
+P|Mano tesa|b|0.5|Col bersaglio agganciato colpisci all'istante, senno spari.|if tgt do(tgt d12/15/18) else(shot d9/11/13 v32)
+P|Furia del ferito|b|0.4|Sotto meta vita spari due colpi invece di uno.|if hpb50 do(shot n2 sp.08 d9/11/13 v36) else(shot d10/12/14 v36)
+P|Colpo sereno|b|0.45|A vita alta fa piu male e trapassa.|if hpa80 do(shot d13/16/19 v38 pierce) else(shot d9/11/13 v34)
+P|Passo e tiro|b|0.4|Fermo spari preciso e forte, in corsa spari a raffica larga.|if still do(shot d14/17/20 v44) else(shot n2 sp.2 d6/7.5/9 v32)
+P|Colpo in corsa|b|0.42|In movimento i colpi cercano il bersaglio.|if moving do(shot d9/11/13 v24 hom) else(shot d10/12/14 v36)
+P|Accerchiato|b|0.6|Con tre nemici addosso colpisci tutt'attorno.|if count3 do(circ r4.5 d18/22/26 push6) else(cone r3.4 h1 d15/18/21)
+P|Risonanza alta|b|0.45|Con la Risonanza oltre meta ogni colpo esplode.|if resa50 do(shot d11/13/15 v32 boom2.6) else(shot d10/12/14 v34)
+P|Colpo sul bruciato|b|0.45|Ai nemici in fiamme fa molto piu male.|tgt d10/12/14 vsburn1.9
+P|Colpo sul congelato|b|0.5|Ai nemici rallentati fa molto piu male.|line l22 w.9 d10/12/14 vsslow1.9
+P|Colpo sul marchiato|b|0.45|Ai nemici marchiati fa molto piu male.|shot d9/11/13 v36 pierce then(pop mark r2.5 d14/18/22)
+P|Giustiziere dei fermi|b|0.5|Ai nemici storditi o bloccati fa il doppio.|cone r3.6 h1 d12/15/18 vsstun2 vsroot2
+P|Colpo che approfitta|b|0.5|Ai nemici avvelenati o indeboliti fa molto piu male.|shot d10/12/14 v34 then(near r2 d6/8/10 vspois2.5 vsweak2.5)
+P|Sangue per sangue|b|0.35|Ogni colpo ti costa un po di vita ma picchia duro.|cost v1.5; shot d17/21/25 v38
+P|Patto di lama|b|0.45|Paghi vita, il fendente e enorme.|cost v2; cone r4.6 h1.2 d26/32/38
+P|Scudo che spara|b|0.5|Se hai scudo i colpi trapassano e bruciano.|if shielded do(shot d11/13/15 v36 pierce burn5) else(shot d9/11/13 v34)
+P|Colpo dall'ombra|b|0.5|Da nascosto colpisci all'istante e marchi.|if veiled do(tgt d16/20/24 mark1.3:5) else(shot d10/12/14 v34)
+# ===== PRIMARI: zone, evocazioni, stranezze =====
+P|Semina-braci|c|1.1|Ogni colpo lascia una chiazza dove guardi.|zone @aim g14 r2.2 t3 dps12/15/18
+P|Pozza di melma|c|1.3|Una pozza che rallenta e avvelena dove guardi.|zone @aim g14 r2.8 t4 dps5/6/7 slow.5:1 pois.5
+P|Tornado tascabile|c|1.6|Un vortice che avanza da solo.|zone @fwd2 r2 t3 dps14/17/20 mv7
+P|Nube che insegue|c|2|Una nuvoletta che cerca i nemici da sola.|zone @fwd3 r1.8 t5 dps11/14/17 seek4
+P|Lancia-spiriti|c|1.8|Ogni colpo e uno spirito che corre a esplodere.|sum bomba n1 t6 d20/26/32
+P|Trottola|c|1.5|Una lama rotante resta dove la lanci.|shot d3 v20 t.4 then(zone r2 t3 dps15/19/23)
+P|Chiodo e martello|b|0.6|Blocchi il bersaglio mirato; se e gia bloccato lo colpisci forte.|if hasroot do(tgt d24/30/36) else(tgt d6/8/10 root1.2)
+P|Marchia ed esplodi|b|0.5|Alterna: un colpo marchia, il successivo fa scoppiare i marchi.|nth2 do(pop mark r3 d16/20/24) else(shot d7/9/11 v36 mark1.2:4)
+P|Brucia e spegni|b|0.55|Un colpo incendia, il successivo fa esplodere chi brucia.|nth2 do(pop burn r3 d18/22/26) else(shot d6/8/10 v34 burn8)
+P|Soffio corto|a|0.14|Un getto continuo a ventaglio.|cone r6.5 h.5 d3.4/4.2/5 tk
+P|Lanciafiamme|b|0.14|Getto continuo che incendia.|cone r7.5 h.42 d2.8/3.4/4 tk burn6
+P|Getto criogenico|b|0.14|Getto continuo che raffredda fino a congelare.|cone r7 h.42 d2.6/3.2/3.8 tk chill.15
+P|Nube tossica a spruzzo|b|0.14|Getto continuo che avvelena.|cone r7 h.5 d2.4/3/3.6 tk pois.15
+P|Raggio trattore|b|0.14|Un raggio che trascina verso di te.|line l16 w1 d2.4/3/3.6 tk pull2.2
+P|Raggio repulsore|b|0.14|Un raggio che spinge via.|line l14 w1.2 d2.6/3.2/3.8 tk push2.4
+P|Raggio sottile|a|0.12|Un raggio continuo e preciso.|line l22 w.5 d3.6/4.4/5.2 tk
+P|Raggio che cura|b|0.14|Il raggio ti restituisce parte del danno.|line l18 w.7 d3/3.7/4.4 tk ls.15
+P|Sega circolare|b|0.14|Lame continue tutt'attorno a te.|circ r3 d3.4/4.2/5 tk
+P|Aura che consuma|b|0.2|Brucia una parte della vita di chi ti sta vicino.|circ r4 d1 hpc.004/.005/.006 tk
+P|Sguardo fisso|b|0.14|Un raggio sul bersaglio mirato che lo indebolisce.|tgt d3/3.7/4.4 tk weak1
+P|Trapano|b|0.14|Raggio corto: piu sei vicino, piu macina.|line l8 w1 d2.6/3.2/3.8 tk close2.4
+P|Laser da cecchino|b|0.14|Raggio lunghissimo: da lontano fa piu male.|line l34 w.5 d2.2/2.7/3.2 tk far2.4
+P|Fiamma ossidrica|b|0.14|Cortissimo, ma chi brucia gia brucia il doppio.|cone r4 h.35 d3/3.7/4.4 tk burn5 vsburn1.6
+P|Scarica continua a catena|c|0.3|Una scarica costante che salta tra i nemici.|chain n3/4/5 d4/5/6 fall.85 r8
+P|Mietitrebbia|c|0.2|Un anello continuo a media distanza.|ring r6.5 i2.5 d3/3.7/4.4 tk
+P|Colpo di tosse velenosa|b|0.9|Una nube davanti a te che resta un poco.|cone r5 h.8 d8/10/12 pois2 then(zone @fwd3 r2.6 t2.5 dps6/8/10)
+P|Tuono a mani giunte|b|1|Un'onda davanti a te che stordisce.|cone r6 h.9 d16/20/24 stun.4 push5
+P|Urlo|b|1.1|Spaventa chi hai davanti.|cone r8 h.8 d10/13/16 fear1
+P|Colpo che scambia|c|1.4|Colpisci il bersaglio mirato e vi scambiate di posto.|tgt d14/18/22 swap
+P|Lancio del nemico|c|1.5|Scagli via il bersaglio mirato: fa male dove atterra.|tgt d6 fling24/30/36
+P|Pioggerella|c|0.5|Piccoli colpi cadono a caso attorno al punto che guardi.|circ @aim g16 r1.6 d9/11/13 in.35; circ @rnd4 r1.6 d9/11/13 in.5
+P|Martello che rimbomba|c|1.1|Un colpo a terra e due onde che si allargano.|circ r3 d18/22/26; ring r6 i3 d10/13/16 in.25; ring r9 i6 d7/9/11 in.5
+P|Tiro al piattello|b|0.8|Un colpo in aria che ricade sul piu vicino al punto mirato.|near @aim g18 r6 d24/30/36
+P|Spari dal cielo|b|0.7|Il colpo cade dall'alto sul bersaglio mirato dopo un attimo.|circ @tgt r2 d20/25/30 in.4
+P|Mina vagante|c|1.4|Lanci una mina che cerca i nemici e scoppia.|zone @fwd2 r1.4 t4 seek6 end(circ r3.6 d30/38/46)
+P|Sciabolata che lascia il segno|b|0.7|Il fendente lascia a terra una striscia che brucia.|cone r3.6 h1 d12/15/18 then(zone @fwd3 r2 t2.5 dps8/10/12)
+P|Colpo a ricaduta|b|0.8|Colpo secco; poco dopo, un secondo scoppio nello stesso punto.|shot d10/12/14 v32 then(circ r2.6 d12/15/18 in.6)
+P|Lama che allunga|b|0.5|Se manchi, niente; se colpisci, il prossimo raggio e piu lungo.|cone r3.4 h1 d13/16/19 then(line l12 w1 d7/9/11)
+P|Pugno e onda|b|0.7|Se il pugno va a vuoto parte comunque un'onda corta.|cone r3 h.8 d19/24/29 miss(shot d8/10/12 v26 wide r1.6 t.4)
+P|Rimbalzo tra nemici|b|0.6|Il colpo passa dal primo al piu vicino, e poi a un terzo.|shot d10/12/14 v34 then(shot d8/10/12 v30 skip then(shot d6/8/10 v30 skip))
+`);
+
+Bricks.load(String.raw`
+# ===== PRIMARI: ultimi =====
+P|Forbice|b|0.6|Due linee che si incrociano davanti a te.|line l9 w1 d10/12/14; cone r4 h.4 d8/10/12
+P|Raffica che stringe|b|0.9|Quattro colpi sempre piu forti.|shot d6/7/8 v36; wait t.1; shot d8/10/12 v36; wait t.1; shot d12/15/18 v36 pierce
+P|Tiro e scatto corto|c|0.9|Spari e arretri di un passo.|shot d16/20/24 v38; dash l3 back
+P|Lama che avanza|c|0.8|Fai un passo avanti e tagli.|dash l3 fwd then(cone r3.6 h1.1 d18/22/26)
+P|Doppio dito|b|0.6|Colpisci il bersaglio mirato e chi gli sta accanto.|tgt d10/12/14 then(near r5 d8/10/12)
+P|Mazza a catena|b|0.85|Un colpo largo che tira tutti verso il centro.|circ @fwd4 r3.4 d16/20/24 pull8
+P|Pungiglione|b|0.5|Un affondo che avvelena forte.|line l5 w1.2 d9/11/13 pois2
+P|Mortaretto|b|0.5|Un piccolo scoppio a media distanza, sempre li.|circ @fwd8 r2.4 d14/17/20
+P|Onda sismica|b|0.9|Tre scoppi in fila davanti a te.|circ @fwd4 r2.4 d12/15/18; circ @fwd8 r2.4 d12/15/18 in.15; circ @fwd12 r2.4 d12/15/18 in.3
+# ===== MOVIMENTO: scatti =====
+M|Scatto semplice lungo|a|3|Uno scatto lungo senza fronzoli.|dash l13
+M|Scatto tagliente|a|3|Attraversi i nemici ferendoli.|dash l9 d18/24/30
+M|Scatto all'indietro|a|2.5|Un balzo corto all'indietro.|dash l7 back
+M|Scatto con onda|b|4.5|Alla fine dello scatto esplodi.|dash l9 then(circ r3.6 d22/28/34 push8)
+M|Scatto che congela|b|5|Alla fine dello scatto rallenti tutti attorno.|dash l9 then(circ r4.5 d8/10/12 slow.6:3 chill2)
+M|Scatto incendiario|b|5|Lasci una scia e una vampata all'arrivo.|dash l10 trail8/10/12 then(circ r3 d12/15/18 burn8)
+M|Scatto che stordisce|b|6|All'arrivo stordisci chi hai accanto.|dash l8 then(circ r3.2 d10/13/16 stun.9)
+M|Scatto con scudo|b|5|Arrivi coperto da uno scudo.|dash l9 then(buff shield25/32/40 t3)
+M|Scatto e sparisci|b|7|Alla fine dello scatto sei invisibile.|dash l9 then(buff veil1.7 t3)
+M|Scatto doppio|b|5|Due scatti di fila nella stessa direzione.|dash l7; wait t.25; dash l7
+M|Scatto a boomerang|b|6|Scatti avanti colpendo, poi torni dove eri.|mem; dash l10 d16/20/24 fwd; wait t.6; ret
+M|Scatto sul bersaglio|b|4.5|Ti lanci addosso a chi stai mirando.|dash totgt g20 d14/18/22
+M|Assalto|b|6|Ti lanci sul bersaglio e lo stordisci.|dash totgt g18 then(tgt d20/26/32 stun.8)
+M|Placcaggio|b|6.5|Ti lanci sul bersaglio e lo scaraventi via.|dash totgt g16 then(tgt d16/20/24 fling20/26/32)
+M|Colpo di spalla|b|5|Carichi sul bersaglio e respingi tutti attorno a lui.|dash totgt g16 then(circ r3.6 d16/20/24 push14)
+M|Scatto che ruba vita|b|6|Attraversi i nemici e ti curi per ognuno.|dash l10 d10/13/16 then(circ r3 d6 heal3/4/5)
+M|Scatto con cloni|c|9|Dove parti resta un'esca che esplode.|sum esca n1 t3 d24/30/36 r3.5; dash l10
+M|Scatto che semina mine|b|7|Lasci una mina alla partenza e una all'arrivo.|circ r3 d22/28/34 in1; dash l9 then(circ r3 d22/28/34 in1)
+M|Scatto del lampo|b|5|All'arrivo una scarica salta tra i nemici vicini.|dash l10 then(chain n3/4/5 d12/15/18)
+M|Scatto con spine|b|5.5|All'arrivo spari dardi tutt'attorno.|dash l9 then(shot n8 ringall d7/9/11 v24 t.5)
+M|Scatto del predatore|b|6|Se hai un bersaglio ti ci lanci, senno scatti e basta.|if tgt do(dash totgt g20 d16/20/24) else(dash l9)
+M|Scatto disperato|b|6|Sotto meta vita lo scatto ti cura e ti rende intoccabile.|if hpb50 do(dash l11 then(heal v14/18/22; buff invuln t1)) else(dash l9)
+M|Scatto che carica|b|5|Ogni nemico attraversato carica la Risonanza.|dash l10 d8/10/12 then(circ r3.4 d4 res3/4/5)
+M|Scatto ricaricante|b|7|Alla fine dello scatto le altre ricariche si accorciano.|dash l9 then(cdr v1.5/2/2.5)
+M|Scatto marchiante|b|5|Chi sta dove arrivi viene marchiato.|dash l9 then(circ r4 mark1.3:5)
+M|Scatto con vortice|c|8|All'arrivo lasci un vortice che risucchia.|dash l9 then(zone r4.5 t3 dps6/8/10 zpull1)
+M|Scatto di paura|b|7|Chi sta dove arrivi scappa.|dash l9 then(circ r5 fear1.5/2/2.5)
+M|Scatto corazzato|b|6|Durante e dopo lo scatto prendi meno danni.|buff armor.5 t3; dash l10 d10/13/16
+M|Scatto rabbioso|b|7|Dopo lo scatto colpisci piu forte per un po.|dash l9 then(buff fury1.3/1.4/1.5 t4)
+M|Scatto con muro|c|9|Dietro di te si alza un muro.|sum muro n3 wall t7; dash l9
+M|Scatto a zig-zag|c|7|Tre scatti corti in rapida successione, guidati da te.|rep n3 ev.22 do(dash l5 d8/10/12)
+M|Triplo fendente in corsa|c|8|Tre scatti corti, ognuno con un taglio.|rep n3 ev.3 do(dash l4.5 then(cone r3.2 h1.2 d12/15/18))
+M|Ritirata coperta|b|6|Arretri lasciando una nube che ti nasconde.|zone r4 t3 inv dome; dash l9 back
+M|Ritirata con spinta|b|5|Respingi tutti e arretri.|circ r4 d8/10/12 push16; dash l8 back
+M|Ritirata che gela|b|6|Congeli il terreno davanti a te e arretri.|zone @fwd3 r3.5 t4 slow.6:1 chill.6; dash l8 back
+M|Ritirata e contrattacco|c|7|Arretri e spari tre colpi verso chi ti inseguiva.|dash l8 back then(shot n3 sp.12 d10/13/16 v34)
+M|Capriola con granata|b|6|Arretri e lasci cadere una bomba.|shot d6 v2 t.9 boom4 r.5; dash l8 back
+M|Scivolata|a|3.5|Scatto corto che rallenta chi tocchi.|dash l6 d6/8/10 then(circ r2.5 slow.5:2)
+M|Sfondamento|c|8|Carica lunghissima: chi e sulla strada viene travolto e stordito.|dash l18 d26/34/42 fwd then(circ r3 stun1 d10)
+M|Scatto fantasma|b|6|Durante lo scatto sei intoccabile piu a lungo.|buff invuln t.8; dash l11
+M|Passo laterale con eco|c|7|Scatti e una tua ombra ripete un colpo dal punto di partenza.|shot n3 sp.15 d8/10/12 v30; dash l8
+# ===== MOVIMENTO: teletrasporti =====
+M|Varco corto|a|3.5|Un teletrasporto corto e veloce da ricaricare.|blink g8
+M|Varco esplosivo|b|6|Dove arrivi esplodi.|blink g16 then(circ r4 d22/28/34 push8)
+M|Varco con ricordo|b|6|Dove eri resta un'esplosione ritardata.|blink g16 left(circ r4 d26/33/40 in.7)
+M|Varco gelido|b|6.5|Dove arrivi congeli tutti.|blink g15 then(circ r4.5 d8/10/12 chill3 slow.5:3)
+M|Varco che acceca|b|7|Dove arrivi stordisci.|blink g14 then(circ r3.6 d8/10/12 stun.9)
+M|Varco d'ombra|b|8|Arrivi invisibile.|blink g16 then(buff veil1.9 t3.5)
+M|Varco con esca|c|9|Dove eri resta una tua copia.|blink g16 left(sum esca n1 t4 d24/30/36 r3.5)
+M|Varco curativo|b|8|Arrivando ti curi.|blink g14 then(heal v12/16/20)
+M|Varco protetto|b|7|Arrivi con uno scudo.|blink g16 then(buff shield25/32/40 t3.5)
+M|Alle spalle|b|6|Compari dietro al bersaglio mirato.|blink behind g20
+M|Pugnalata alle spalle|b|7|Compari dietro al bersaglio e lo colpisci forte.|blink behind g18 then(tgt d26/33/40)
+M|Agguato paralizzante|b|8|Compari dietro al bersaglio e lo blocchi.|blink behind g18 then(tgt d10/13/16 root1.5/2/2.5)
+M|Agguato e marchio|b|7|Compari dietro al bersaglio e lo marchi.|blink behind g20 then(tgt d8/10/12 mark1.4:6)
+M|Scambio rapido|b|6|Ti scambi di posto col bersaglio mirato.|tgt swap
+M|Scambio e gabbia|c|8|Scambi posto e il nemico resta bloccato dove eri tu.|tgt swap root1.5/2/2.5
+M|Scambio esplosivo|c|8|Scambi posto: il nemico arriva in un'esplosione.|tgt swap then(circ @tgt r3.6 d24/30/36)
+M|Varco a catena|c|9|Due teletrasporti di fila.|blink g12; wait t.35; blink g12
+M|Varco e raffica|b|7|Appena arrivi spari dardi tutt'attorno.|blink g15 then(shot n8 ringall d8/10/12 v26 t.5)
+M|Varco del fulmine|b|6.5|Dove arrivi una scarica salta tra i nemici.|blink g16 then(chain n3/4/5 d14/18/22)
+M|Varco con vortice|c|9|Dove arrivi tiri tutti a te.|blink g16 then(circ r7 pull16 d8/10/12)
+M|Varco e respingi|b|6|Dove arrivi spingi via tutti.|blink g15 then(circ r5 push18 d8/10/12)
+M|Doppio varco|c|8|Vai e, dopo due secondi, torni dove eri.|mem; blink g18; wait t2; ret
+M|Varco tossico|b|7|Dove eri resta una nube velenosa.|blink g15 left(zone r3.5 t4 dps6/8/10 pois1)
+M|Varco infuocato|b|7|Partenza e arrivo prendono fuoco.|blink g15 left(zone r3 t3 dps10/13/16) then(zone r3 t3 dps10/13/16)
+M|Varco che ricarica|c|10|Arrivando azzeri le altre ricariche.|blink g14 then(cdr all)
+M|Varco risonante|b|8|Arrivando guadagni Risonanza.|blink g15 then(res v10/13/16)
+M|Varco di paura|b|8|Dove arrivi tutti scappano.|blink g15 then(circ r6 fear1.5/2/2.5)
+M|Varco del giudice|c|9|Dove arrivi, un colpo cade su ogni nemico vicino.|blink g16 then(circ r7 each(circ r2 d18/23/28 in.5))
+M|Passo nel vuoto|b|7|Ti sposti e il tempo si ferma un istante.|blink g14; freeze t1/1.3/1.6
+# ===== MOVIMENTO: salti =====
+M|Salto semplice|a|4|Un salto ad arco senza danni.|leap g16
+M|Salto con schianto forte|b|6.5|Atterri con un'onda d'urto.|leap g16 then(circ r4.5 d30/38/46 push8)
+M|Salto del gelo|b|7|Atterri congelando il suolo.|leap g16 then(circ r5 d12/15/18 chill3; zone r4 t3 slow.5:1)
+M|Salto del cratere|b|7|Atterri lasciando un cratere che brucia.|leap g16 then(circ r4 d20/25/30; zone r4 t4 dps9/11/13)
+M|Salto stordente|b|8|Chi sta dove atterri resta stordito.|leap g15 then(circ r4 d14/18/22 stun1.2)
+M|Salto che solleva|c|8|Atterrando sollevi tutti in aria.|leap g15 then(circ r4.5 lift1.6:20)
+M|Salto del meteorite|c|9|Atterri, e subito dopo cade un secondo colpo piu grande.|leap g16 then(circ r3.5 d18/23/28; circ r6 d30/38/46 in.7)
+M|Salto con eco|c|8|Atterri con tre onde che si allargano.|leap g16 then(circ r3 d16/20/24; ring r6 i3 d12/15/18 in.2; ring r9 i6 d8/10/12 in.4)
+M|Salto protetto|b|7|In volo e all'arrivo hai uno scudo.|buff shield30/38/46 t3; leap g16
+M|Salto del cacciatore|b|7|Atterri marchiando tutti.|leap g18 then(circ r5 d8/10/12 mark1.3:6)
+M|Balzo rapido|a|4|Un balzo teso e veloce.|leap g14 fast
+M|Balzo rapido con taglio|b|5|Balzo teso: all'arrivo tagli davanti a te.|leap g14 fast then(cone r4 h1.2 d20/25/30)
+M|Balzo dell'arpione|b|5.5|Balzo teso: all'arrivo tiri tutti a te.|leap g16 fast then(circ r6 pull14 d8/10/12)
+M|Balzo e dardi|b|6|Balzo teso con una rosa di dardi all'arrivo.|leap g15 fast then(shot n6 ringall d8/10/12 v24 t.5)
+M|Salto con paracadute|c|9|Mentre sei in aria piovono colpi sotto di te.|leap g18; rep n4 ev.15 do(circ r2.6 d12/15/18 in.3)
+M|Salto del re|c|10|Atterri e tutti attorno si inchinano: bloccati e indeboliti.|leap g15 then(circ r6 root1.2/1.5/1.8 weak4)
+M|Salto vampiro|b|8|Atterrando ti curi per ogni nemico colpito.|leap g15 then(circ r4.5 d16/20/24 heal4/5/6)
+M|Salto con seguito|c|10|Atterri e due spiriti arrivano con te.|leap g16 then(sum spirito n2 t10 hp40 d9/11/13)
+M|Salto del vulcano|c|9|Atterrando lanci lapilli tutt'attorno.|leap g16 then(shot n10 ringall d6/8/10 v18 t.6 boom2)
+# ===== MOVIMENTO: corse, stati, trucchi =====
+M|Corsa leggera|a|6|Corri piu forte per qualche secondo.|buff haste1.5 t4
+M|Corsa bruciante|b|8|Corri e lasci fuoco dove passi.|buff haste1.5 t5; trig step t5 ev.4 do(zone r1.8 t2.5 dps8/10/12)
+M|Corsa elettrica|b|8|Mentre corri, scariche colpiscono chi ti sta vicino.|buff haste1.5 t5; trig step t5 ev.5 do(near r5 d8/10/12)
+M|Corsa travolgente|b|8|Mentre corri spingi via chi tocchi.|buff haste1.6 t4; trig step t4 ev.25 do(circ r2.2 d5/6/7 push10)
+M|Corsa invisibile|b|10|Corri e sparisci.|buff haste1.4 veil1.6 t4
+M|Corsa corazzata|b|9|Corri e prendi meno danni.|buff haste1.4 armor.6 t5
+M|Corsa che rigenera|b|10|Corri e intanto ti curi.|buff haste1.4 hot20/26/32 t5
+M|Corsa frenetica|b|11|Corri e le ricariche vanno al doppio.|buff haste1.4 cdr2 t4
+M|Passo spettrale|b|9|Per un attimo niente puo toccarti.|buff invuln t1.2/1.5/1.8
+M|Fumogeno|b|9|Una nube: finche ci stai dentro nessuno ti vede.|zone r5 t5/6/7 inv dome
+M|Terreno scivoloso|b|8|Geli il suolo attorno: i nemici arrancano, tu corri.|zone r7 t5 slow.6:1; buff haste1.4 t5
+M|Spinta e fuga|b|6|Respingi tutti e corri via.|circ r5 d6/8/10 push18; buff haste1.5 t3
+M|Segno e ritorno|b|8|La prima volta lasci un segno, la seconda ci torni.|if still do(mem) else(ret)
+M|Ancora esplosiva|c|9|Lasci un segno; tra tre secondi ci torni esplodendo.|mem; wait t3; ret then(circ r5 d30/38/46)
+M|Elastico|b|7|Scatti avanti e l'elastico ti riporta indietro.|mem; dash l12 fwd d10/13/16; wait t.9; ret
+M|Gancio al nemico|b|5|Ti tiri fino al bersaglio mirato.|dash totgt g24
+M|Gancio e calcio|b|6|Ti tiri sul bersaglio e rimbalzi indietro.|dash totgt g22 then(tgt d18/23/28; dash l6 back)
+M|Tira e molla|c|7|Tiri a te il bersaglio, poi arretri.|tgt yank d8/10/12; dash l6 back
+M|Ombra in avanti|c|9|Mandi avanti un'esca; dopo un attimo ti scambi con lei.|mem; sum esca n1 @fwd9 t1.5 d20/26/32 r3.5; wait t1; blink g1 @fwd9
+M|Fuga col botto|b|7|Dopo un secondo esplodi dove sei: nel frattempo corri.|circ r4.5 d30/38/46 in1; buff haste1.6 t1.5
+M|Slancio del sangue|b|4|Paghi vita per uno scatto che ricarica in fretta.|cost v6; dash l11 d14/18/22
+M|Ultima risorsa|c|14|Intoccabile, velocissimo e curato: per le emergenze.|buff invuln t1.5 haste1.6 hot24/30/36
+M|Scatto a comando|b|5|Fermo fai un salto, in corsa fai uno scatto.|if still do(leap g14 fast) else(dash l10)
+M|Via d'uscita|b|8|Se sei accerchiato ti teletrasporti e li blocchi, senno scatti.|if count3 do(circ r5 root1.5; blink g14) else(dash l9)
+M|Scatto dell'opportunista|b|6|Se il bersaglio e stordito o bloccato gli arrivi alle spalle con un colpo doppio.|if hasroot do(blink behind g18 then(tgt d34/42/50)) else(dash l9)
+M|Onda cavalcata|c|8|Lanci un'onda e ci scatti dietro.|shot d14/18/22 v26 wide r2 t.6; dash l10 fwd
+M|Corsa sui cadaveri|c|12|Per un po ogni uccisione ti fa scattare in avanti e ti cura.|trig kill t10 do(heal v5/6/7; buff haste1.5 t2.5)
+M|Riflesso|c|12|Per un po, quando ti colpiscono ti teletrasporti via da solo.|trig hurt t8 n2 do(blink g9 @back9)
+M|Passo che rimbomba|b|9|Per un po ogni tuo scatto o varco finisce con un'esplosione.|trig cast t10 do(circ r3.6 d14/18/22)
+`);
+
+Bricks.load(String.raw`
+# ===== ABILITA: aree e colpi =====
+S|Onda d'urto|a|6|Un'esplosione attorno a te che allontana tutti.|circ r5.5 d24/30/36 push14
+S|Implosione|b|7|Tiri a te tutti quelli attorno e li colpisci.|circ r7.5 d18/23/28 pull18
+S|Colpo di tuono|b|8|Stordisci tutti quelli attorno.|circ r5 d14/18/22 stun1/1.3/1.6
+S|Vampata|a|6|Un ventaglio di fuoco.|cone r9 h.6 d26/33/40 burn8
+S|Soffio polare|b|8|Un ventaglio che congela.|cone r9 h.6 d14/18/22 chill4
+S|Sputo corrosivo|b|7|Un ventaglio che avvelena e indebolisce.|cone r8 h.6 d12/15/18 pois3 weak4
+S|Ruggito|b|9|Chi hai davanti scappa terrorizzato.|cone r10 h.8 fear2/2.5/3
+S|Lama di luce|b|6|Una linea lunghissima che trapassa tutto.|line l28 w1.6 d32/40/48
+S|Fenditura|b|7|Una linea che blocca al suolo chi prende.|line l18 w2 d18/23/28 root1.5/1.8/2.1
+S|Corridoio di vento|b|7|Una linea larga che spinge tutti in fondo.|line l16 w3.5 d12/15/18 push20
+S|Linea di sutura|b|8|Una linea che tira tutti verso il suo inizio.|line l20 w2.5 d14/18/22 pull16
+S|Anello di fuoco|b|7|Un anello a media distanza: chi ti sta addosso e salvo.|ring r10 i4.5 d30/38/46 burn8
+S|Anello di ghiaccio|b|8|Un anello che congela chi sta a media distanza.|ring r10 i4 d14/18/22 chill4 slow.6:3
+S|Castigo|b|7|Un colpo istantaneo sul bersaglio mirato.|tgt d42/53/64
+S|Sentenza|b|9|Colpo sul bersaglio: enorme se e quasi finito.|tgt d26/33/40 ex2.5
+S|Colpo al cuore|c|10|Toglie una grossa fetta della vita rimasta al bersaglio.|tgt d10 hpc.14/.18/.22
+S|Maledizione|b|8|Il bersaglio subisce piu danni, colpisce meno e rallenta.|tgt mark1.35:7 weak7 slow.4:7
+S|Paralisi|b|9|Blocca a lungo il bersaglio mirato.|tgt d8/10/12 root3/3.6/4.2
+S|Sguardo di pietra|b|10|Stordisce a lungo il bersaglio mirato.|tgt stun2/2.5/3
+S|Spavento mirato|a|7|Il bersaglio scappa e chi lo vede resta scosso.|tgt fear3/3.5/4 then(circ @tgt r5 weak4)
+S|Fulmine a ciel sereno|b|7|Un colpo cade dopo un attimo dove guardi.|circ @aim g20 r3.6 d50/63/76 in.7
+S|Tre fulmini|b|8|Tre colpi cadono a caso vicino a dove guardi.|rep n3 ev.25 do(circ @aim g20 r2 d1 in.01; circ @rnd5 r2.8 d26/33/40 in.5)
+S|Pilastro di ghiaccio|b|8|Un colpo dal basso che congela.|circ @aim g18 r3.2 d22/28/34 in.6 chill4
+S|Eruzione|b|9|Un colpo dal basso che lancia in aria.|circ @aim g18 r3.6 d18/23/28 in.6 lift1.6:22
+S|Colpo e risacca|b|8|Un'esplosione che spinge, poi una che tira.|circ r6 d16/20/24 push14; wait t.6; circ r9 d12/15/18 pull16
+S|Tre onde|b|9|Tre onde che si allargano attorno a te.|circ r4 d18/23/28; ring r8 i4 d14/18/22 in.25; ring r12 i8 d10/13/16 in.5
+S|Onde che si stringono|c|10|Tre anelli che si chiudono verso di te.|ring r12 i8 d12/15/18 pull8; ring r8 i4 d14/18/22 in.3 pull8; circ r4 d22/28/34 in.6
+S|Croce|b|8|Quattro linee a croce attorno a te.|line l14 w2 d20/25/30; cone r1 h.1; rep n1 do(circ r3 d10/13/16)
+S|Pugno del gigante|b|8|Un colpo enorme davanti a te.|circ @fwd5 r4.5 d40/50/60 stun.5
+S|Schiaffo del vento|a|6|Spazzi via chi hai davanti senza fargli molto male.|cone r8 h.9 d6/8/10 push24
+S|Presa di terra|b|9|Radici bloccano tutti attorno a te.|circ r7 d8/10/12 root2/2.5/3
+S|Grido di guerra che ferisce|b|9|Indebolisci tutti attorno e li marchi.|circ r9 weak6 mark1.25:6
+S|Morso del branco|b|8|Ogni nemico colpito attorno a te ti cura.|circ r5.5 d20/25/30 heal4/5/6
+S|Mietitura|b|9|Ogni nemico colpito ti da scudo.|circ r6 d18/23/28 sh7/9/11
+S|Colpo che ispira|b|8|Ogni nemico colpito carica la Risonanza.|cone r9 h.7 d18/23/28 res4/5/6
+S|Rasoiata frenetica|b|8|Ogni nemico colpito accorcia le altre ricariche.|cone r7 h.9 d20/25/30 cdr.5/.6/.7
+S|Giudizio dei fermi|b|8|Enorme contro chi e stordito o bloccato.|circ r7 d18/23/28 vsstun2.5 vsroot2.5
+S|Frantuma|b|7|Enorme contro chi e rallentato o raffreddato.|cone r9 h.7 d20/25/30 vsslow2.2 vschill2.2
+S|Deflagrazione|b|7|Enorme contro chi sta bruciando.|circ r7 d18/23/28 vsburn2.4
+S|Colpo dell'untore|b|7|Enorme contro chi e avvelenato.|line l20 w2.4 d18/23/28 vspois2.4
+S|Esecuzione di massa|c|10|Attorno a te, chi e quasi finito viene finito.|circ r8 d14/18/22 ex3
+S|Tocco lontano|b|8|Colpo a lungo raggio: piu lontano, piu forte.|line l34 w1.2 d24/30/36 far2.5
+S|Pugno a bruciapelo|b|6|Colpo corto: da vicinissimo e devastante.|cone r5 h.6 d22/28/34 close2.6
+S|Scossa selettiva|b|7|Colpisce solo i tre nemici piu vicini, ma forte.|circ r9 d34/43/52 max3
+S|Colpo di rimbalzo|b|7|Colpisce il bersaglio, poi salta sui vicini.|tgt d24/30/36 then(chain n3/4/5 d14/18/22)
+S|Fulmine ramificato|b|8|Una scarica lunga che salta molte volte.|chain n6/7/8 d22/28/34 fall.85 r9
+S|Catena di ghiaccio|b|9|Una scarica che congela ogni nemico che tocca.|chain n4/5/6 d12/15/18 chill4 r8
+S|Catena che lega|c|10|Una scarica che blocca tutti quelli che tocca.|chain n4/5/6 d8/10/12 root1.5/1.8/2.1
+S|Catena del terrore|b|9|Una scarica che mette in fuga.|chain n4/5/6 d8/10/12 fear2 fall.9
+S|Stella di schegge|b|7|Sedici schegge tutt'attorno a te.|shot n16 ringall d10/13/16 v26 t.6
+S|Stella rimbalzante|c|9|Dieci sfere che rimbalzano sui muri.|shot n10 ringall d10/13/16 v24 t1.8 bnc3
+S|Corona di lame|c|9|Otto lame partono e tornano.|shot n8 ringall d10/13/16 v22 t.5 back
+S|Tre razzi|b|8|Tre razzi a ventaglio.|shot n3 sp.25 d22/28/34 v20 boom3.2
+S|Sciame cercatore|b|8|Sei colpi che inseguono i bersagli.|shot n6 sp.35 d10/13/16 v18 hom t2
+S|Missile pesante|c|9|Un solo missile che insegue ed esplode enorme.|shot d40/50/60 v14 hom t3 boom5 r.8
+S|Lama d'aria|a|5|Una mezzaluna enorme che taglia tutto.|shot d30/38/46 v30 wide r3 t.7
+S|Onda di marea|b|8|Una mezzaluna che trascina via.|shot d16/20/24 v20 wide r3.2 t.9 push10
+S|Onda che gela|b|8|Una mezzaluna che congela.|shot d14/18/22 v22 wide r3 t.8 chill4
+S|Palla di cannone|b|7|Un colpo solo, pesante: spinge e stordisce.|shot d36/45/54 v28 r.8 push12 stun.5
+S|Seme di vortice|c|10|Dove arriva nasce un vortice che risucchia.|shot d8 v22 then(zone r5 t3.5 dps8/10/12 zpull1)
+S|Seme di gelo|b|9|Dove arriva nasce una lastra di ghiaccio.|shot d8 v22 then(zone r4.5 t5 slow.6:1 chill.6)
+S|Spora|b|9|Dove arriva nasce una nube velenosa che si allarga.|shot d6 v20 then(zone r2.5 t5 dps6/8/10 pois1 grow.8)
+S|Colpo colonizzatore|c|10|Dove colpisce nascono due spiriti.|shot d14/18/22 v26 then(sum spirito n2 t8 hp40 d9/11/13)
+S|Proiettile cluster|c|9|Esplode, poi le schegge esplodono a loro volta.|shot d14/18/22 v20 boom3 then(shot n5 ringall d8/10/12 v16 t.4 boom2)
+S|Arpione|b|7|Colpisce e trascina il nemico fino a te.|shot d18/23/28 v36 yank stun.6
+S|Colpo telecinetico|b|8|Colpisce il primo nemico e lo scaglia via.|shot d10 v34 fling26/33/40
+S|Bolas grande|b|9|All'impatto blocca tutti e li marchia.|shot d8 v26 then(circ r4.5 root2 mark1.25:5)
+S|Bomba a orologeria|b|8|La lanci: scoppia dopo due secondi, enorme.|shot d4 v14 t.7 then(circ r6 d60/75/90 in1.4)
+S|Granata stordente|b|9|Scoppia stordendo tutti.|shot d6 v20 t.6 then(circ r5.5 d10/13/16 stun1.4/1.7/2)
+S|Granata fumogena|b|10|Scoppia in una nube che ti nasconde.|shot d4 v18 t.6 then(zone r5.5 t5 inv dome weak1)
+S|Molotov|b|8|Scoppia in una pozza di fuoco.|shot d10/13/16 v18 t.7 then(zone r4.5 t5 dps12/15/18 burn4)
+S|Fiala di gelo|b|9|Scoppia e congela, poi il ghiaccio resta.|shot d6 v18 t.7 then(circ r4.5 d10/13/16 chill4; zone r4.5 t4 slow.5:1)
+S|Boccetta d'acido|b|9|Scoppia: veleno e armatura sciolta.|shot d6 v18 t.7 then(circ r4.5 d10/13/16 pois4 mark1.3:6)
+# ===== ABILITA: zone =====
+S|Cerchio di fiamme|b|8|Un cerchio di fuoco dove guardi.|zone @aim g14 r4 t5 dps15/19/23 burn3
+S|Lastra di ghiaccio|b|9|Un tratto di suolo gelato dove guardi.|zone @aim g14 r5.5 t6 slow.65:1 chill.5
+S|Palude|b|9|Fango che blocca chi ci entra.|zone @aim g14 r4.5 t5 dps4/5/6 root.6
+S|Nube di spore|b|9|Una nube velenosa che si allarga.|zone @aim g14 r3 t6 dps7/9/11 pois1 grow.6
+S|Campo di paura|b|10|Chi entra nel cerchio scappa.|zone @aim g14 r4.5 t4 fear1
+S|Campo di debolezza|b|9|Chi sta nel cerchio colpisce meno e subisce di piu.|zone @aim g14 r5.5 t6 weak1 mark1.25:1
+S|Vortice mobile|c|10|Un vortice che avanza risucchiando.|zone @fwd3 r3.5 t4 dps12/15/18 mv6 zpull1
+S|Muro di fuoco che avanza|b|9|Una fiamma che corre in avanti.|zone @fwd2 r3 t3 dps22/28/34 mv10 burn4
+S|Fronte freddo|b|9|Un fronte gelido che avanza lento.|zone @fwd2 r4 t5 dps6/8/10 mv4 slow.6:1 chill.5
+S|Segugio di fiamma|c|10|Una fiamma che insegue i nemici da sola.|zone @fwd3 r2.4 t6 dps18/23/28 seek5.5
+S|Nube temporalesca|c|11|Una nube che insegue e lancia scariche.|zone @fwd3 r3 t7 seek3.5 tick(near r6 d16/20/24) ev.8
+S|Aura rovente|b|10|Un cerchio di fuoco che ti segue.|zone r4 t6 dps14/18/22 fol
+S|Aura gelida|b|10|Un cerchio che rallenta e raffredda, e ti segue.|zone r5 t6 fol slow.5:1 chill.4
+S|Aura velenosa|b|10|Una nube che ti segue e avvelena.|zone r4.5 t6 dps4/5/6 fol pois.8
+S|Aura di terrore|c|12|Chi ti si avvicina scappa.|zone r4.5 t5 fol fear.8
+S|Aura magnetica|c|11|Un campo che ti segue e tira i nemici verso di te.|zone r7 t5 dps5/6/7 fol zpull.6
+S|Santuario|b|12|Un cerchio che ti cura e ti copre: prendi meno danni dentro.|zone r4.5 t6 zheal7/9/11 armor.6
+S|Cerchio di potere|b|12|Dentro il cerchio colpisci piu forte e ricevi cure.|zone r5 t7 fury1.25/1.3/1.35 zheal3
+S|Cupola antiproiettile mobile|c|12|Una cupola che ti segue e ferma i proiettili.|zone r3.5 t5 ward fol dome
+S|Buco nero minore|c|11|Risucchia, poi esplode.|zone @aim g14 r5.5 t3 dps6/8/10 zpull1.4 boom40/50/60
+S|Zona che cresce|b|10|Un cerchio di fuoco che si allarga sempre di piu.|zone @aim g12 r2 t6 dps11/14/17 grow1
+S|Mina di prossimita gigante|b|9|Una zona che dopo tre secondi esplode enorme.|zone @aim g12 r5 t3 slow.3:1 end(circ r6 d60/75/90)
+S|Fontana di schegge|c|10|Una zona che spara dardi attorno a se ogni secondo.|zone @aim g14 r2 t6 tick(shot n8 ringall d7/9/11 v22 t.5) ev1
+S|Faro|c|11|Una zona che colpisce a intervalli il nemico piu vicino.|zone @aim g14 r2 t7 tick(near r9 d18/23/28) ev.7
+S|Geyser a tempo|b|9|Una zona che ogni secondo lancia in aria chi c'e sopra.|zone @aim g14 r3.5 t5 tick(circ r3.5 d8/10/12 lift.8:10) ev1.2
+S|Cuore pulsante|c|11|Una zona che pulsa: ogni battito un'onda che spinge.|zone @aim g12 r2 t5 tick(circ r6 d10/13/16 push10) ev1
+S|Trappola a strappo|b|9|Una zona che ogni secondo tira tutti al centro.|zone @aim g14 r6 t4 tick(circ r6 pull14 d5/6/7) ev1
+S|Nido|c|12|Una zona da cui escono spiriti-bomba uno alla volta.|zone @aim g10 r2 t6 tick(sum bomba n1 t5 d18/23/28) ev1.5
+S|Pioggia acida|b|10|Sull'area piovono gocce a caso.|zone @aim g16 r6 t5 tick(circ @rnd6 r2.2 d14/18/22 in.3 pois1) ev.35
+S|Tempesta di fulmini locale|c|11|Sull'area cadono fulmini a caso.|zone @aim g16 r7 t5 tick(circ @rnd7 r2.6 d24/30/36 in.4) ev.5
+S|Grandinata|b|10|Sull'area cade grandine che rallenta.|zone @aim g16 r6 t5 slow.4:1 tick(circ @rnd6 r2 d10/13/16 in.25) ev.3
+S|Scia di lava|b|9|Tre pozze in fila davanti a te.|zone @fwd4 r2.6 t4 dps12/15/18; zone @fwd8 r2.6 t4 dps12/15/18; zone @fwd12 r2.6 t4 dps12/15/18
+S|Tenaglia di ghiaccio|c|10|Una lastra davanti e una dietro: chi ti insegue rallenta.|zone @fwd6 r4 t5 slow.6:1; zone @back6 r4 t5 slow.6:1 chill.5
+S|Cerchio e centro|c|11|Un anello di fuoco con al centro un rifugio che ti cura.|ring r9 i4 d16/20/24 burn8; zone r3.5 t5 zheal6/8/10
+S|Fossato|c|11|Un cerchio largo di fango attorno a te: chi entra arranca.|zone r9 t6 slow.7:1 dps3/4/5
+S|Zona che esplode a catena|c|11|Una pozza che alla fine scoppia e lascia tre pozze piu piccole.|zone @aim g14 r3.5 t3 dps10/13/16 end(circ r4.5 d24/30/36; zone @rnd4 r2 t3 dps8/10/12; zone @rnd4 r2 t3 dps8/10/12)
+S|Occhio del ciclone|c|12|Attorno a te un vortice che spinge fuori tutti.|zone r6 t5 fol tick(circ r6 push12 d4/5/6) ev.5
+S|Sabbie mobili|b|10|Rallenta sempre di piu: alla fine blocca.|zone @aim g14 r5 t5 slow.5:1 end(circ r5 root2/2.5/3)
+S|Brace che cova|b|9|Una zona debole che alla fine divampa.|zone @aim g14 r4 t4 dps5/6/7 end(circ r5.5 d40/50/60 burn8)
+S|Gelo che stringe|b|10|Una zona che raffredda e alla fine congela tutti.|zone @aim g14 r5 t3.5 slow.4:1 end(circ r5 d14/18/22 stun1.5/1.8/2.1)
+S|Rovi|b|9|Un cespuglio di spine: ferisce e blocca a tratti.|zone @aim g14 r4 t6 dps9/11/13 tick(circ r4 root.5) ev2
+S|Fumo soporifero|c|12|Una nube: chi resta dentro alla fine si addormenta.|zone @aim g14 r5 t3 weak1 end(circ r5 stun2.2/2.6/3)
+S|Altare del sangue|c|12|Una zona che ferisce i nemici dentro e ti cura a ogni battito.|zone @aim g12 r5 t5 tick(circ r5 d8/10/12 heal2/2.5/3) ev.8
+S|Specchio d'acqua|c|11|Una zona che carica la Risonanza per ogni nemico dentro.|zone @aim g14 r5.5 t5 tick(circ r5.5 d5/6/7 res2/2.5/3) ev1
+S|Zona di caccia|b|10|Chi entra nel cerchio viene marchiato a lungo.|zone @aim g14 r6 t6 mark1.3:3
+S|Fornace|c|11|Un cerchio piccolo e rovente: brucia una parte della vita di chi ci sta.|zone @aim g14 r3.2 t5 tick(circ r3.2 d4 hpc.04/.05/.06) ev.6
+`);
+
+Bricks.load(String.raw`
+# ===== ABILITA: evocazioni =====
+S|Branco|b|14|Tre spiriti combattono per te.|sum spirito n3 t12 hp40 d9/11/13
+S|Guardia del corpo|c|16|Un colosso piccolo ti difende.|sum colosso n1 t12 hp160/200/240 d18/22/26
+S|Batteria|b|14|Una torretta che spara da sola.|sum torretta n1 t14 d8/10/12 @fwd2
+S|Due nidi di mitragliatrice|c|16|Due torrette ai tuoi lati.|sum torretta n2 t10 d6/8/10 far3
+S|Manichino|a|10|Un'esca che attira i nemici e poi esplode.|sum esca n1 t5 d30/38/46 r4 @fwd3
+S|Kamikaze|b|9|Tre spiriti corrono a esplodere sui nemici.|sum bomba n3 t7 d22/28/34
+S|Sciame di kamikaze|c|12|Sei spiriti esplosivi tutt'attorno.|sum bomba n6 t6 d16/20/24 far3.5
+S|Arcieri|b|14|Due tiratori ti coprono da lontano.|sum arciere n2 t12 hp45 d10/13/16
+S|Linea di tiro|c|16|Quattro tiratori in fila accanto a te.|sum arciere n4 t9 hp40 d8/10/12 wall
+S|Infermiere|b|15|Uno spirito ti segue e ti cura.|sum guaritore n1 t12 hp60 d5/6.5/8
+S|Muro|a|9|Un muro davanti a te.|sum muro n4 wall @fwd4 t8 hp140/180/220
+S|Barricata lontana|b|10|Un muro largo dove guardi.|sum muro n6 wall @aim g14 t8 hp120/150/180
+S|Recinto|c|12|Un cerchio di muri attorno al punto che guardi.|sum muro n7 @aim g14 far4.5 t6 hp140
+S|Bunker|c|13|Un cerchio di muri attorno a te.|sum muro n6 far3.2 t7 hp160/200/240
+S|Muro che esplode|c|11|Un muro che quando cade esplode.|sum muro n4 wall @fwd4 t5 hp100 die(circ r3.2 d22/28/34)
+S|Spiriti vendicativi|c|14|Spiriti che esplodono quando muoiono.|sum spirito n3 t10 hp30 d8/10/12 die(circ r3.2 d20/25/30)
+S|Torretta autodistruttiva|c|13|Spara, e alla fine salta in aria.|sum torretta n1 t8 d9/11/13 @fwd2 die(circ r5 d40/50/60)
+S|Esca gelida|b|11|Un'esca che esplodendo congela.|sum esca n1 t4 d10 r4 @fwd3 die(circ r5 chill4 d10/13/16)
+S|Esca velenosa|b|11|Un'esca che lascia una nube di veleno.|sum esca n1 t4 d10 r3 @fwd3 die(zone r4.5 t5 dps8/10/12 pois1)
+S|Esca che chiama rinforzi|c|13|Quando l'esca cade, nascono due spiriti.|sum esca n1 t4 d16 r3 @fwd3 die(sum spirito n2 t8 hp40 d9/11/13)
+S|Colosso instabile|c|15|Un colosso che cadendo libera un'onda d'urto.|sum colosso n1 t9 hp140 d20/25/30 die(circ r6 d30/38/46 push14)
+S|Guaritore martire|c|15|Ti cura; se muore, ti lascia uno scudo.|sum guaritore n1 t10 hp40 d5/6/7 die(buff shield30/38/46 t5)
+S|Squadra mista|c|16|Un tiratore, un guaritore e uno spirito.|sum arciere n1 t11 d10/13/16; sum guaritore n1 t11 d4; sum spirito n1 t11 d10/13/16
+S|Avanguardia|c|14|Due spiriti davanti e un muro dietro di loro.|sum spirito n2 @fwd6 t10 hp50 d10/13/16; sum muro n3 wall @fwd3 t8
+S|Postazione fortificata|c|15|Una torretta protetta da due muri.|sum torretta n1 @fwd3 t12 d9/11/13; sum muro n2 wall @fwd5 t10
+S|Evocazione sul bersaglio|c|12|Tre spiriti compaiono attorno a chi stai mirando.|aim; sum spirito n3 @tgt far2.5 t8 hp35 d9/11/13
+S|Bomba sul bersaglio|b|9|Un kamikaze compare addosso al bersaglio.|aim; sum bomba n2 @tgt far1.5 t4 d26/33/40
+S|Gabbia di muri|c|12|Chiudi il bersaglio in un recinto.|aim; sum muro n6 @tgt far3 t5 hp120
+S|Chiamata del sangue|c|12|Paghi vita, ottieni un colosso.|cost v20; sum colosso n1 t14 hp260/320/380 d26/32/38
+S|Un soldato per nemico|c|14|Evochi uno spirito per ogni nemico vicino.|circ r10 max6 each(sum spirito n1 t9 hp35 d9/11/13)
+S|Spiriti a ondate|c|14|Uno spirito al secondo, per cinque secondi.|rep n5 ev1 do(sum spirito n1 t7 hp35 d9/11/13)
+S|Pioggia di kamikaze|c|12|Quattro spiriti esplosivi cadono vicino a dove guardi.|rep n4 ev.3 do(sum bomba n1 @aim g16 t5 d20/25/30)
+# ===== ABILITA: potenziamenti =====
+S|Scudo breve e forte|a|8|Uno scudo robusto per pochi secondi.|buff shield55/70/85 t3
+S|Pelle di pietra|b|12|Per un po subisci la meta dei danni.|buff armor.5 t5/6/7
+S|Rigenerazione|a|11|Recuperi vita lentamente ma a lungo.|buff hot36/46/56 t8
+S|Furia|b|12|Colpisci piu forte per qualche secondo.|buff fury1.35/1.45/1.55 t6
+S|Sete di sangue|b|12|Per un po ogni tuo colpo ti cura.|buff ls.12/.15/.18 t7
+S|Fretta|b|12|Per un po tutte le ricariche vanno piu veloci.|buff cdr2/2.3/2.6 t5
+S|Ispirazione|b|12|Per un po la Risonanza si carica molto piu in fretta.|buff resrate2.2/2.6/3 t8
+S|Spine|b|11|Chi ti colpisce si fa male, e i proiettili tornano indietro.|buff reflect.7/.9/1.1 t4
+S|Lame in orbita|b|11|Tre lame ti girano attorno.|buff orbit20/25/30 r3 t8
+S|Mantello|b|11|Sparisci: il primo colpo da nascosto e doppio.|buff veil2/2.3/2.6 t5
+S|Berserk|c|13|Colpisci molto piu forte, ma subisci di piu.|buff fury1.6/1.75/1.9 armor1.4 t6
+S|Guardia alta|c|12|Subisci pochissimo, ma colpisci piano.|buff armor.3 fury.6 t5/6/7
+S|Trance|c|14|Ricariche rapidissime e Risonanza che vola, per poco.|buff cdr2.5 resrate2.5 t4/5/6
+S|Vampiro|c|14|Ti curi coi colpi e colpisci piu forte.|buff ls.1/.12/.14 fury1.25 t7
+S|Fortezza|c|14|Scudo, pelle dura e spine insieme.|buff shield30/38/46 armor.7 reflect.5 t5
+S|Secondo fiato|b|13|Ti curi subito e continui a curarti.|heal v15/19/23; buff hot20/26/32 t5
+S|Scambio equo|b|10|Perdi vita, guadagni molta Risonanza.|cost v15; res v25/32/40
+S|Sangue in potere|b|11|Perdi vita, colpisci molto piu forte.|cost v14; buff fury1.6/1.75/1.9 t6
+S|Sangue in tempo|b|12|Perdi vita, azzeri le altre ricariche.|cost v16; cdr all
+S|Meditazione|b|14|Se stai fermo ti curi molto, se ti muovi poco.|if still do(heal v30/38/46) else(heal v10/13/16)
+S|Colpo di reni|b|12|Sotto meta vita ti cura tanto e ti copre; sopra, poco.|if hpb50 do(heal v28/35/42; buff shield25 t4) else(heal v8/10/12)
+S|Concentrazione|b|12|A vita piena: grande furia. Ferito: ti curi.|if hpa80 do(buff fury1.5/1.6/1.7 t6) else(buff hot24/30/36 t5)
+S|Circondato|b|11|Con tre nemici addosso esplodi e ti copri; senno ti copri soltanto.|if count3 do(circ r5.5 d24/30/36 push12; buff shield30 t4) else(buff shield30/38/46 t4)
+S|Opportunista|b|10|Se hai Risonanza oltre meta la trasformi in cure e fretta.|if resa50 do(heal v22/28/34; buff cdr2 t4) else(res v14/18/22)
+# ===== ABILITA: inneschi =====
+S|Colpi esplosivi|b|12|Per un po ogni tuo colpo scatena una piccola esplosione.|trig hit t8 icd.5 do(circ r3 d12/15/18)
+S|Colpi a catena|b|12|Per un po ogni tuo colpo fa partire una scarica sui vicini.|trig hit t8 icd.5 do(chain n3 d9/11/13)
+S|Colpi di gelo|b|12|Per un po ogni tuo colpo raffredda forte il bersaglio.|trig hit t8 icd.3 do(tgt chill2 slow.4:2)
+S|Colpi venefici|b|12|Per un po ogni tuo colpo avvelena.|trig hit t9 icd.3 do(tgt pois2)
+S|Colpi incendiari|b|12|Per un po ogni tuo colpo da fuoco e lascia una brace.|trig hit t8 icd.6 do(tgt burn8; zone r1.8 t2.5 dps7/9/11)
+S|Colpi che marchiano|b|12|Per un po ogni tuo colpo marchia.|trig hit t9 icd.4 do(tgt mark1.25:4)
+S|Colpi che respingono|b|11|Per un po ogni tuo colpo spinge via chi sta attorno al bersaglio.|trig hit t7 icd.5 do(circ r3 push12 d4/5/6)
+S|Colpi che attirano|b|11|Per un po ogni tuo colpo tira tutti verso il bersaglio.|trig hit t7 icd.6 do(circ r5 pull10 d4/5/6)
+S|Colpi che evocano|c|14|Ogni tuo colpo ha la sua ombra: tre spiriti, uno per colpo.|trig hit t10 n3 icd.8 do(sum spirito n1 t7 hp35 d9/11/13)
+S|Colpi doppi|b|12|I prossimi cinque colpi sono seguiti da un dardo.|trig hit t10 n5 do(shot d10/13/16 v32)
+S|Colpi dal cielo|b|12|I prossimi quattro colpi chiamano un fulmine sul bersaglio.|trig hit t10 n4 icd.3 do(circ r2.4 d24/30/36 in.4)
+S|Colpo carico|b|9|Il tuo prossimo colpo esplode enorme.|trig hit t8 n1 do(circ r5.5 d45/56/68 stun.6)
+S|Prossimo colpo paralizzante|b|10|Il tuo prossimo colpo blocca il bersaglio e chi gli sta attorno.|trig hit t8 n1 do(circ r4 root2/2.5/3)
+S|Prossimo colpo ladro|b|10|Il tuo prossimo colpo ti cura molto.|trig hit t8 n1 do(heal v22/28/34; tgt d14/18/22)
+S|Prossimo colpo a frammenti|b|10|Il tuo prossimo colpo si apre in dodici schegge.|trig hit t8 n1 do(shot n12 ringall d9/11/13 v24 t.5)
+S|Mietitore|b|13|Per un po ogni uccisione ti cura.|trig kill t12 do(heal v8/10/12)
+S|Uccisioni esplosive|b|13|Per un po chi uccidi esplode.|trig kill t12 do(circ r4.5 d26/33/40)
+S|Uccisioni contagiose|c|14|Per un po chi uccidi lascia una nube velenosa.|trig kill t12 do(zone r3.5 t4 dps8/10/12 pois1)
+S|Anime al servizio|c|15|Per un po chi uccidi si rialza come spirito tuo.|trig kill t12 n4 do(sum spirito n1 t10 hp40 d10/13/16)
+S|Slancio dell'uccisore|b|13|Per un po ogni uccisione accorcia le ricariche e ti fa correre.|trig kill t12 do(cdr v1.5/2/2.5; buff haste1.4 t2.5)
+S|Raccolto|b|13|Per un po ogni uccisione carica la Risonanza e ti da scudo.|trig kill t12 do(res v6/8/10; buff shield10/13/16 t4)
+S|Uccisioni a catena|c|14|Per un po da chi uccidi parte una scarica.|trig kill t12 do(chain n4 d20/25/30)
+S|Terrore contagioso|b|13|Per un po, quando uccidi, chi sta vicino scappa.|trig kill t12 do(circ r6 fear2)
+S|Vendetta|b|11|Per un po, quando ti colpiscono esplodi.|trig hurt t8 icd.8 do(circ r4.5 d20/25/30 push8)
+S|Pelle elettrica|b|11|Per un po chi ti colpisce prende una scarica che salta.|trig hurt t8 icd.5 do(chain n3 d14/18/22)
+S|Corazza reattiva|b|12|I prossimi tre colpi che subisci ti danno scudo.|trig hurt t10 n3 do(buff shield18/23/28 t4)
+S|Pelle di ghiaccio|b|12|Per un po chi ti colpisce viene congelato.|trig hurt t8 icd.6 do(circ r4 chill4)
+S|Sangue acido|b|12|Per un po, quando ti colpiscono lasci una pozza che avvelena.|trig hurt t8 icd1 do(zone r3 t4 dps7/9/11 pois1)
+S|Contraccolpo|b|10|Il prossimo colpo che subisci viene restituito triplo a chi ti sta vicino.|trig hurt t8 n1 do(circ r5 d40/50/60 stun.8)
+S|Fuga istintiva|b|12|Il prossimo colpo che subisci ti rende invisibile e veloce.|trig hurt t10 n1 do(buff veil1.8 haste1.5 t3)
+S|Dolore che carica|b|12|Per un po ogni colpo subito carica la Risonanza.|trig hurt t10 do(res v5/6/7)
+S|Rabbia crescente|c|13|Per un po ogni colpo subito ti fa picchiare piu forte per qualche secondo.|trig hurt t10 do(buff fury1.4/1.5/1.6 t3)
+S|Guardiani feriti|c|14|I prossimi due colpi che subisci evocano uno spirito ciascuno.|trig hurt t12 n2 do(sum spirito n1 t9 hp45 d10/13/16)
+S|Eco dei poteri|c|14|Per un po ogni altro potere che usi scatena un'onda attorno a te.|trig cast t10 do(circ r5 d18/23/28)
+S|Poteri che curano|b|13|Per un po ogni altro potere che usi ti cura.|trig cast t12 do(heal v8/10/12)
+S|Poteri che proteggono|b|13|Per un po ogni altro potere che usi ti da scudo.|trig cast t12 do(buff shield14/18/22 t4)
+S|Poteri a schegge|b|13|Per un po ogni altro potere che usi lancia dardi attorno.|trig cast t12 do(shot n8 ringall d8/10/12 v24 t.5)
+S|Poteri caricati|c|14|Per un po ogni altro potere che usi carica la Risonanza.|trig cast t12 do(res v6/8/10)
+S|Scatti taglienti|b|12|Per un po ogni tuo scatto finisce con un taglio largo.|trig dashend t12 do(cone r4.5 h1.3 d20/25/30)
+S|Scatti gelidi|b|12|Per un po ogni tuo scatto lascia ghiaccio all'arrivo.|trig dashend t12 do(zone r3.5 t3 slow.6:1 chill.6)
+S|Scatti con seguito|c|13|Per un po ogni tuo scatto lascia un'esca alle tue spalle.|trig dashend t12 n3 do(sum esca n1 @back3 t3 d20/25/30 r3)
+S|Pulsazione|b|11|Per un po emetti un'onda ogni secondo.|trig step t6 ev1 do(circ r4.5 d10/13/16)
+S|Scariche a intervalli|b|11|Per un po, ogni mezzo secondo una scarica colpisce il piu vicino.|trig step t6 ev.5 do(near r8 d10/13/16)
+S|Respiro di brina|b|12|Per un po, ogni secondo rallenti e raffreddi chi ti sta attorno.|trig step t6 ev1 do(circ r5 slow.5:1.2 chill1)
+S|Semina|b|12|Per un po lasci una mina ritardata ogni secondo dove passi.|trig step t5 ev1 do(circ r3 d20/25/30 in1.2)
+S|Battito curativo|b|13|Per un po ti curi a ogni battito, di piu se hai nemici vicini.|trig step t6 ev1 do(heal v2; circ r5 d2 heal2/2.5/3)
+S|Lanciadardi automatico|b|12|Per un po un dardo parte da solo verso il piu vicino, tre volte al secondo.|trig step t5 ev.33 do(shot d7/9/11 v32)
+S|Torretta umana|c|13|Per un po, finche resti fermo, spari raffiche tutt'attorno.|trig step t6 ev.5 do(if still do(shot n8 ringall d7/9/11 v26 t.5))
+S|Aura che ruba|c|13|Per un po, ogni secondo rubi vita a chi ti sta vicino.|trig step t6 ev1 do(circ r5 d8/10/12 ls.6)
+S|Tamburo di guerra|c|14|Ogni due secondi un colpo che stordisce chi ti sta attorno.|trig step t6.5 ev2 do(circ r5 d12/15/18 stun.6)
+S|Magnete intermittente|c|13|Ogni secondo tiri verso di te chi sta a media distanza.|trig step t5 ev1 do(ring r10 i3 pull12 d3/4/5)
+`);
+
+Bricks.load(String.raw`
+# ===== ABILITA: controllo del bersaglio =====
+S|Strattone|a|6|Tiri a te il bersaglio mirato.|tgt yank d10/13/16
+S|Strattone e pugno|b|7|Lo tiri a te e lo stordisci.|tgt yank d14/18/22 stun1
+S|Lancio|b|8|Scagli via il bersaglio: esplode dove atterra.|tgt fling34/43/52
+S|Sollevamento|b|8|Sollevi il bersaglio e lo lasci cadere.|tgt lift2/2.4/2.8:30
+S|Rimpicciolimento|b|10|Il bersaglio diventa piccolo e innocuo, e subisce di piu.|tgt poly4/5/6 mark1.4:6
+S|Tradimento|b|11|Il bersaglio passa dalla tua parte.|tgt charm7/9/11
+S|Tradimento esplosivo|c|12|Il bersaglio combatte per te; attorno a lui tutti restano scossi.|tgt charm6/7/8 then(circ @tgt r5 weak5 d8/10/12)
+S|Presa del burattinaio|c|12|Due nemici vicini al punto che guardi passano con te.|circ @aim g16 r5 max2 charm6/7/8
+S|Panico di massa|c|12|Attorno al bersaglio tutti scappano.|tgt fear2 then(circ @tgt r7 fear3/3.5/4)
+S|Capro espiatorio|b|9|Marchi il bersaglio: ogni colpo che riceve ti cura un poco.|tgt mark1.35:6 then(trig hit t6 icd.3 do(heal v2/2.5/3))
+S|Bersaglio prioritario|b|9|Marchi forte un solo nemico e gli mandi contro i tuoi spiriti.|tgt mark1.5:8 then(sum spirito n2 @tgt far2 t8 hp35 d9/11/13)
+S|Scambio di posto crudele|b|8|Vi scambiate di posto e lui resta stordito.|tgt swap stun1.2/1.5/1.8
+S|Scambio e inferno|c|9|Vi scambiate di posto; dove eri tu c'e un cerchio di fuoco.|zone r4 t4 dps14/18/22; tgt swap
+S|Calamita umana|b|8|Tiri verso il bersaglio tutti i suoi vicini.|tgt d8/10/12 then(circ @tgt r8 pull18)
+S|Palla da bowling|c|9|Scagli il bersaglio; dove atterra, tutti vengono spinti via.|tgt fling26/33/40 then(circ @fwd8 r5 push14 d10/13/16 in.6)
+S|Chiodo|b|8|Blocchi il bersaglio e lo marchi.|tgt d8/10/12 root2.5 mark1.3:5
+S|Tortura|b|9|Fuoco, veleno e debolezza sullo stesso bersaglio.|tgt d6/8/10 burn10 pois4 weak6
+S|Ibernazione|b|10|Congeli all'istante il bersaglio mirato.|tgt d8/10/12 chill5 slow.6:5
+S|Giudizio lento|b|9|Marchi il bersaglio; tra due secondi gli cade addosso un colpo enorme.|tgt mark1.2:3; circ @tgt r3.5 d55/70/85 in2
+S|Legame di sangue|c|11|Colpisci il bersaglio e ti curi di tutto il danno fatto.|tgt d30/38/46 ls1
+S|Furto|b|9|Togli vita al bersaglio e la prendi tu, con uno scudo.|tgt d20/25/30 ls.6 sh12/15/18
+S|Prosciugare|b|10|Colpo sul bersaglio che carica molta Risonanza.|tgt d18/23/28 res14/18/22
+S|Colpo che resetta|c|12|Se il colpo uccide, i poteri tornano subito pronti.|tgt d34/43/52 ex1.5 then(trig kill t.4 n1 do(cdr all))
+S|Presa e schianto|c|10|Sollevi il bersaglio; quando cade, esplode.|tgt lift1.6:20 then(circ @tgt r4.5 d26/33/40 in1.6)
+S|Trascinamento|c|10|Tiri a te tre nemici davanti.|cone r12 h.5 max3 yank d10/13/16
+S|Spazzata telecinetica|c|11|Scagli via tutti quelli davanti a te.|cone r7 h.7 fling20/25/30
+S|Sollevamento di massa|c|11|Sollevi tutti attorno a te.|circ r6 lift1.8/2.2/2.6:22
+S|Rimpicciolimento di massa|c|13|Rimpicciolisci tutti quelli nel cerchio che guardi.|circ @aim g16 r5 poly3/4/5
+S|Conversione|c|14|Attorno a te, fino a tre nemici passano dalla tua parte.|circ r7 max3 charm6/8/10
+S|Presa a distanza sul gruppo|c|11|Attiri verso il punto che guardi tutti quelli attorno.|circ @aim g18 r9 pull22 d8/10/12
+S|Dispersione|b|8|Dal punto che guardi tutti vengono scagliati lontano.|circ @aim g18 r6 push22 d8/10/12
+S|Presa al collo|b|9|Blocchi il bersaglio piu vicino e gli togli una fetta di vita.|near r10 root2 d6 hpc.08/.1/.12
+S|Colpo al piu vicino|a|5|Colpisce da solo il nemico piu vicino, forte.|near r14 d36/45/54
+S|Stordisci il piu vicino|a|7|Stordisce da solo chi ti sta piu addosso.|near r8 d10/13/16 stun1.5/1.8/2.1
+S|Scaccia|a|6|Scagli via chi ti sta piu addosso.|near r6 fling24/30/36
+# ===== ABILITA: combinazioni =====
+S|Detonazione dei marchi|b|7|Tutti i nemici marchiati esplodono.|pop mark r4 d40/50/60
+S|Combustione|b|7|Tutti i nemici in fiamme esplodono.|pop burn r4 d36/45/54 burn8
+S|Frantumazione|b|7|Tutti i nemici rallentati vanno in pezzi e restano storditi.|pop slow r3.5 d36/45/54 stun1
+S|Maturazione del veleno|b|8|Il veleno esplode tutto insieme e contagia i vicini.|pop pois r4.5 d34/43/52 pois3
+S|Paura che uccide|b|8|Chi sta scappando viene colpito e bloccato.|pop fear r3 d40/50/60 root2
+S|Colpo sui deboli|b|8|Chi e indebolito esplode e ti cura.|pop weak r3.5 d30/38/46 then(heal v6/8/10)
+S|Strappo delle radici|b|8|Chi e bloccato viene strappato via e lanciato in aria.|pop root r3 d30/38/46 lift1.5:16
+S|Risveglio brusco|b|8|Chi e stordito prende un colpo enorme.|pop stun r3 d50/63/76
+S|Marchia e detona|b|9|Marchi tutti attorno; dopo un secondo e mezzo i marchi esplodono.|circ r8 mark1.3:4; wait t1.5; pop mark r3.5 d30/38/46
+S|Accendi e detona|b|9|Incendi chi hai davanti e subito fai esplodere le fiamme.|cone r9 h.7 d6/8/10 burn10; wait t.8; pop burn r3.5 d28/35/42
+S|Gela e frantuma|b|10|Rallenti tutti attorno e poi li frantumi.|circ r7 slow.6:3 chill2; wait t1; pop slow r3 d30/38/46
+S|Se brucia, esplode|b|7|Sul bersaglio in fiamme: esplosione. Altrimenti lo incendi.|if hasburn do(circ @tgt r5 d44/55/66) else(tgt d10/13/16 burn12)
+S|Se e fermo, finiscilo|b|8|Sul bersaglio bloccato: colpo triplo. Altrimenti lo blocchi.|if hasroot do(tgt d60/75/90) else(tgt d8/10/12 root2.5)
+S|Se e marchiato, giustizia|b|8|Sul marchiato: una catena enorme. Altrimenti lo marchi.|if hasmark do(chain n5 d30/38/46) else(tgt mark1.4:8 d6/8/10)
+S|Se e avvelenato, contagia|b|8|Sull'avvelenato: nube tossica attorno. Altrimenti lo avveleni forte.|if haspois do(zone @tgt r5 t5 dps10/13/16 pois1) else(tgt d8/10/12 pois5)
+S|Se e rallentato, congela|b|8|Sul rallentato: lo congeli insieme ai vicini. Altrimenti lo rallenti.|if hasslow do(circ @tgt r5 chill5 d14/18/22) else(tgt d10/13/16 slow.6:4)
+S|Se ha paura, convincilo|c|11|Chi sta scappando passa con te. Altrimenti lo spaventi.|if hasfear do(tgt charm8/10/12) else(tgt fear3)
+S|Vicino o lontano|b|7|Se hai nemici addosso li respingi, senno spari una lama.|if near5 do(circ r6 d20/25/30 push16) else(shot d30/38/46 v30 wide r2.6 t.7)
+S|Attacco o difesa|b|9|Se hai un bersaglio lo colpisci, senno ti copri.|if tgt do(tgt d38/48/58) else(buff shield40/50/60 t4)
+S|Solo o in compagnia|b|9|Con tanti nemici vicini li blocchi tutti; con pochi, colpo singolo forte.|if count3 do(circ r8 root2/2.5/3 d8/10/12) else(near r12 d40/50/60)
+S|Tutto o niente|c|10|A vita piena: colpo devastante. Ferito: ti curi.|if hpa80 do(cone r10 h.7 d50/63/76) else(heal v24/30/36)
+S|Bestia ferita|b|9|Sotto meta vita il colpo ruba vita; sopra, spinge.|if hpb50 do(circ r6 d24/30/36 ls.5) else(circ r6 d24/30/36 push14)
+S|Risonanza spesa bene|c|10|Con Risonanza alta: pioggia di colpi. Bassa: la ricarichi.|if resa50 do(rep n6 ev.2 do(circ @rnd7 r3 d22/28/34 in.4)) else(res v20/25/30)
+S|In corsa o da fermo|b|8|In corsa lasci una scia di mine, da fermo un cerchio di fuoco.|if moving do(rep n4 ev.3 do(circ r2.6 d18/23/28 in.9)) else(zone r5 t5 dps14/18/22)
+S|Scudo che esplode|b|9|Se hai scudo lo fai detonare; senno te ne da uno.|if shielded do(circ r7 d40/50/60 push12) else(buff shield40/50/60 t5)
+S|Colpo dal buio|b|9|Da nascosto: colpo enorme e marchio. Altrimenti sparisci.|if veiled do(tgt d55/70/85 mark1.3:5) else(buff veil2 t4)
+# ===== ABILITA: sequenze =====
+S|Bombardamento a tappeto|c|11|Cinque scoppi in fila davanti a te.|circ @fwd4 r3 d18/23/28; circ @fwd8 r3 d18/23/28 in.2; circ @fwd12 r3 d18/23/28 in.4; circ @fwd16 r3 d18/23/28 in.6
+S|Raffica di lame|b|8|Tre mezzelune una dopo l'altra.|rep n3 ev.2 do(shot d16/20/24 v30 wide r2.4 t.6)
+S|Mitragliata|b|8|Dieci colpi rapidissimi.|rep n10 ev.07 do(shot d6/7.5/9 v40 jit.05)
+S|Tre respiri di fuoco|b|9|Tre vampate in fila.|rep n3 ev.35 do(cone r8 h.55 d12/15/18 burn6)
+S|Pugni a raffica|b|8|Sei colpi corti velocissimi; l'ultimo stordisce.|rep n5 ev.1 do(cone r3.4 h.9 d7/9/11); wait t.55; cone r3.6 h1 d16/20/24 stun.8
+S|Terremoto|c|11|Quattro scosse attorno a te, sempre piu larghe.|rep n4 ev.4 do(circ r7 d12/15/18 slow.4:1.5)
+S|Pioggia mirata|b|9|Cinque colpi cadono attorno al punto che guardi.|rep n5 ev.2 do(circ @aim g18 r1 in.01; circ @rnd5 r2.6 d18/23/28 in.45)
+S|Bersaglio inseguito|c|10|Quattro colpi dal cielo inseguono il bersaglio mirato.|aim; rep n4 ev.4 do(circ @tgt r2.6 d18/23/28 in.35)
+S|Fuochi d'artificio|c|10|Un colpo che esplode, poi esplode ancora, poi ancora.|shot d6 v20 t.5 then(circ r3 d14/18/22; shot n4 ringall d4 v14 t.35 then(circ r2.6 d12/15/18))
+S|Colpo, pausa, colpo|b|8|Un'onda attorno a te, e un'altra piu forte un secondo dopo.|circ r5.5 d16/20/24; wait t1; circ r6.5 d26/33/40 stun.5
+S|Conto alla rovescia|c|10|Tra tre secondi esplodi enorme; nel frattempo sei piu veloce.|buff haste1.4 t3; wait t3; circ r8 d70/88/106 push14
+S|Prima il gelo poi il martello|c|10|Blocchi chi hai davanti e, un attimo dopo, lo schiacci.|cone r9 h.7 root1.5; wait t.7; cone r9 h.7 d40/50/60
+S|Tira, colpisci, respingi|c|10|Li tiri a te, li colpisci, li scaraventi via.|circ r9 pull18; wait t.5; circ r5 d28/35/42; wait t.3; circ r6 push20
+S|Solleva e schiaccia|c|10|Sollevi tutti attorno, poi un colpo dall'alto.|circ r6 lift1.4:8; wait t1.2; circ r6.5 d36/45/54
+S|Marchia, attira, esplodi|c|11|Marchi tutti, li raduni, e scateni un'esplosione.|circ r9 mark1.3:5; wait t.4; circ r9 pull18; wait t.6; circ r5 d36/45/54
+S|Avvelena e aspetta|b|9|Una dose forte di veleno a tutti; tra tre secondi il veleno esplode.|circ r8 pois4; wait t3; pop pois r3 d24/30/36
+S|Onda avanti e indietro|b|8|Una lama parte in avanti; un secondo dopo ne parte una alle tue spalle.|shot d22/28/34 v28 wide r2.6 t.7; wait t.8; circ @back4 r4 d18/23/28 push10
+S|Raggio rotante|c|10|Otto linee una dopo l'altra tutt'attorno a te.|rep n8 ev.12 do(shot n3 ringall d8/10/12 v34 pierce t.5)
+S|Scariche in sequenza|b|9|Quattro scariche, ognuna sul nemico piu vicino in quel momento.|rep n4 ev.3 do(near r12 d20/25/30 stun.2)
+S|Tre catene|c|10|Tre scariche a catena di fila.|rep n3 ev.4 do(chain n3 d14/18/22)
+S|Cerchio che si chiude|c|11|Un anello lontano, poi uno medio, poi il centro: tutto tira verso di te.|ring r13 i9 d10/13/16 pull12; wait t.4; ring r9 i5 d14/18/22 pull12; wait t.4; circ r5 d24/30/36 stun.6
+S|Spirale di dardi|c|10|Dardi tutt'attorno a te, in quattro giri.|rep n4 ev.18 do(shot n6 ringall d7/9/11 v24 t.6)
+S|Colpo con replica|b|9|Colpisci il bersaglio; due repliche piu deboli seguono.|tgt d24/30/36; wait t.4; tgt d14/18/22; wait t.4; tgt d14/18/22 stun.4
+S|Schianto e crepe|c|10|Un colpo a terra da cui partono quattro linee.|circ r4 d20/25/30; shot n4 ringall d14/18/22 v26 pierce t.5 r.6
+S|Vulcano|c|12|Un cratere dove guardi lancia lapilli per quattro secondi.|zone @aim g14 r3 t4 dps10/13/16 tick(shot n5 ringall d8/10/12 v16 t.5 boom2) ev.8
+S|Sequenza del domatore|c|11|Spaventi tutti, poi li blocchi mentre scappano.|circ r8 fear1.2; wait t1; circ r13 root2/2.5/3
+S|Prima lo scudo poi lo schianto|c|11|Ti copri; tra due secondi lo scudo esplode.|buff shield45/56/68 t2.2; wait t2; circ r6.5 d36/45/54 push12
+# ===== ABILITA: utilita =====
+S|Pronto soccorso|a|10|Ti curi subito.|heal v26/33/40
+S|Cura e pulizia|b|12|Ti curi e respingi chi ti sta addosso.|heal v20/25/30; circ r4.5 push16
+S|Cura col prezzo|b|8|Ti curi molto, ma le altre ricariche si allungano.|heal v36/45/54; buff cdr.5 t5
+S|Sorso di Risonanza|a|12|Guadagni Risonanza.|res v22/28/34
+S|Riarmo|b|16|Accorci tutte le altre ricariche.|cdr v3/4/5
+S|Riarmo totale|c|22|Azzeri tutte le altre ricariche.|cdr all
+S|Fermo immagine|c|16|Il tempo si ferma per un istante.|freeze t1.5/2/2.5
+S|Fermo immagine e colpo|c|16|Fermi il tempo e prepari un colpo che cade quando riparte.|freeze t1.5; circ @aim g18 r5 d50/63/76 in1.4
+S|Segnaposto|a|6|Lasci un segno a terra per tornarci dopo con un altro potere.|mem; buff shield12/15/18 t3
+S|Richiamo|b|8|Torni al segno lasciato, curandoti.|ret then(heal v14/18/22)
+S|Richiamo esplosivo|b|9|Torni al segno lasciato con un'esplosione.|ret then(circ r5.5 d36/45/54 stun.6)
+S|Cambio di ritmo|b|12|Corri, ricarichi in fretta e carichi Risonanza: tutto insieme, per poco.|buff haste1.3 cdr1.6 resrate1.6 t5
+S|Adrenalina del ferito|b|12|Piu sei messo male, piu ti rimette in piedi.|if hpb50 do(heal v30/38/46; buff haste1.4 t3) else(buff haste1.4 t3)
+S|Offerta|b|10|Paghi vita per uno scudo molto grande.|cost v15; buff shield70/88/106 t6
+S|Patto di velocita|b|11|Paghi vita per ricariche rapidissime.|cost v12; buff cdr2.6/3/3.4 t5
+S|Dono del sangue|c|12|Paghi vita e curi... te stesso, piu tardi e di piu.|cost v18; buff hot45/56/68 t7
+S|Sacrificio dell'esca|c|12|Paghi vita, lasci tre esche esplosive.|cost v10; sum esca n3 far3.5 t4 d24/30/36 r3.5
+`);
+
+Bricks.load(String.raw`
+# ===== ABILITA: attacco e movimento insieme =====
+S|Carica e fendente|b|8|Scatti avanti e tagli largo.|dash l7 fwd then(cone r4.5 h1.3 d30/38/46)
+S|Entrata a gamba tesa|b|9|Scatti sul bersaglio e lo lanci via.|dash totgt g16 then(tgt d14/18/22 fling24/30/36)
+S|Colpo e fuga|b|8|Colpisci chi hai davanti e arretri.|cone r5 h.9 d28/35/42; dash l8 back
+S|Salto del martello|c|10|Salti sul punto che guardi e stordisci a lungo.|leap g14 then(circ r5 d30/38/46 stun1.5/1.8/2.1)
+S|Tuffo nel gruppo|c|10|Ti teletrasporti tra i nemici e li tiri tutti a te.|blink g16 then(circ r8 pull20 d14/18/22 slow.5:2)
+S|Mordi e fuggi|b|9|Compari dietro al bersaglio, colpisci, e torni dove eri.|mem; blink behind g18 then(tgt d34/43/52); wait t.5; ret
+S|Giro della morte|c|10|Scatti in avanti lasciando lame che esplodono dietro di te.|dash l10 fwd trail10/13/16 then(shot n8 ringall d10/13/16 v24 t.5)
+S|Rimbalzo sul nemico|c|10|Ti lanci sul bersaglio e rimbalzi via con un'onda.|dash totgt g18 then(circ r4.5 d24/30/36 push12; dash l7 back)
+S|Passo e scudo|a|8|Un passo indietro e uno scudo.|dash l5 back; buff shield35/44/53 t4
+S|Affondo che attraversa|b|8|Scatto lungo che ferisce e marchia chi attraversi.|dash l12 fwd d22/28/34 then(circ @back6 r6 mark1.3:5)
+S|Uscita di scena|c|12|Esplodi, sparisci e ti sposti.|circ r5.5 d24/30/36 push10; blink g12; buff veil1.8 t3
+# ===== ABILITA: colpi con effetti su di te =====
+S|Colpo che protegge|b|8|Colpisci attorno e ti copri.|circ r5.5 d22/28/34; buff shield25/32/40 t4
+S|Colpo che nasconde|b|9|Un'esplosione di fumo: colpisci e sparisci.|circ r5 d16/20/24 weak3; buff veil1.8 t3.5
+S|Colpo che accelera|b|8|Spingi via tutti e corri.|cone r8 h.8 d16/20/24 push14; buff haste1.5 t3
+S|Colpo che infuria|b|9|Colpisci chi hai davanti e per un po picchi piu forte.|cone r7 h.8 d20/25/30; buff fury1.3/1.4/1.5 t5
+S|Urlo che rigenera|b|11|Spaventi tutti e ti curi nel tempo.|circ r8 fear1.5/2/2.5; buff hot24/30/36 t5
+S|Onda che ricarica|b|10|Colpisci attorno e le ricariche vanno piu veloci.|circ r6 d20/25/30; buff cdr1.8/2.1/2.4 t4
+S|Schianto corazzato|b|10|Colpo a terra e pelle dura.|circ r5 d24/30/36 stun.5; buff armor.55 t4
+S|Lama assetata|b|9|Una mezzaluna; poi per un po ogni colpo ti cura.|shot d24/30/36 v30 wide r2.6 t.7; buff ls.12/.15/.18 t5
+S|Colpo e orbite|c|11|Un'esplosione da cui nascono lame che ti girano attorno.|circ r5 d18/23/28; buff orbit18/23/28 r3.2 t6
+S|Schianto riflettente|c|11|Spingi via tutti e per un attimo rimandi indietro i colpi.|circ r6 d14/18/22 push16; buff reflect.8/1/1.2 t3
+# ===== ABILITA: proiettili speciali =====
+S|Sfera di plasma|c|10|Una sfera lenta e enorme che brucia tutto attorno.|shot d8/10/12 v6 aura4 t4.5
+S|Sfera di gelo errante|c|11|Una sfera lenta che congela chi sfiora.|shot d5/6/7 v6 aura4 t4.5 chill1 slow.5:1
+S|Sfera calamita|c|11|Una sfera lenta che trascina con se i nemici, poi esplode.|shot d4/5/6 v7 aura4.5 t3.5 pull8 then(circ r5 d34/43/52)
+S|Sfera di paura|c|11|Una sfera lenta: chi le sta vicino scappa.|shot d3/4/5 v7 aura4 t4 fear.6
+S|Disco rimbalzante|b|8|Un disco largo che rimbalza sui muri.|shot d18/23/28 v26 wide r1.8 t2.2 bnc3
+S|Giavellotto|b|7|Un colpo solo: trapassa tutti e li blocca.|shot d24/30/36 v44 pierce root1/1.3/1.6 r.6
+S|Giavellotto esplosivo|c|9|Trapassa tutti, ed esplode in fondo.|shot d20/25/30 v40 pierce boom4.5 t.6
+S|Colpo che torna con gli interessi|b|8|Una lama che al ritorno tira i nemici verso di te.|shot d16/20/24 v24 back t.6 wide r1.8 pull6
+S|Ventaglio di giavellotti|c|9|Cinque colpi perforanti a ventaglio.|shot n5 sp.18 d16/20/24 v40 pierce
+S|Ventaglio che incendia|b|8|Sette dardi di fuoco a ventaglio largo.|shot n7 sp.16 d9/11/13 v30 burn7
+S|Ventaglio avvelenato|b|8|Sette spine a ventaglio largo.|shot n7 sp.16 d7/9/11 v30 pois2
+S|Dardi storditori|b|9|Tre dardi che stordiscono.|shot n3 sp.2 d12/15/18 v34 stun.9
+S|Colpi cercatori marchianti|b|9|Quattro colpi che inseguono e marchiano.|shot n4 sp.4 d10/13/16 v18 hom t2 mark1.3:5
+S|Raffica cercatrice esplosiva|c|10|Tre missili che inseguono ed esplodono.|shot n3 sp.5 d18/23/28 v16 hom t2.5 boom3
+S|Seme di spine|c|10|Dove arriva, spara spine tutt'attorno per tre volte.|shot d8 v24 then(rep n3 ev.4 do(shot n8 ringall d7/9/11 v22 t.5))
+S|Proiettile evocatore di muri|c|10|Dove arriva nasce un muro.|shot d10 v26 then(sum muro n4 wall t7 hp120)
+S|Colpo boomerang che cura|b|9|Va, torna, e ti cura per ogni nemico toccato.|shot d14/18/22 v24 back t.55 wide r1.6 then(heal v8/10/12)
+S|Bomba a rimbalzo|c|9|Rimbalza sui muri e alla fine esplode.|shot d8 v24 bnc3 t1.6 boom4.5
+S|Proiettile a frammentazione doppia|c|10|Si divide in sei, e trapassa.|shot d18/23/28 v32 pierce t.45 split6
+S|Onda doppia|b|8|Due mezzelune, una dietro l'altra, la seconda piu larga.|shot d16/20/24 v30 wide r2 t.6; shot d12/15/18 v24 wide r3 t.8
+S|Tre onde a ventaglio|c|9|Tre mezzelune in tre direzioni.|shot n3 sp.5 d18/23/28 v28 wide r2 t.6
+S|Onda che blocca|b|9|Una mezzaluna che inchioda chi tocca.|shot d12/15/18 v26 wide r2.6 t.7 root1.2/1.5/1.8
+S|Onda che terrorizza|b|9|Una mezzaluna che mette in fuga.|shot d12/15/18 v24 wide r3 t.8 fear1.5/2/2.5
+S|Onda che marchia|b|8|Una mezzaluna larghissima che marchia tutti.|shot d8/10/12 v26 wide r3.6 t.9 mark1.3:6
+# ===== ABILITA: evocazioni con trucco =====
+S|Spiriti e furia|c|14|Evochi due spiriti e colpisci piu forte finche ci sono.|sum spirito n2 t8 hp45 d10/13/16; buff fury1.3 t8
+S|Torretta e mantello|c|14|Pianti una torretta e sparisci: sparano a lei.|sum torretta n1 @fwd2 t10 d9/11/13; buff veil1.6 t4
+S|Esca e trappola|b|10|Un'esca al centro di un cerchio che blocca.|sum esca n1 @fwd5 t4 d20/25/30 r3.5; zone @fwd5 r4.5 t4 root.6
+S|Esca e bombardamento|c|12|Un'esca attira tutti; due secondi dopo cade un colpo enorme su di lei.|sum esca n1 @aim g14 t3 d10 r3; circ @aim g14 r5.5 d50/63/76 in2
+S|Muro e mine|c|11|Un muro davanti a te e mine oltre il muro.|sum muro n4 wall @fwd4 t8; rep n3 ev.1 do(circ @fwd9 r3 d24/30/36 in1.5)
+S|Guaritore e cerchio|c|15|Un guaritore e un cerchio che ti rende piu forte.|sum guaritore n1 t10 d5/6/7; zone r5 t10 fury1.2
+S|Arcieri sul muro|c|15|Un muro davanti e due tiratori dietro.|sum muro n4 wall @fwd5 t9; sum arciere n2 t9 d9/11/13
+S|Kamikaze a comando|c|11|Tre spiriti esplosivi compaiono dove guardi.|sum bomba n3 @aim g16 far2 t4 d24/30/36
+S|Colosso e catene|c|15|Evochi un colosso e blocchi i nemici attorno a lui.|sum colosso n1 @fwd4 t9 hp160 d18/23/28; circ @fwd4 r6 root2
+S|Totem di scariche|c|12|Un muro-totem che lancia scariche a chi gli sta vicino.|sum muro n1 @fwd4 t8 hp140; zone @fwd4 r1.5 t8 tick(near r8 d16/20/24) ev.8
+S|Spiriti dal bersaglio|c|12|Colpisci il bersaglio; se muore entro poco, nascono tre spiriti.|tgt d28/35/42 then(trig kill t1.5 n1 do(sum spirito n3 t9 hp40 d10/13/16))
+S|Esercito di carta|c|12|Sei esche tutt'attorno: confusione totale.|sum esca n6 far4.5 t3 d10/13/16 r2.5
+# ===== ABILITA: inneschi particolari =====
+S|Ultimo respiro|c|16|Il prossimo colpo che subisci sotto meta vita ti cura molto.|trig hurt t12 n1 do(if hpb50 do(heal v36/45/54; buff invuln t1) else(buff shield20 t3))
+S|Occhio per occhio|b|11|Per un po, quando ti colpiscono marchi e rallenti l'aggressore.|trig hurt t10 icd.4 do(circ r5 mark1.3:5 slow.5:2)
+S|Trappola vivente|c|12|Per un po, quando ti colpiscono blocchi chi ti sta vicino.|trig hurt t8 icd1.5 do(circ r5 root1.5/1.8/2.1)
+S|Scudo a molla|c|12|Per un po, quando ti colpiscono scagli via l'aggressore.|trig hurt t8 icd.8 do(near r5 fling20/25/30)
+S|Cacciatore di taglie|b|12|Per un po ogni uccisione marchia tutti i nemici vicini.|trig kill t12 do(circ r8 mark1.35:6)
+S|Falò|c|13|Per un po chi uccidi lascia un cerchio di fuoco.|trig kill t12 do(zone r3.5 t4 dps12/15/18 burn3)
+S|Festa del boia|c|14|Per un po ogni uccisione ti da furia per qualche secondo.|trig kill t14 do(buff fury1.4/1.5/1.6 t4)
+S|Uccisioni che gelano|c|13|Per un po chi uccidi esplode in ghiaccio.|trig kill t12 do(circ r5 chill4 d12/15/18)
+S|Ogni terzo colpo|b|12|Per un po, a intervalli, un tuo colpo diventa esplosivo e stordente.|trig hit t10 icd1.5 do(circ r3.5 d24/30/36 stun.5)
+S|Colpi che rubano tempo|b|13|Per un po ogni tuo colpo accorcia le altre ricariche.|trig hit t8 icd.3 do(cdr v.4/.5/.6)
+S|Colpi che caricano|b|12|Per un po ogni tuo colpo carica Risonanza in piu.|trig hit t8 icd.3 do(res v2/2.5/3)
+S|Colpi che proteggono|b|12|Per un po ogni tuo colpo ti da un po di scudo.|trig hit t8 icd.4 do(buff shield6/8/10 t3)
+S|Colpi che lanciano|c|13|I tuoi prossimi tre colpi scagliano via il bersaglio.|trig hit t10 n3 icd.5 do(tgt fling16/20/24)
+S|Colpi che convertono|c|15|Il tuo prossimo colpo fa passare il bersaglio dalla tua parte.|trig hit t8 n1 do(tgt charm6/8/10)
+S|Colpi che seminano|c|13|Per un po ogni tuo colpo lascia una mina ritardata sul bersaglio.|trig hit t8 icd.7 do(circ r3 d18/23/28 in1)
+S|Poteri che gelano|b|13|Per un po ogni altro potere che usi raffredda chi ti sta attorno.|trig cast t12 do(circ r6 chill2 slow.5:2)
+S|Poteri che evocano|c|14|Per un po ogni altro potere che usi chiama uno spirito.|trig cast t12 n4 do(sum spirito n1 t7 hp35 d9/11/13)
+S|Poteri che accelerano|b|13|Per un po ogni altro potere che usi ti fa correre.|trig cast t12 do(buff haste1.5 t2.5)
+S|Scatti che esplodono due volte|c|13|Per un po ogni tuo scatto esplode alla fine, e ancora un secondo dopo.|trig dashend t12 do(circ r4 d16/20/24; circ r5 d16/20/24 in1)
+S|Scatti che curano|b|12|Per un po ogni tuo scatto ti cura.|trig dashend t12 do(heal v8/10/12)
+S|Scatti a catena|b|12|Per un po ogni tuo scatto finisce con una scarica sui vicini.|trig dashend t12 do(chain n4 d14/18/22)
+S|Passi di fuoco|b|11|Per un po, mentre ti muovi lasci fuoco.|trig step t6 ev.4 do(if moving do(zone r2 t3 dps9/11/13))
+S|Radar|b|12|Per un po, ogni secondo marchi tutti i nemici vicini.|trig step t6 ev1 do(circ r9 mark1.2:1.5)
+S|Campo statico|c|13|Ogni secondo una scarica a catena parte da te.|trig step t6 ev1 do(chain n3 d10/13/16)
+S|Respingente automatico|b|12|Per un po, ogni secondo allontani chi ti sta addosso.|trig step t6 ev1 do(circ r4 push14)
+S|Mortaio automatico|c|13|Per un po, ogni secondo un colpo cade sul nemico piu vicino.|trig step t6 ev1 do(near r14 each(circ r2.6 d18/23/28 in.5))
+S|Pioggia personale|c|13|Per un po attorno a te piovono colpi a caso.|trig step t6 ev.35 do(circ @rnd7 r2.4 d14/18/22 in.4)
+S|Fabbrica di esche|c|14|Ogni due secondi lasci un'esca esplosiva.|trig step t6.5 ev2 do(sum esca n1 t2.5 d18/23/28 r3)
+# ===== ABILITA: varie =====
+S|Colpo proporzionale|c|10|Attorno a te: toglie a ognuno una fetta della vita che gli resta.|circ r7 d6 hpc.1/.13/.16
+S|Risucchio di gruppo|b|10|Rubi vita a tutti quelli davanti a te.|cone r9 h.7 d16/20/24 ls.5
+S|Anello che cura|b|10|Un anello: ogni nemico preso ti cura e ti da scudo.|ring r10 i4 d14/18/22 heal3/4/5 sh4
+S|Linea che carica|b|8|Una linea: ogni nemico preso carica Risonanza.|line l24 w2.2 d18/23/28 res5/6/7
+S|Colpo che ricarica|b|9|Colpo sul bersaglio: accorcia tutte le altre ricariche.|tgt d22/28/34 cdr1.5/2/2.5
+S|Massimo tre|b|8|Tre nemici davanti a te, i piu vicini: colpo forte e blocco.|cone r10 h.8 max3 d30/38/46 root1.2
+S|Solo il piu vicino, col botto|b|7|Colpisci il piu vicino e chi gli sta attorno esplode con lui.|near r12 d20/25/30 then(circ r4.5 d20/25/30)
+S|Doppio bersaglio|b|8|Colpisci il bersaglio mirato e il nemico piu vicino a lui.|tgt d28/35/42 then(near r8 d20/25/30 stun.5)
+S|Colpo e maledizione dei vicini|b|9|Colpisci il bersaglio; i suoi vicini vengono indeboliti e rallentati.|tgt d26/33/40 then(circ @tgt r6 weak5 slow.5:3)
+S|Miccia|b|9|Dai fuoco al bersaglio; se non era gia in fiamme, il fuoco passa ai vicini.|tgt d8/10/12 burn12 then(chain n4 d4/5/6 burn10)
+S|Epidemia|b|10|Avveleni il bersaglio e il veleno salta a catena.|tgt d6/8/10 pois4 then(chain n5 d4/5/6 pois3 r9)
+S|Brivido|b|10|Raffreddi il bersaglio e il gelo salta a catena.|tgt d8/10/12 chill3 then(chain n5 d4/5/6 chill3 r9)
+S|Anello e centro|c|10|Un anello lontano che spinge dentro, e un colpo al centro.|ring r12 i7 d8/10/12 pull16; circ r5 d30/38/46 in.6
+S|Cono e contraccono|b|9|Un ventaglio davanti e, dopo un attimo, uno dietro.|cone r8 h.7 d22/28/34; circ @back4 r5 d18/23/28 in.4
+S|Tre linee a ventaglio|b|8|Tre lame istantanee a ventaglio.|shot n3 sp.3 d20/25/30 v60 pierce t.3
+S|Griglia|c|10|Quattro scoppi ai quattro angoli attorno a te, poi uno al centro.|circ @fwd7 r3.5 d18/23/28; circ @back7 r3.5 d18/23/28; ring r8 i5 d10/13/16 in.3; circ r4 d22/28/34 in.6
+S|Morsa|c|10|Due muri ai lati e un colpo nel mezzo.|sum muro n2 wall @fwd7 t5; line l14 w3 d30/38/46 in.5
+S|Colpo cieco|a|6|Un'esplosione a caso li attorno: forte, ma chissa dove.|circ @rnd6 r4.5 d44/55/66
+S|Scossa di assestamento|b|9|Un'onda debole che rallenta; chi era gia rallentato resta bloccato.|circ r8 d8/10/12 slow.5:3 then(pop slow r2 d10 root1.5)
+S|Luce accecante|b|10|Tutti quelli davanti a te colpiscono piu piano e non ti vedono per un attimo.|cone r11 h.9 weak6; buff veil1.3 t2
+S|Fischio|a|9|Attiri l'attenzione di tutti e ti copri.|circ r12 mark1.15:5; buff armor.6 t5
+`);
+
+Bricks.load(String.raw`
+# ===== SUPREME: distruzione =====
+U|Supernova|c|1|Un'esplosione enorme che scaraventa via tutti.|circ r14 d130/165/200 push20 stun1
+U|Collasso|c|1|Tiri tutti al centro e li schiacci.|circ r16 pull26 d40/50/60; wait t.7; circ r7 d120/150/180 stun1.2
+U|Giorno del giudizio|c|1|Un colpo dal cielo su ogni nemico attorno a te.|circ r20 max12 each(circ r3 d80/100/120 in.9)
+U|Tempesta perfetta|c|1|Per sei secondi cadono fulmini tutt'attorno a te.|trig step t6 ev.25 do(circ @rnd11 r3 d44/55/66 in.4)
+U|Bombardamento orbitale|c|1|Dodici colpi cadono a tappeto dove guardi.|rep n12 ev.18 do(circ @aim g22 r1 in.01; circ @rnd8 r3.2 d48/60/72 in.5)
+U|Raggio della fine|c|1|Una linea enorme che cancella tutto cio che attraversa.|line l40 w5 d170/215/260 in.8
+U|Raggio rotante supremo|c|1|Per quattro secondi lame partono da te in ogni direzione.|rep n16 ev.25 do(shot n4 ringall d22/28/34 v36 pierce t.6 r.6)
+U|Cometa|c|1|Un colpo solo, gigantesco, dopo un'attesa lunga.|circ @aim g22 r11 d260/325/390 in2.4 stun2
+U|Catena del giudizio|c|1|Una scarica che salta su quattordici nemici senza perdere forza.|chain n14 d70/88/106 fall.97 r12 stun.6
+U|Inferno|c|1|Un cerchio di fuoco enorme attorno a te, che ti segue.|zone r9 t8 dps40/50/60 fol burn6
+U|Era glaciale|c|1|Tutti attorno a te congelati; poi il ghiaccio resta.|circ r16 d40/50/60 stun2.5/3/3.5; zone r12 t6 slow.7:1 chill.6
+U|Pestilenza|c|1|Una nube velenosa enorme che si allarga e ti segue.|zone r6 t9 dps18/23/28 fol pois2 grow.9
+U|Mietitura delle anime|c|1|Attorno a te: chi e sotto un terzo di vita muore sul colpo, gli altri restano feriti.|circ r14 d50/63/76 ex4
+U|Sentenza di morte|c|1|Togli al bersaglio una fetta enorme della vita che gli resta.|tgt d40 hpc.35/.42/.5 stun1
+U|Terremoto supremo|c|1|Sei scosse enormi, una al secondo.|rep n6 ev.8 do(circ r13 d36/45/54 slow.5:1.5 stun.3)
+U|Onda anomala|c|1|Tre mezzelune gigantesche in fila che trascinano tutto.|rep n3 ev.5 do(shot d60/75/90 v26 wide r5 t1 push14)
+U|Stella cadente multipla|c|1|Cinque comete, una dopo l'altra, sul bersaglio mirato.|aim; rep n5 ev.5 do(circ @tgt r4.5 d60/75/90 in.6)
+U|Anelli concentrici|c|1|Cinque anelli che si allargano fino all'orizzonte.|circ r4 d50/63/76; ring r8 i4 d44/55/66 in.25; ring r12 i8 d38/48/58 in.5; ring r16 i12 d32/40/48 in.75; ring r20 i16 d26/33/40 in1
+U|Vulcano supremo|c|1|Un cratere erutta lapilli esplosivi per otto secondi.|zone @aim g16 r5 t8 dps20/25/30 tick(shot n8 ringall d16/20/24 v16 t.6 boom2.6) ev.7
+U|Buco nero supremo|c|1|Risucchia tutto per cinque secondi, poi esplode e rilascia schegge.|zone @aim g16 r11 t5 dps16/20/24 zpull2.2 end(circ r11 d120/150/180; shot n16 ringall d20/25/30 v24 t.7)
+U|Mille tagli|c|1|Trenta fendenti velocissimi davanti a te.|rep n15 ev.1 do(cone r6 h1 d14/18/22)
+U|Pioggia di lame|c|1|Per cinque secondi mezzelune partono da te verso il piu vicino.|trig step t5 ev.3 do(shot d30/38/46 v30 wide r2.4 t.7)
+U|Scarica totale|c|1|Una catena dopo l'altra, otto volte.|rep n8 ev.3 do(chain n5 d30/38/46)
+U|Detonazione universale|c|1|Marchi tutti; due secondi dopo ogni marchio esplode enorme.|circ r20 mark1.4:4; wait t2; pop mark r5 d90/113/136
+U|Rogo|c|1|Incendi tutti; poi ogni fiamma esplode.|circ r18 d20/25/30 burn14; wait t2.5; pop burn r5 d80/100/120 burn10
+U|Zero assoluto|c|1|Rallenti tutti; poi chi e rallentato va in frantumi.|circ r18 slow.8:4 chill3; wait t1.5; pop slow r5 d90/113/136 stun1.5
+U|Piaga|c|1|Avveleni tutti al massimo; poi il veleno esplode e si sparge.|circ r18 pois6; wait t3; pop pois r6 d80/100/120 pois4
+# ===== SUPREME: trasformazioni =====
+U|Avatar|c|1|Per dodici secondi: piu forte, piu duro, piu veloce.|buff fury1.5/1.6/1.7 armor.6 haste1.3 t12
+U|Forma spettrale|c|1|Per sei secondi intoccabile e velocissimo.|buff invuln t6 haste1.6
+U|Dio della guerra|c|1|Colpisci il doppio, e ogni colpo ti cura.|buff fury1.9/2.05/2.2 ls.12 t9
+U|Fortezza vivente|c|1|Scudo gigantesco, pelle di pietra e spine.|buff shield150/190/230 armor.5 reflect1 t9
+U|Flusso|c|1|Per otto secondi le ricariche vanno quattro volte piu veloci.|buff cdr4/4.5/5 t8
+U|Cuore immortale|c|1|Ti curi del tutto, e continui a curarti.|heal v100; buff hot60/75/90 t8
+U|Ombra assoluta|c|1|Sparisci a lungo: il primo colpo da nascosto fa il quintuplo.|buff veil4.5/5/5.5 t9 haste1.3
+U|Tempesta di lame personale|c|1|Lame larghe e fitte ti girano attorno, e ogni colpo ti cura.|buff orbit55/70/85 r5 t9 ls.08
+U|Frenesia|c|1|Piu forte, piu veloce, ricariche doppie: ma subisci di piu.|buff fury1.7/1.85/2 haste1.5 cdr2 armor1.3 t10
+U|Risonanza infinita|c|1|Per dieci secondi la Risonanza si ricarica cinque volte piu in fretta, e le ricariche vanno al doppio.|buff resrate5 cdr2 t10
+# ===== SUPREME: inneschi =====
+U|Ogni colpo un'esplosione|c|1|Per dieci secondi ogni tuo colpo esplode forte.|trig hit t10 icd.3 do(circ r4 d30/38/46)
+U|Ogni colpo un fulmine|c|1|Per dieci secondi ogni tuo colpo chiama un fulmine a catena.|trig hit t10 icd.3 do(chain n4 d26/33/40)
+U|Ogni colpo uno spirito|c|1|Per dodici secondi ogni tuo colpo puo evocare uno spirito.|trig hit t12 icd1 do(sum spirito n1 t9 hp50 d12/15/18)
+U|Ogni morte un'esplosione|c|1|Per quindici secondi chi uccidi esplode enorme e marchia i vicini.|trig kill t15 do(circ r7 d70/88/106 mark1.3:5)
+U|Ogni morte un servo|c|1|Per venti secondi chi uccidi si rialza per te.|trig kill t20 do(sum spirito n1 t14 hp60 d14/18/22)
+U|Ogni morte una vita|c|1|Per quindici secondi ogni uccisione ti cura molto e accorcia le ricariche.|trig kill t15 do(heal v20/25/30; cdr v2)
+U|Vendetta suprema|c|1|Per otto secondi, ogni colpo subito scatena un'esplosione enorme.|trig hurt t8 icd.5 do(circ r8 d60/75/90 push14)
+U|Specchio della sofferenza|c|1|Per otto secondi, ogni colpo subito cade moltiplicato su tutti i nemici vicini.|trig hurt t8 icd.4 do(circ r12 each(circ r2 d30/38/46 in.3))
+U|Onnipotenza|c|1|Per dodici secondi ogni altro potere che usi viene seguito da un'esplosione e ti cura.|trig cast t12 do(circ r8 d50/63/76; heal v10)
+U|Passo del titano|c|1|Per dieci secondi, a ogni secondo un'onda d'urto attorno a te.|trig step t10 ev1 do(circ r7 d30/38/46 push8 slow.4:1)
+U|Sole portatile|c|1|Per otto secondi bruci una fetta della vita di chi ti sta vicino, a ogni istante.|trig step t8 ev.5 do(circ r8 d8 hpc.05/.06/.07 burn8)
+U|Faro della morte|c|1|Per otto secondi, due volte al secondo, un colpo cade sul nemico piu vicino.|trig step t8 ev.5 do(near r20 each(circ r3 d40/50/60 in.4))
+U|Scatti divini|c|1|Per quindici secondi ogni scatto finisce con un'esplosione e un'altra subito dopo.|trig dashend t15 do(circ r6 d50/63/76 stun.5; circ r8 d30/38/46 in.5)
+# ===== SUPREME: evocazioni =====
+U|Legione|c|1|Otto spiriti combattono per te.|sum spirito n8 far4 t16 hp60 d12/15/18
+U|Titano|c|1|Un colosso enorme.|sum colosso n1 @fwd4 t18 hp500/620/740 d40/50/60
+U|Due titani|c|1|Due colossi, piu piccoli, ai tuoi lati.|sum colosso n2 far3.5 t14 hp260/320/380 d26/33/40
+U|Batteria d'assedio|c|1|Quattro torrette attorno a te.|sum torretta n4 far4 t14 d12/15/18
+U|Reggimento di tiratori|c|1|Sei tiratori in linea.|sum arciere n6 wall t14 hp60 d12/15/18
+U|Ondata kamikaze|c|1|Dodici spiriti esplosivi partono in ogni direzione.|sum bomba n12 far4 t8 d34/43/52
+U|Cittadella|c|1|Un cerchio di muri attorno a te, con due torrette dentro.|sum muro n8 far5 t12 hp220; sum torretta n2 far2 t12 d10/13/16
+U|Corte reale|c|1|Un colosso, due tiratori, un guaritore.|sum colosso n1 @fwd4 t14 hp260 d24/30/36; sum arciere n2 t14 d10/13/16; sum guaritore n1 t14 d6
+U|Esercito che non muore|c|1|Sei spiriti: quando ne cade uno, esplode e ne nasce un altro.|sum spirito n6 far3.5 t12 hp40 d12/15/18 die(circ r4 d30/38/46; sum spirito n1 t8 hp40 d12/15/18)
+U|Sciame senza fine|c|1|Per otto secondi nasce un kamikaze ogni mezzo secondo.|trig step t8 ev.5 do(sum bomba n1 t5 d30/38/46)
+U|Prigione|c|1|Chiudi il bersaglio tra i muri e gli fai cadere addosso il cielo.|aim; sum muro n8 @tgt far3.2 t6 hp200; circ @tgt r5 d140/175/210 in2
+U|Ombre di te|c|1|Cinque esche attorno a te: quando esplodono, stordiscono.|sum esca n5 far4.5 t5 d50/63/76 r5 die(circ r5 stun1.5)
+U|Guardiano sacro|c|1|Un guaritore potentissimo e uno scudo enorme.|sum guaritore n1 t16 hp200 d14/18/22; buff shield90/113/136 t8
+U|Chiamata del branco|c|1|Uno spirito per ogni nemico attorno a te, e sono furiosi.|circ r16 max10 each(sum spirito n1 t12 hp50 d16/20/24)
+# ===== SUPREME: controllo =====
+U|Dominio assoluto|c|1|Fino a sei nemici attorno a te passano dalla tua parte, a lungo.|circ r16 max6 charm12/14/16
+U|Tempo spezzato|c|1|Il tempo si ferma per cinque secondi e intanto ricarichi tutto.|freeze t5/5.5/6; cdr all
+U|Tempo spezzato con sorpresa|c|1|Fermi il tempo; quando riparte, un colpo cade su ogni nemico.|freeze t3; circ r22 max12 each(circ r3 d70/88/106 in3)
+U|Gravita zero|c|1|Tutti i nemici attorno a te volano in aria a lungo e ricadono male.|circ r16 lift3/3.5/4:70
+U|Terrore primordiale|c|1|Tutti scappano a lungo, indeboliti e marchiati.|circ r20 fear5/6/7 weak8 mark1.4:8
+U|Radici del mondo|c|1|Tutti bloccati a lungo, mentre il suolo li consuma.|circ r18 root4/4.5/5; zone r18 t5 dps22/28/34
+U|Rimpicciolimento generale|c|1|Tutti i nemici attorno a te diventano minuscoli e fragili.|circ r16 poly6/7/8 mark1.6:8
+U|Mano del gigante|c|1|Scagli via tutti quelli davanti a te: ognuno esplode dove atterra.|cone r14 h.9 fling70/88/106
+U|Tutti a me|c|1|Tiri a te ogni nemico in vista e li blocchi attorno a te.|circ r24 max10 yank d30/38/46 root2.5
+U|Scambio caotico|c|1|Ti scambi di posto col bersaglio, che esplode e resta stordito a lungo.|tgt swap stun3 then(circ @tgt r8 d110/138/166)
+U|Silenzio|c|1|Tutti storditi a lungo e indeboliti quando si riprendono.|circ r18 stun3.5/4/4.5 weak8
+U|Ragnatela|c|1|Un cerchio enorme che blocca chi entra, per dieci secondi.|zone r13 t10 root.7 dps10/13/16 slow.5:1
+# ===== SUPREME: movimento =====
+U|Meteora umana|c|1|Salti dove guardi e atterri come un meteorite.|leap g24 then(circ r11 d170/215/260 stun1.5 push14)
+U|Lampo|c|1|Ti teletrasporti cinque volte sui nemici piu vicini, colpendoli.|rep n5 ev.3 do(near r20 each(blink g1 @pt then(circ r4 d50/63/76)))
+U|Carica inarrestabile|c|1|Uno scatto lunghissimo che devasta tutto cio che attraversi.|buff invuln t1; dash l24 fwd d110/138/166 then(circ r8 d70/88/106 stun1.5)
+U|Danza delle ombre|c|1|Sei scatti fulminei guidati da te, ognuno con un'esplosione.|buff invuln t2.2; rep n6 ev.35 do(dash l7 then(circ r4.5 d40/50/60))
+U|Apparizione|c|1|Compari dietro al bersaglio e gli infliggi un colpo che ignora tutto.|blink behind g26 then(tgt d190/240/290 stun2)
+U|Ritorno del re|c|1|Ti teletrasporti dove guardi: arrivi con un'esplosione, uno scudo e tre spiriti.|blink g22 then(circ r9 d90/113/136 stun1; buff shield80 t6; sum spirito n3 t12 hp60 d14/18/22)
+U|Passo tra i mondi|c|1|Sparisci, il tempo rallenta, e ricompari dove guardi curato del tutto.|freeze t2; heal v100; blink g26 then(buff veil3 t4)
+`);
+
+Bricks.load(String.raw`
+# ===== SUPREME: seconda parte =====
+U|Fine del mondo locale|c|1|Dove guardi: prima tutto viene risucchiato, poi esplode, poi brucia.|circ @aim g18 r12 pull24; circ @aim g18 r9 d130/165/200 in.8; zone @aim g18 r8 t6 dps24/30/36
+U|Martello degli dei|c|1|Tre colpi enormi davanti a te, sempre piu lontani.|circ @fwd5 r5 d80/100/120 stun.8; circ @fwd11 r6 d80/100/120 in.35 stun.8; circ @fwd18 r7 d80/100/120 in.7 stun.8
+U|Croce di luce|c|1|Otto raggi partono da te e trapassano tutto.|shot n8 ringall d90/113/136 v50 pierce t.6 r1
+U|Pioggia di giavellotti|c|1|Venti giavellotti a ventaglio largo.|shot n20 sp.09 d30/38/46 v44 pierce
+U|Nugolo di missili|c|1|Dodici missili che inseguono ed esplodono.|shot n12 sp.3 d26/33/40 v16 hom t3 boom3.5
+U|Sole nero|c|1|Una sfera lenta e immensa: brucia, trascina, e alla fine implode.|shot d16/20/24 v5 aura7 t6 pull8 then(circ r10 d140/175/210)
+U|Sfera del giudizio|c|1|Una sfera lenta che stordisce chi sfiora e alla fine chiama un fulmine su ognuno.|shot d10/13/16 v6 aura6 t5 stun.4 then(circ r12 each(circ r3 d70/88/106 in.5))
+U|Lama dell'orizzonte|c|1|Una mezzaluna larga quanto la strada.|shot d150/190/230 v30 wide r7 t1.2
+U|Lama che torna|c|1|Una mezzaluna enorme che va e torna, tirando tutti verso di te.|shot d80/100/120 v24 wide r5 back t1 pull10
+U|Bomba madre|c|1|Un ordigno che esplode in otto, che esplodono in altre schegge.|shot d40 v18 t.8 boom6 then(shot n8 ringall d20 v14 t.6 boom4 then(shot n4 ringall d14/18/22 v14 t.4 boom2.5))
+U|Disco della fine|c|1|Un disco enorme che rimbalza per tutta la via.|shot d70/88/106 v28 wide r3.5 t4 bnc6
+U|Granata del vuoto|c|1|Dove scoppia, tutto viene tirato dentro e poi sparato fuori.|shot d10 v20 t.7 then(circ r12 pull26 d30/38/46; circ r8 d100/125/150 in.8 push22)
+U|Colpo unico|c|1|Un proiettile solo. Fa un danno assurdo.|shot d300/375/450 v60 r.6
+U|Colpo unico perforante|c|1|Un proiettile solo che trapassa una fila intera e la stordisce.|shot d170/215/260 v60 pierce r.8 stun1.5
+U|Frusta di fuoco|c|1|Cinque vampate a ventaglio, una dopo l'altra, che incendiano tutto.|rep n5 ev.25 do(cone r13 h.6 d40/50/60 burn12)
+U|Respiro del drago|c|1|Per cinque secondi un getto continuo enorme.|trig step t5 ev.15 do(cone r13 h.5 d14/18/22 burn8)
+U|Raggio continuo supremo|c|1|Per cinque secondi un raggio trapassa tutto davanti a te.|trig step t5 ev.12 do(line l34 w2.4 d14/18/22)
+U|Disintegratore|c|1|Per quattro secondi un raggio consuma una fetta della vita di chi tocca.|trig step t4 ev.2 do(line l30 w2 d10 hpc.05/.06/.07)
+U|Tornado|c|1|Un vortice enorme avanza risucchiando e lanciando in aria.|zone @fwd3 r6 t7 dps26/33/40 mv5 zpull1.6 tick(circ r6 lift.8:10) ev1.5
+U|Tre tornado|c|1|Tre vortici che inseguono i nemici.|zone @fwd3 r3.5 t8 dps30/38/46 seek5; zone @back3 r3.5 t8 dps30/38/46 seek4; zone r3.5 t8 dps30/38/46 seek6 zpull.8
+U|Nube del giudizio|c|1|Una nube che insegue i nemici e li bombarda.|zone @fwd4 r4 t10 seek4.5 tick(circ r9 max4 each(circ r2.6 d50/63/76 in.4)) ev.8
+U|Santuario supremo|c|1|Un cerchio enorme: dentro ti curi tanto, colpisci forte e subisci poco.|zone r9 t10 zheal14/18/22 fury1.5 armor.5
+U|Cupola del tempo|c|1|Una cupola enorme: i nemici dentro sono quasi fermi e bruciano.|zone @aim g16 r10 t7 dome slow.9:1 dps18/23/28
+U|Campo di sterminio|c|1|Un cerchio enorme che cresce e consuma la vita di chi c'e dentro.|zone r5 t8 fol grow1.2 tick(circ r12 max14 d6 hpc.03/.04/.05) ev.5
+U|Mare di lava|c|1|Cinque pozze enormi attorno a te.|zone @fwd8 r6 t8 dps30/38/46; zone @back8 r6 t8 dps30/38/46; zone @rnd9 r6 t8 dps30/38/46; zone @rnd9 r6 t8 dps30/38/46; zone r4 t8 zheal6
+U|Inverno eterno|c|1|Un cerchio immenso di gelo che ti segue; alla fine tutti congelati.|zone r12 t7 fol slow.7:1 chill.5 end(circ r12 stun3 d40/50/60)
+U|Epicentro|c|1|Dove guardi nasce un punto che pulsa: ogni battito un'onda enorme.|zone @aim g18 r3 t6 tick(circ r11 d44/55/66 push10 slow.4:1) ev1
+U|Occhio della tempesta|c|1|Attorno a te calma; fuori, una tempesta ad anello che ti segue.|zone r4 t8 fol zheal8; trig step t8 ev.4 do(ring r13 i5 d24/30/36)
+U|Faglia|c|1|Il terreno si spacca in linea: chi e sopra viene lanciato in aria e brucia.|line l34 w5 d70/88/106 lift1.6:40; zone @fwd8 r5 t6 dps20/25/30; zone @fwd18 r5 t6 dps20/25/30
+U|Prigione di ghiaccio|c|1|Il bersaglio e tutti attorno a lui congelati a lungo, e fragili.|tgt stun4 mark1.6:6 then(circ @tgt r9 stun3/3.5/4 mark1.4:6)
+U|Marionette|c|1|Il bersaglio e quattro suoi vicini passano dalla tua parte.|tgt charm14 then(circ @tgt r10 max4 charm10/12/14)
+U|Capro del mondo|c|1|Il bersaglio prende il triplo dei danni per dieci secondi.|tgt mark3:10 weak10 slow.5:10
+U|Catena dei dannati|c|1|Una scarica che blocca, marchia e indebolisce dodici nemici.|chain n12 d30/38/46 fall.95 r12 root3 mark1.4:8 weak8
+U|Catena che converte|c|1|Una scarica che fa passare dalla tua parte chi tocca.|chain n6 d10 fall1 r10 charm8/10/12
+U|Catena di fuoco e veleno|c|1|Una scarica che incendia e avvelena quindici nemici.|chain n15 d24/30/36 fall.97 r12 burn14 pois5
+U|Furia e fulmini|c|1|Furia per dieci secondi, e ogni uccisione chiama una catena.|buff fury1.6/1.7/1.8 t10; trig kill t10 do(chain n6 d40/50/60)
+U|Mantello e pugnale|c|1|Sparisci; il primo colpo dopo esplode enorme e stordisce.|buff veil3 t8; trig hit t8 n1 do(circ r7 d130/165/200 stun2)
+U|Scudo e vendetta|c|1|Scudo enorme; ogni colpo che ricevi finche dura esplode.|buff shield140/175/210 t8; trig hurt t8 icd.4 do(circ r6 d40/50/60)
+U|Sangue reale|c|1|Per dodici secondi ogni colpo ti cura, e ogni uccisione ti da uno scudo.|buff ls.2/.24/.28 t12; trig kill t12 do(buff shield25 t5)
+U|Motore perpetuo|c|1|Per dieci secondi ogni tuo colpo accorcia le ricariche e carica Risonanza.|trig hit t10 icd.2 do(cdr v.5/.6/.7; res v1.5)
+U|Mano veloce|c|1|Per otto secondi ogni tuo colpo e seguito da tre dardi cercatori.|trig hit t8 icd.25 do(shot n3 sp.4 d14/18/22 v20 hom t1.5)
+U|Pelle del drago|c|1|Subisci un quarto dei danni e ogni colpo subito incendia chi ti sta vicino.|buff armor.25 t9; trig hurt t9 icd.4 do(circ r6 d16/20/24 burn12)
+U|Signore del gelo|c|1|Per dieci secondi ogni tuo colpo congela il bersaglio e i suoi vicini.|trig hit t10 icd.6 do(circ r4.5 chill4 d14/18/22)
+U|Signore della peste|c|1|Per dodici secondi ogni tuo colpo avvelena al massimo, e chi muore contagia.|trig hit t12 icd.3 do(tgt pois4); trig kill t12 do(zone r4.5 t5 dps12/15/18 pois2)
+U|Signore del fuoco|c|1|Per dodici secondi ogni tuo colpo incendia, e chi muore esplode.|trig hit t12 icd.3 do(tgt burn14); trig kill t12 do(circ r6 d60/75/90 burn10)
+U|Collezionista di anime|c|1|Per venti secondi ogni uccisione ti cura, ti carica e ti rende piu forte.|trig kill t20 do(heal v12; res v8; buff fury1.5 t5)
+U|Passo del dio|c|1|Per dodici secondi ogni tuo scatto e un'esplosione enorme e ti rende intoccabile.|trig dashend t12 do(circ r7 d70/88/106 push12; buff invuln t.8)
+U|Tempesta interiore|c|1|Per dieci secondi ogni altro potere che usi scatena una catena e ti carica.|trig cast t10 do(chain n6 d50/63/76; res v10)
+U|Eco triplo|c|1|Per dieci secondi ogni altro potere che usi e seguito da tre esplosioni attorno a te.|trig cast t10 do(rep n3 ev.3 do(circ r7 d36/45/54))
+U|Aura del re|c|1|Per dieci secondi chi ti sta attorno e rallentato, indebolito e marchiato.|trig step t10 ev1 do(circ r10 slow.6:1.2 weak1.5 mark1.3:1.5)
+U|Cuore di stella|c|1|Per sei secondi, ogni mezzo secondo spari dardi in ogni direzione.|trig step t6 ev.5 do(shot n12 ringall d18/23/28 v28 t.7)
+U|Ira del cielo|c|1|Per dieci secondi un fulmine a catena al secondo parte da te.|trig step t10 ev1 do(chain n6 d36/45/54 r10 stun.3)
+U|Vortice di lame e fuoco|c|1|Lame in orbita, e sotto di te il terreno brucia.|buff orbit50/63/76 r4.5 t9; zone r6 t9 dps20/25/30 fol
+U|Ultimo baluardo|c|1|Sotto meta vita: torni pieno, intoccabile, e respingi tutti. Sopra: scudo enorme.|if hpb50 do(heal v100; buff invuln t2.5; circ r9 d60/75/90 push22) else(buff shield160/200/240 t8)
+U|Colpo di grazia|c|1|Se il bersaglio ha meno di un terzo di vita lo finisci; altrimenti lo ferisci e lo marchi.|tgt d120/150/180 ex5 mark1.4:6
+U|Giocata d'azzardo|c|1|Con vita piena: danno devastante attorno. Ferito: ti curi del tutto e fuggi.|if hpa80 do(circ r13 d190/240/290) else(heal v100; buff haste1.6 veil2 t4)
+U|Assedio o ritirata|c|1|Con tanti nemici vicini li congeli tutti; con pochi, colpo singolo enorme.|if count3 do(circ r14 stun3.5 d40/50/60) else(near r22 d260/325/390)
+U|Fermo o in corsa|c|1|Da fermo: una batteria di torrette. In corsa: una scia di esplosioni.|if still do(sum torretta n3 far3 t14 d12/15/18) else(trig step t6 ev.4 do(circ r4.5 d50/63/76 in.6))
+U|Furia del martire|c|1|Paghi quasi tutta la vita: il danno e proporzionale al sacrificio.|cost v40; circ r15 d260/325/390 stun2
+U|Patto finale|c|1|Paghi vita: per dodici secondi colpisci il triplo.|cost v30; buff fury2.6/2.8/3 t12
+U|Scambio di anime|c|1|Paghi vita e ogni nemico attorno a te perde una fetta enorme della sua.|cost v25; circ r14 d10 hpc.3/.36/.42
+U|Rinascita|c|1|Ti curi del tutto, azzeri le ricariche e respingi tutti.|heal v100; cdr all; circ r8 d30/38/46 push20
+U|Seconda occasione|c|1|Lasci un segno; tra sei secondi ci torni con tutta la vita e un'esplosione.|mem; buff fury1.4 t6; wait t6; ret then(heal v100; circ r9 d100/125/150)
+U|Colpo doppio temporale|c|1|Colpisci attorno; fermi il tempo; quando riparte colpisci di nuovo, piu forte.|circ r10 d70/88/106; freeze t2.5; circ r12 d110/138/166 in2.6 stun1.5
+U|Istante eterno|c|1|Fermi il tempo e in quell'istante sei velocissimo e colpisci il doppio.|freeze t4/4.5/5; buff haste1.6 fury2 t5
+U|Sciame di spiriti cercatori|c|1|Dieci spiriti-bomba compaiono addosso ai nemici vicini.|circ r18 max10 each(sum bomba n1 t4 d50/63/76)
+U|Muraglia|c|1|Un muro lunghissimo davanti a te, che esplodendo stordisce.|sum muro n12 wall @fwd6 t10 hp220 die(circ r4 d40/50/60 stun1)
+U|Assedio|c|1|Due torrette, un muro e un bombardamento sul punto che guardi.|sum torretta n2 far3 t12 d12/15/18; sum muro n5 wall @fwd5 t12; rep n6 ev.5 do(circ @aim g22 r4 d50/63/76 in.6)
+U|Parata|c|1|Colosso davanti, guaritore dietro, e tu con lo scudo.|sum colosso n1 @fwd5 t14 hp320 d30/38/46; sum guaritore n1 @back3 t14 d8; buff shield70/88/106 t8
+U|Orda esplosiva a ondate|c|1|Tre ondate di quattro kamikaze.|rep n3 ev1.2 do(sum bomba n4 far3 t5 d36/45/54)
+U|Guardia d'onore|c|1|Quattro spiriti robusti che esplodono cadendo e ti curano.|sum spirito n4 far3 t14 hp90 d14/18/22 die(circ r5 d40/50/60; heal v10)
+U|Trappola suprema|c|1|Un'esca attira tutti; poi muri la chiudono dentro e cade un colpo enorme.|sum esca n1 @aim g16 t3.2 d20 r3; wait t1.5; sum muro n8 @aim g16 far4.5 t4; circ @aim g16 r6 d170/215/260 in1.6
+U|Battaglione|c|1|Tre spiriti, tre tiratori, tre kamikaze.|sum spirito n3 far3 t12 hp50 d12/15/18; sum arciere n3 far5 t12 d10/13/16; sum bomba n3 far2 t8 d30/38/46
+U|Il gigante e i nani|c|1|Un colosso; quando cade, al suo posto sei spiriti.|sum colosso n1 @fwd4 t10 hp300 d30/38/46 die(sum spirito n6 far3 t10 hp45 d12/15/18)
+U|Assalto coordinato|c|1|Ti lanci sul bersaglio; tre spiriti arrivano con te e lui resta stordito.|dash totgt g24 then(tgt d90/113/136 stun2.5; sum spirito n3 far2.5 t10 hp55 d14/18/22)
+U|Cometa cavalcata|c|1|Salti; mentre sei in aria piovono colpi; atterri con un cratere di fuoco.|rep n6 ev.12 do(circ @aim g22 r3 d1 in.01; circ @rnd7 r3 d40/50/60 in.5); leap g22 then(circ r8 d110/138/166; zone r7 t6 dps22/28/34)
+U|Sette passi|c|1|Sette teletrasporti rapidissimi guidati da te, ognuno lascia un'esplosione ritardata.|rep n7 ev.3 do(blink g9 left(circ r5 d60/75/90 in.8))
+U|Tuono e lampo|c|1|Compari tra i nemici stordendoli; un attimo dopo, una catena enorme.|blink g22 then(circ r8 stun2 d30/38/46); wait t.6; chain n10 d70/88/106 fall.95 r12
+U|Sfondamento e crollo|c|1|Carichi in avanti; dietro di te tutto esplode a catena.|dash l22 fwd d70/88/106 trail30/38/46 then(circ @back6 r7 d70/88/106 in.3; circ @back14 r7 d70/88/106 in.6)
+U|Ritirata strategica|c|1|Esplodi, ti teletrasporti lontano, e dove eri resta un buco nero.|circ r9 d70/88/106 push14; blink g24 left(zone r9 t5 dps18/23/28 zpull2 boom100/125/150)
+U|Doppio di te|c|1|Per dodici secondi un tuo gemello potente combatte con te, e tu colpisci piu forte.|sum spirito n1 t12 hp300/380/460 d30/38/46; buff fury1.4 t12
+U|Tutto in uno|c|1|Scudo, furia, fretta e cure insieme, per poco.|buff shield80 fury1.5 cdr2 hot50 t7
+U|Colpo, cura, scudo|c|1|Un'esplosione enorme attorno a te: ogni nemico colpito ti cura e ti da scudo.|circ r12 d100/125/150 heal6/8/10 sh10
+U|Raccolta suprema|c|1|Un'esplosione: ogni nemico colpito accorcia le ricariche e carica Risonanza.|circ r13 d90/113/136 cdr1 res4/5/6
+U|Divoratore|c|1|Rubi vita a tutti quelli attorno, moltissima.|circ r13 d90/113/136 ls.5
+U|Anello della fine|c|1|Un anello immenso: chi ti sta vicino e salvo, tutti gli altri no.|ring r24 i6 d170/215/260 stun1.5
+U|Tre giudizi|c|1|Colpo dal cielo sul bersaglio, tre volte, sempre piu forte.|aim; circ @tgt r4 d60/75/90 in.5; circ @tgt r5 d90/113/136 in1.2; circ @tgt r6 d130/165/200 in2 stun2
+U|Vendetta del branco|c|1|Marchi a fondo il bersaglio e otto spiriti lo assalgono.|tgt mark2:10 root3 then(sum spirito n8 @tgt far3.5 t10 hp45 d14/18/22)
+U|Mietitore supremo|c|1|Attorno a te: enorme contro chi ha uno stato addosso.|circ r14 d70/88/106 vsburn2 vspois2 vsslow2 vsmark2 vsweak2
+U|Boia dei fermi|c|1|Attorno a te: blocchi tutti, poi chi e bloccato prende un colpo terribile.|circ r14 root3; wait t.8; pop root r3 d150/190/230
+U|Paura e morte|c|1|Terrorizzi tutti; chi sta scappando viene falciato.|circ r16 fear4; wait t1.2; pop fear r4 d130/165/200
+U|Risveglio|c|1|Stordisci tutti a lungo; al risveglio li aspetta un'esplosione ciascuno.|circ r15 stun3; wait t2.6; pop stun r5 d120/150/180
+# ===== ABILITA: ultime =====
+S|Zappa e semina|b|9|Sollevi chi hai davanti e sotto di loro lasci il fuoco.|cone r8 h.7 lift1.2:10; zone @fwd5 r4 t4 dps12/15/18
+S|Colpo di frusta lungo|a|6|Una linea lunga che tira a te il primo che prende.|line l16 w1.4 max1 yank d18/23/28
+S|Abbraccio|b|9|Tiri a te tutti e ti copri in proporzione.|circ r8 pull18 d8/10/12 sh8/10/12
+S|Ruggito del capo|b|10|Spaventi i nemici e rafforzi i tuoi spiriti chiamandone uno in piu.|circ r9 fear2; sum spirito n1 t10 hp60 d12/15/18
+S|Scintilla|a|5|Un colpetto istantaneo che stordisce un attimo e carica Risonanza.|tgt d14/18/22 stun.4 res6
+S|Barricata che cura|c|12|Un muro davanti e un cerchio che ti cura dietro.|sum muro n4 wall @fwd4 t8; zone r3.5 t8 zheal6/8/10
+S|Ghigliottina|b|9|Una linea ritardata davanti a te: micidiale contro chi e quasi finito.|line l20 w3 d30/38/46 in.6 ex3
+S|Risacca|b|9|Una mezzaluna spinge via; al ritorno li riporta tutti.|shot d14/18/22 v22 wide r3 back t.7 push8
+S|Colpo che divide|b|8|Colpisci il bersaglio: tre schegge partono da lui verso i vicini.|tgt d24/30/36 then(shot n3 ringall d12/15/18 v26 hom t.8)
+S|Salva di mortai|b|9|Quattro colpi cadono in fila davanti a te, tutti insieme.|circ @fwd6 r3 d22/28/34 in.7; circ @fwd10 r3 d22/28/34 in.7; circ @fwd14 r3 d22/28/34 in.7; circ @fwd18 r3 d22/28/34 in.7
+S|Zolla|a|7|Un pezzo di terra si solleva sotto il nemico piu vicino.|near r12 lift1.5/1.8/2.1:26
+S|Ancora di gravita|c|11|Un punto dove guardi tira tutti verso di se per quattro secondi, poi li blocca.|zone @aim g16 r7 t4 zpull1.5 end(circ r7 root2/2.5/3)
+S|Colpo elastico|b|8|Spingi via il bersaglio; un secondo dopo torna da te stordito.|tgt d16/20/24 push20; wait t1; tgt yank stun1
+S|Punizione dei vicini|b|9|Il bersaglio non si fa nulla: tutti quelli attorno a lui si.|tgt then(ring @tgt r7 i1.5 d36/45/54)
+S|Vetro|b|9|Il bersaglio diventa fragile: marchio enorme ma breve.|tgt mark2/2.2/2.4:2.5
+S|Macigno|b|8|Un proiettile lento e largo che stordisce e spinge.|shot d30/38/46 v14 r1.4 t1.6 stun1 push10
+S|Fiotto|b|8|Una linea che cura te per ogni nemico e li avvelena.|line l18 w2.4 d14/18/22 heal4/5/6 pois2
+S|Scudo condiviso|c|12|Scudo a te e uno spirito guaritore che resta poco.|buff shield40/50/60 t5; sum guaritore n1 t5 d8/10/12
+S|Giro di boa|b|9|Tre anelli stretti, uno dopo l'altro, sempre nello stesso punto: a media distanza.|rep n3 ev.5 do(ring r8 i5 d18/23/28)
+S|Colpo basso|a|6|Colpo corto che rallenta molto e indebolisce.|cone r4 h.9 d16/20/24 slow.7:3 weak4
+S|Squarcio|b|8|Un colpo corto: sanguina a lungo.|cone r4.5 h1 d14/18/22 burn14 pois3
+S|Onda sonica|b|9|Un cono lunghissimo e stretto che stordisce.|cone r16 h.25 d18/23/28 stun1/1.3/1.6
+S|Nebbia fitta|b|11|Una nube enorme attorno a te: ti nasconde e rallenta chi entra.|zone r8 t5 inv dome slow.4:1
+S|Stretta finale|c|11|Blocchi tutti attorno; se sono tre o piu, esplodi anche.|circ r7 root2; if count3 do(circ r7 d36/45/54)
+S|Semaforo|b|10|Fermi il tempo un istante, giusto per riposizionarti, e corri.|freeze t1; buff haste1.6 t2.5
+S|Ago e filo|c|10|Colpisci il bersaglio e lo leghi al nemico piu vicino: si tirano l'uno verso l'altro.|tgt d18/23/28 then(circ @tgt r9 pull20 max3 d10/13/16)
+S|Doppia mandata|b|10|Blocchi il bersaglio; quando si libera resta rallentato e marchiato.|tgt root2.5 slow.6:6 mark1.3:6
+`);
+
+Bricks.load(String.raw`
+# ===== SUPREME: ultime =====
+U|Gabbia di fulmini|c|1|Un recinto di muri attorno al punto che guardi, e dentro piovono scariche.|sum muro n8 @aim g16 far5 t6 hp200; zone @aim g16 r4.5 t6 tick(circ r4.5 d30/38/46 stun.3) ev.7
+U|Mareggiata|c|1|Cinque onde larghe partono da te in ogni direzione, una dopo l'altra.|rep n5 ev.3 do(shot n5 ringall d40/50/60 v24 wide r3 t.9 push8)
+U|Sguardo che uccide|c|1|Per sei secondi il bersaglio mirato perde vita a vista d'occhio.|aim; rep n12 ev.5 do(tgt d14 hpc.04/.05/.06 slow.3:1)
+U|Colonna infinita|c|1|Dove guardi una colonna di fuoco resta accesa e lancia in aria chi la tocca.|zone @aim g18 r4.5 t8 dps44/55/66 burn6 tick(circ r4.5 lift.6:6) ev2
+U|Parola di potere|c|1|Una sola parola: il bersaglio resta stordito, marchiato e in fiamme, e i vicini scappano.|tgt stun3 mark1.6:8 burn16 then(circ @tgt r9 fear4)
+U|Cuore di ghiaccio|c|1|Diventi una statua intoccabile per tre secondi; quando ti liberi, esplodi e sei curato.|buff invuln t3 hot60 armor.2; wait t3; circ r11 d140/175/210 stun2 chill4
+U|Contrappasso|c|1|Per dieci secondi chi ti colpisce perde una fetta della propria vita.|trig hurt t10 icd.3 do(circ r6 max2 d10 hpc.12/.15/.18)
+U|Mano sinistra del buio|c|1|Tiri a te il bersaglio, gli togli una fetta di vita e la prendi tu.|tgt yank d60/75/90 hpc.15 ls1 stun1.5
+U|Legioni alle porte|c|1|Ai quattro lati compaiono spiriti che convergono su di te.|sum spirito n2 @fwd10 t12 hp50 d14/18/22; sum spirito n2 @back10 t12 hp50 d14/18/22; sum arciere n2 far6 t12 d12/15/18
+U|Stretta del serpente|c|1|Una linea lunghissima che tira tutti al suo inizio e li avvelena al massimo.|line l34 w5 d60/75/90 pull26 pois6 slow.6:4
+U|Eclissi di sangue|c|1|Per otto secondi un'aura ti segue: ruba vita a tutti e ti rende piu forte.|trig step t8 ev.5 do(circ r8 d16/20/24 ls.5); buff fury1.4 t8
+U|Ultima parola|c|1|Un colpo che ignora tutto sul bersaglio; se muore, esplode e la Risonanza torna a meta.|tgt d220/275/330 then(trig kill t.5 n1 do(circ r9 d100/125/150; res v50))
+`);
+
+'use strict';
 // MOTORE - generatore di citta'. Da un seme e un tema esce una citta' intera: strade, piazze, arene, canali, cavi, schermi.
 const City = (() => {
   const CELL = 4, N = 44, HALF = (N * CELL) / 2, NODE_H = 11, SAG = 1.4, PERIOD = 6, NB = 8; // 8 strade per asse, 7x7 isolati
@@ -2389,6 +3415,7 @@ const City = (() => {
   return { CELL, N, HALF, NODE_H, SAG, PERIOD, NB, THEMES, rng, gen, cellCenter, bandC };
 })();
 
+'use strict';
 // MOTORE - logica pura (nessuna grafica). Esegue qualsiasi ricetta di mattoncini in qualsiasi citta' generata.
 const Core = (() => {
   const B = typeof Bricks !== 'undefined' ? Bricks : require('./bricks.js');
@@ -2402,6 +3429,8 @@ const Core = (() => {
     colosso: { hp: 300, speed: 4.2, r: 1.6, dmg: 30, atkCd: 1.3, reach: 3.2, mass: 8, heavy: true },
     esca: { hp: 70, speed: 0, r: 0.6, dmg: 0, atkCd: 9, reach: 0, mass: 50, fixed: true },
     torretta: { hp: 90, speed: 0, r: 0.7, dmg: 8, atkCd: 0.45, reach: 0, mass: 50, fixed: true },
+    bomba: { hp: 30, speed: 7.5, r: 0.5, dmg: 30, atkCd: 9, reach: 1.3, mass: 0.6 }, arciere: { hp: 45, speed: 4, r: 0.55, dmg: 9, atkCd: 1.1, reach: 13, mass: 0.8, shooter: true },
+    guaritore: { hp: 60, speed: 6, r: 0.55, dmg: 0, atkCd: 9, reach: 0, mass: 0.8, healer: true }, muro: { hp: 160, speed: 0, r: 1.1, dmg: 0, atkCd: 9, reach: 0, mass: 50, fixed: true },
     anima: { hp: 130, speed: 3.3, r: 0.6, dmg: 0, atkCd: 9, reach: 0, mass: 2 },
   };
   const PSPEED = 7.6, NPC_N = 64;
@@ -2497,13 +3526,13 @@ const Core = (() => {
       t: 0, rand, city, grid, liqSolid: city.theme.liquidSolid, recipe, kit: buildKit(recipe), fame: o.fame || 0, level: B.levelFor(o.fame || 0),
       player: { x: city.spawn.x, z: city.spawn.z, yaw: Math.PI, pitch: 0, hp: 100, maxHp: 100, r: 0.6, cam: { x: city.spawn.x, y: EYE, z: city.spawn.z }, moving: false,
         cd: [0, 0, 0, 0, 0], res: 0, haste: 0, hasteMul: 1, veil: 0, veilBonus: 1, shield: 0, shieldT: 0, hot: 0, hotRate: 0, oc: 0, ocDur: 1, eclipse: 0, orbit: 0, invuln: 0,
-        dash: null, leap: null, ride: null, drain: null, beam: { on: false, x: 0, y: 0, z: 0, hit: false }, cone: false, tick: 0, hurtT: 9, dead: 0, touchT: 0, fury: 0, furyMul: 1, reflect: 0, thorns: 0, reflEl: '', phoenix: 0, phK: null, grab: null, anchor: null, hist: [], histT: 0 },
+        dash: null, leap: null, ride: null, drain: null, beam: { on: false, x: 0, y: 0, z: 0, hit: false }, cone: false, tick: 0, hurtT: 9, dead: 0, touchT: 0, fury: 0, furyMul: 1, reflect: 0, thorns: 0, reflEl: '', phoenix: 0, phK: null, grab: null, anchor: null, hist: [], histT: 0, trigs: [], cnt: {}, mem: null, lsT: 0, lsV: 0, armT: 0, armV: 1, cdrT: 0, cdrV: 1, rrT: 0, rrV: 1 },
       mobs: [], npcs: [], shots: [], zones: [], traps: [], lobs: [], teles: [], boss: null, freeze: 0,
       turrets: city.turrets.map((t, id) => ({ id, x: t.x, z: t.z, r: 1.0, yaw: 0, state: t.arena !== undefined ? 'idle' : 'hostile', idle: t.arena !== undefined, timer: 0, dur: 1, stun: 0, atk: 1 })),
       arenas: city.arenas.map((a) => ({ id: a.id, status: 'sealed', t: 0, wins: 0 })),
       givers: city.givers.map((g) => ({ id: g.id, x: g.x, z: g.z, nome: g.nome, offer: null, cool: 0, n: 0 })),
       patrols: city.patrols.map((p) => ({ x: p.x, z: p.z, t: 0, alive: 0 })),
-      quest: null, done: 0, echo: [], events: [], nextId: 1, flow: new Int16Array(N * N).fill(BIG), flowT: 0,
+      quest: null, done: 0, echo: [], marks: [], timers: [], firing: false, inp: null, events: [], nextId: 1, flow: new Int16Array(N * N).fill(BIG), flowT: 0,
       aim: { kind: '', id: -1, x: 0, z: 0, d: 0 }, gp: { x: 0, z: 0 }, hint: { node: -1, turret: -1, screen: -1, use: null }, act: [0, 0, 0, 0, 0], ready: [true, true, true, true, false],
       stats: { casts: [0, 0, 0, 0, 0], fizz: 0, dmg: 0, taken: 0, kills: 0, deaths: 0, quests: 0, qfail: 0, bossWins: 0, rides: 0, watch: 0 },
     };
@@ -2515,7 +3544,7 @@ const Core = (() => {
     for (const p of s.patrols) spawnPack(s, p.x, p.z, ['sgherro', 'sgherro', 'tiratore'], 'ronda', p);
     return s;
   }
-  function setRecipe(s, recipe) { if (!B.valid(recipe)) return false; s.recipe = recipe; s.kit = buildKit(recipe); const p = s.player; p.cd = [0, 0, 0, 0, 0]; p.beam.on = false; p.cone = false; p.drain = null; dropGrab(s); if (p.anchor) { const z = s.zones.find((o) => o.id === p.anchor.zid); if (z) z.t = z.dur; p.anchor = null; } s.echo.length = 0; return true; }
+  function setRecipe(s, recipe) { if (!B.valid(recipe)) return false; s.recipe = recipe; s.kit = buildKit(recipe); const p = s.player; p.cd = [0, 0, 0, 0, 0]; p.beam.on = false; p.cone = false; p.drain = null; dropGrab(s); if (p.anchor) { const z = s.zones.find((o) => o.id === p.anchor.zid); if (z) z.t = z.dur; p.anchor = null; } s.echo.length = 0; p.trigs.length = 0; p.cnt = {}; s.timers.length = 0; s.marks.length = 0; return true; }
   function dropGrab(s) { const p = s.player; if (!p.grab) return; const e = findMob(s, p.grab.id); if (e) e.held = false; p.grab = null; }
 
   function mkMob(s, kind, x, z, team, extra) {
@@ -2532,7 +3561,7 @@ const Core = (() => {
   }
 
   // ---------- Danni e stati ----------
-  function gainRes(s, n) { const p = s.player; if (p.oc > 0) return; p.res = Math.min(100, p.res + n); }
+  function gainRes(s, n) { const p = s.player; if (p.oc > 0) return; if (p.rrT > 0) n *= p.rrV; p.res = Math.min(100, p.res + n); }
   function gainFame(s, n, why) {
     s.fame += n; const l = B.levelFor(s.fame); s.events.push({ type: 'fame', n, why, fame: s.fame });
     if (l > s.level) { s.level = l; s.events.push({ type: 'level', level: l, budget: B.budgetFor(l) }); }
@@ -2546,6 +3575,7 @@ const Core = (() => {
     if (h.src === 'p') {
       if (p.oc > 0) d *= 1.3;
       if (p.fury > 0) d *= p.furyMul;
+      if (p.lsT > 0 && !h.sub) healPlayer(s, d * p.lsV);
       if (p.veil > 0 && !h.tick) { d *= p.veilBonus; p.veil = 0; s.events.push({ type: 'unveil' }); }
       if (el === 'sangue' && e.hp < e.maxHp * 0.3) d *= 1.35;
     }
@@ -2583,6 +3613,7 @@ const Core = (() => {
       }
       if (mod === 'contagio' && e.hp <= 0 && !e.boss && !e.dead) { s.events.push({ type: 'boom', x: e.x, z: e.z, r: 4, el }); hostiles(s, (o) => { if (o !== e && Math.hypot(o.x - e.x, o.z - e.z) < 4 + o.r) sub(o, 25); }); }
     }
+    if (h.src === 'p' && !h.tick && !h.sub && !h.trig && p.trigs.length) fire(s, 'hit', e.x, e.z, e);
     if (e.hp <= 0) { if (e.boss) bossDown(s, e); else killMob(s, e, h.src); }
     return d;
   }
@@ -2590,6 +3621,8 @@ const Core = (() => {
     if (e.dead) return; e.dead = true;
     s.events.push({ type: 'kill', id: e.id, kind: e.kind, x: e.x, z: e.z, team: e.team, src: src || '' });
     if (e.kind === 'esca') explodeDecoy(s, e);
+    if (e.pd) mobDie(s, e);
+    if (e.team === 'e' && s.player.trigs.length) fire(s, 'kill', e.x, e.z, null);
     if (e.team === 'e' || e.charm > 0) { s.stats.kills++; gainRes(s, MOB[e.kind].heavy ? 10 : 4); if (e.owner && e.owner.alive > 0 && --e.owner.alive === 0) e.owner.t = 70; if (e.tag === 'q' && s.quest) s.quest.left = Math.max(0, (s.quest.left || 0) - 1); }
     if (e.kind === 'anima' && s.quest && s.quest.type === 'scorta') failQuest(s, 'L\'anima non ce l\'ha fatta');
   }
@@ -2600,9 +3633,11 @@ const Core = (() => {
     if (src && src.weakT > 0) dmg *= src.boss ? 0.8 : 0.65;
     if (p.reflect > 0 && src && !src.boss && src.kind && !src.dead) applyHit(s, src, { dmg: dmg * p.thorns, el: p.reflEl, src: 'p', sub: true });
     if (p.oc > 0) dmg *= 0.75;
+    if (p.armT > 0) dmg *= p.armV;
     if (p.shield > 0) { const a = Math.min(p.shield, dmg); p.shield -= a; dmg -= a; s.events.push({ type: 'shieldHit', a }); if (p.shield <= 0) { p.shield = 0; p.shieldT = 0; s.events.push({ type: 'shieldEnd' }); } if (dmg <= 0) return; }
     p.hp -= dmg; p.hurtT = 0; s.stats.taken += dmg;
     s.events.push({ type: 'playerHit', dmg, sx, sz, by: by || '' });
+    if (p.hp > 0 && p.trigs.length) fire(s, 'hurt', sx === undefined ? p.x : sx, sz === undefined ? p.z : sz, src && src.kind ? src : null);
     if (p.hp <= 0 && p.phoenix > 0) { const K = p.phK; p.phoenix = 0; p.hp = p.maxHp * 0.5; p.invuln = 1.5; areaHit(s, p.x, p.z, K.r, { dmg: K.dmg, el: K.el, src: 'p', knock: 14, stun: 1.2, fx: p.x, fz: p.z }); s.events.push({ type: 'boom', x: p.x, z: p.z, r: K.r, el: K.el, self: true, big: true }); s.events.push({ type: 'msg', text: 'La fenice ti rialza' }); return; }
     if (p.hp <= 0) {
       dropGrab(s); p.hp = 0; p.dead = 3; p.beam.on = false; p.cone = false; p.drain = null; s.stats.deaths++;
@@ -2840,6 +3875,7 @@ const Core = (() => {
       return;
     }
     if (p.cd[0] > 0) return;
+    if (K.kind === 'x') { const r = run(s, K.prog, { K, slot: 0, depth: 0 }); p.cd[0] = Math.max(0.08, K.cd) * (oc ? 0.7 : 1); s.stats.casts[0]++; if (typeof r === 'string') s.events.push({ type: 'miss', el: K.el }); else s.events.push({ type: 'cast', slot: 0, kind: 'proj', el: K.el }); return; }
     p.cd[0] = K.cd * (oc ? 0.7 : 1); s.stats.casts[0]++; if (K.m === 'eco' && s.rand() < 0.3) p.cd[0] = 0.07;
     if (K.kind === 'proj') {
       const a = s.aim; let dx = fx, dz = fz; if (a.kind) { dx = (a.x - p.x) / (a.d || 1); dz = (a.z - p.z) / (a.d || 1); }
@@ -2867,6 +3903,7 @@ const Core = (() => {
     const hit = (dmg, o) => Object.assign({ dmg, el: K.el, src: 'p', fx: p.x, fz: p.z }, o);
     const fizz = (why) => { s.stats.fizz++; s.events.push({ type: 'fizzle', slot: i, why }); return false; };
     const ev = (o) => s.events.push(o);
+    if (k === 'x') { const r = run(s, K.prog, { K, slot: i, depth: 0 }); return typeof r === 'string' ? fizz(r) : true; }
     switch (k) {
       // --- mobilita'
       case 'dash': { let dx = fx, dz = fz; const m = Math.hypot(inp.mx, inp.my); if (m > 0.3) { const cy = Math.cos(p.yaw), sy = Math.sin(p.yaw); dx = (cy * inp.mx - sy * inp.my) / m; dz = (-sy * inp.mx - cy * inp.my) / m; } p.dash = { dx, dz, t: 0, T: K.dist > 12.5 ? 0.26 : 0.17, dist: K.dist, hit: new Set(), dmg: K.dmg, el: K.el }; if (K.trail) for (let q = 1; q <= 3; q++) { const x = p.x + dx * K.dist * (q / 3.4), z = p.z + dz * K.dist * (q / 3.4); if (!solidAt(s, x, z)) s.zones.push({ id: s.nextId++, team: 'p', kind: 'dmg', x, z, r: 2.2, t: 0, dur: 4, dps: K.trail, el: K.el, tick: 0.2 * q }); } ev({ type: 'dash', el: K.el }); return true; }
@@ -2966,15 +4003,214 @@ const Core = (() => {
     return false;
   }
 
+  // ---------- Linguaggio dei poteri: esecuzione ----------
+  const SHAPE = { circ: 'circle', cone: 'cone', line: 'line', ring: 'donut', tgt: 'circle', near: 'circle' };
+  const VS = ['burn', 'pois', 'slow', 'stun', 'root', 'mark', 'weak', 'fear', 'chill'], SUMK = ['spirito', 'colosso', 'torretta', 'esca', 'bomba', 'arciere', 'guaritore', 'muro'];
+  const yawAng = (p) => Math.atan2(fwdX(p.yaw), fwdZ(p.yaw));
+  const has = (e, k) => (k === 'burn' ? e.burnT > 0 : k === 'pois' ? e.poisT > 0 : k === 'slow' ? e.slowT > 0 : k === 'stun' ? e.stun > 0 : k === 'root' ? e.root > 0 : k === 'mark' ? e.markT > 0 : k === 'weak' ? e.weakT > 0 : k === 'fear' ? e.fearT > 0 : e.chill > 0);
+  const clearSt = (e, k) => { if (k === 'burn') { e.burnT = 0; e.burn = 0; } else if (k === 'pois') { e.poisT = 0; e.pois = 0; } else if (k === 'slow') { e.slowT = 0; e.slow = 0; } else if (k === 'stun') e.stun = 0; else if (k === 'root') e.root = 0; else if (k === 'mark') e.markT = 0; else if (k === 'weak') e.weakT = 0; else if (k === 'fear') e.fearT = 0; else e.chill = 0; };
+  function aimedAny(s, range) { const a = s.aim; if (!a.kind || a.d > range) return null; return a.kind === 'b' ? s.boss : a.kind === 'e' ? findMob(s, a.id) : null; }
+  function nearestFoe(s, x, z, r, skip) { let best = null, bd = r; hostiles(s, (e) => { if (e === skip || e.dead) return; const d = Math.hypot(e.x - x, e.z - z) - e.r; if (d < bd) { bd = d; best = e; } }); return best; }
+  function place(s, o, ctx, out) {
+    const p = s.player, at = o.at || '';
+    if (at === 'pt' || (!at && ctx.depth > 0 && ctx.x !== undefined)) { out.x = ctx.x; out.z = ctx.z; }
+    else if (at === 'aim') groundPoint(s, o.g || 16, out);
+    else if (at === 'tgt') { const e = ctx.tgt && !ctx.tgt.dead ? ctx.tgt : aimedAny(s, o.g || 26); if (e) { out.x = e.x; out.z = e.z; } else groundPoint(s, o.g || 16, out); }
+    else if (at.slice(0, 3) === 'fwd' || at.slice(0, 4) === 'back') { const b = at[0] === 'b', d = +at.slice(b ? 4 : 3) || 4, fx = fwdX(p.yaw) * (b ? -1 : 1), fz = fwdZ(p.yaw) * (b ? -1 : 1); let k = 0; for (; k < d; k++) if (opaqueAt(s, p.x + fx * (k + 1), p.z + fz * (k + 1))) break; out.x = p.x + fx * Math.min(k, d); out.z = p.z + fz * Math.min(k, d); }
+    else if (at.slice(0, 3) === 'rnd') { const bx = ctx.x !== undefined ? ctx.x : p.x, bz = ctx.x !== undefined ? ctx.z : p.z, a = s.rand() * 6.283, d = Math.sqrt(s.rand()) * (+at.slice(3) || 5); out.x = bx + Math.sin(a) * d; out.z = bz + Math.cos(a) * d; }
+    else { out.x = p.x; out.z = p.z; }
+    return out;
+  }
+  function applySt(s, e, o, pt, K) {
+    if (e.dead) return; const p = s.player, heavy = e.boss || MOB[e.kind].heavy, fixed = e.boss || MOB[e.kind].fixed, m = e.boss ? 1 : MOB[e.kind].mass;
+    if (o.stun && !e.boss) e.stun = Math.max(e.stun, heavy ? o.stun * 0.4 : o.stun);
+    if (o.root) { if (e.boss) { e.slowT = Math.max(e.slowT, o.root); e.slow = Math.max(e.slow, 0.3); } else e.root = Math.max(e.root, o.root); }
+    if (o.slow) { e.slowT = Math.max(e.slowT, o.slow2 || 3); e.slow = Math.max(e.slow, e.boss ? o.slow * 0.5 : o.slow); }
+    if (o.burn) { e.burnT = 3; e.burn = Math.max(e.burn, o.burn); }
+    if (o.pois) { e.pois = Math.min(6, e.pois + o.pois); e.poisT = 5; }
+    if (o.weak) e.weakT = Math.max(e.weakT, o.weak);
+    if (o.fear) { if (heavy) e.weakT = Math.max(e.weakT, o.fear); else e.fearT = Math.max(e.fearT, o.fear); }
+    if (o.mark) { e.markT = Math.max(e.markT, o.mark2 || 6); e.markMul = Math.max(1.05, o.mark); }
+    if (o.chill) { e.chill += o.chill; e.slowT = Math.max(e.slowT, 2); e.slow = Math.max(e.slow, e.boss ? 0.15 : 0.3); if (e.chill >= 4 && !heavy) { e.stun = Math.max(e.stun, 1.5); e.chill = -3; s.events.push({ type: 'freeze', id: e.id, x: e.x, z: e.z }); } }
+    if (o.lift && !heavy && !fixed) { e.stun = Math.max(e.stun, o.lift); e.lift = o.lift; e.liftD = o.lift2 || 15; e.liftEl = K.el; }
+    if (o.poly && !heavy) { e.poly = o.poly; e.fearT = o.poly; e.tg = null; }
+    if (o.charm && !heavy && !fixed && e.team === 'e') { e.charm = o.charm; e.team = 'a'; e.stun = 0; e.tg = null; }
+    if ((o.pull || o.push) && !fixed && !e.held) { const dx = pt.x - e.x, dz = pt.z - e.z, d = Math.hypot(dx, dz) || 1, f = (o.pull || 0) - (o.push || 0); if (d > 0.6 || f < 0) { e.kx += ((dx / d) * f) / m; e.kz += ((dz / d) * f) / m; } }
+    if (o.yank && !fixed && !heavy) e.pull = { x: p.x + fwdX(p.yaw) * (1.6 + e.r), z: p.z + fwdZ(p.yaw) * (1.6 + e.r), t: 0 };
+    if (o.fling && !fixed && !heavy && !e.held) e.thrown = { vx: fwdX(p.yaw) * 26, vz: fwdZ(p.yaw) * 26, t: 0.6, dmg: o.fling, r: 3, el: K.el };
+  }
+  const sub = (ctx, x, z, tgt, ang) => ({ K: ctx.K, slot: ctx.slot, depth: ctx.depth + 1, x, z, tgt, ang });
+  function hitNow(s, o, ctx, T, tg) {
+    const p = s.player, K = ctx.K; let list = [];
+    if (tg) list.push(tg); else if (o.op === 'near') { const e = nearestFoe(s, T.x, T.z, T.r); if (e) list.push(e); } else hostiles(s, (e) => { if (inTele(T, e.x, e.z, e.r)) list.push(e); });
+    if (o.max && list.length > o.max) list = list.sort((a, b) => Math.hypot(a.x - T.x, a.z - T.z) - Math.hypot(b.x - T.x, b.z - T.z)).slice(0, o.max);
+    let tot = 0;
+    for (const e of list) {
+      if (e.dead) continue; let d = o.d || 0;
+      if (o.hpc) d += e.hp * o.hpc * (e.boss ? 0.12 : 1);
+      for (const k of VS) if (o['vs' + k] && has(e, k)) d *= o['vs' + k];
+      if (o.ex && e.hp < e.maxHp * 0.3) d *= o.ex;
+      if (o.far) d *= 1 + Math.min(1, Math.hypot(e.x - p.x, e.z - p.z) / 20) * (o.far - 1);
+      if (o.close) d *= 1 + Math.max(0, 1 - Math.hypot(e.x - p.x, e.z - p.z) / 8) * (o.close - 1);
+      if (d > 0) tot += applyHit(s, e, { dmg: d, el: K.el, src: 'p', knock: o.knock, fx: T.x, fz: T.z, tick: !!o.tk, trig: ctx.depth > 0 }); else e.aggro = Math.max(e.aggro, 8);
+      applySt(s, e, o, T, K);
+      if (o.res) gainRes(s, o.res); if (o.heal) healPlayer(s, o.heal); if (o.sh) { p.shield = Math.min(120, p.shield + o.sh); p.shieldT = Math.max(p.shieldT, 4); } if (o.cdr) for (let c = 1; c < 4; c++) if (p.cd[c] > 0) p.cd[c] -= o.cdr;
+      if (o.swap && e === list[0] && !e.boss && !MOB[e.kind].heavy && !MOB[e.kind].fixed) { const x0 = p.x, z0 = p.z; p.x = e.x; p.z = e.z; e.x = x0; e.z = z0; collide(s, p, p.r); s.events.push({ type: 'blink', x0, z0, x1: p.x, z1: p.z, el: K.el, r: 2 }); }
+      if (o.each && ctx.depth < 3) run(s, o.each, sub(ctx, e.x, e.z, e, T.ang));
+    }
+    if (o.op !== 'tgt' && o.op !== 'near') for (const t of s.turrets) if (t.state === 'hostile' && inTele(T, t.x, t.z, t.r)) t.stun = 2.5;
+    if (o.ls) healPlayer(s, tot * o.ls);
+    s.events.push({ type: 'shape', tk: !!o.tk, shape: T.shape, x: T.x, z: T.z, ang: T.ang, r: tg || o.op === 'near' ? 1.3 : T.r, r0: T.r0, half: T.half, len: T.len, w: T.w, el: K.el, n: list.length });
+    if (list.length && o.then && ctx.depth < 3) run(s, o.then, sub(ctx, T.x, T.z, list[0], T.ang));
+    if (!list.length && o.miss && ctx.depth < 3) run(s, o.miss, sub(ctx, T.x, T.z, null, T.ang));
+    return true;
+  }
+  const hasSt = (o) => !!(o.stun || o.root || o.slow || o.burn || o.pois || o.weak || o.fear || o.mark || o.chill || o.lift || o.poly || o.charm || o.pull || o.push || o.yank || o.fling);
+  const OPS = {
+    hit(s, o, ctx) {
+      const p = s.player, pt = place(s, o, ctx, {}); let tg = null;
+      if (o.op === 'tgt') { tg = ctx.tgt && !ctx.tgt.dead && ctx.depth > 0 ? ctx.tgt : aimedAny(s, o.g || 26); if (!tg) return 'Nessun bersaglio'; ctx.tgt = tg; pt.x = tg.x; pt.z = tg.z; }
+      const ang = ctx.ang !== undefined && (o.at === 'pt' || (!o.at && ctx.depth > 0)) ? ctx.ang : yawAng(p);
+      const T = { shape: SHAPE[o.op], x: pt.x, z: pt.z, ang, r: o.r || (o.op === 'cone' ? 8 : 3), r0: o.i || 0, half: o.h || 0.5, len: o.l || 10, w: o.w || 2, el: ctx.K.el };
+      if (o.op === 'ring' && !o.i) T.r0 = T.r * 0.5;
+      if (o.in && !tg) { if (s.marks.length < 40) s.marks.push(Object.assign({ id: s.nextId++, t: 0, wind: o.in, fr: true, o, ctx: Object.assign({}, ctx, { x: pt.x, z: pt.z, ang }), dmg: 0 }, T)); return true; }
+      return hitNow(s, o, ctx, T, tg);
+    },
+    shot(s, o, ctx) {
+      const p = s.player, K = ctx.K, n = o.n || 1, nested = ctx.depth > 0 && ctx.x !== undefined, fx0 = nested ? ctx.x : p.x, fz0 = nested ? ctx.z : p.z; let dir, hom = '';
+      if (nested) { const e = nearestFoe(s, fx0, fz0, 16, o.skip ? ctx.tgt : null); dir = e ? Math.atan2(e.x - fx0, e.z - fz0) : ctx.ang !== undefined ? ctx.ang : yawAng(p); if (o.hom && e) hom = (e.boss ? 'b' : 'e') + e.id; }
+      else { const a = s.aim; dir = a.kind ? Math.atan2(a.x - p.x, a.z - p.z) : yawAng(p); if (o.hom && a.kind) hom = a.kind + a.id; }
+      const base = o.ringall ? s.rand() * 6.283 : dir, v = o.v || 30;
+      for (let k = 0; k < n && s.shots.length < 220; k++) {
+        const an = o.ringall ? base + (k * 6.283) / n : base + (o.sp || 0) * (k - (n - 1) / 2) + (o.jit ? (s.rand() - 0.5) * 2 * o.jit : 0), off = nested ? 0.3 : 0.8;
+        s.shots.push({ id: s.nextId++, team: 'p', x: fx0 + Math.sin(an) * off, z: fz0 + Math.cos(an) * off, vx: Math.sin(an) * v, vz: Math.cos(an) * v, life: o.t || 26 / v + (o.hom ? 0.5 : 0), dmg: o.d || 0, el: K.el, r: o.wide ? o.r || 1.6 : o.aura ? 0.9 : o.r || 0.45, hom, w: o.wide ? o.r || 1.6 : 0,
+          hitSet: o.pierce || o.wide || o.aura || o.back ? new Set() : null, boom: o.boom || 0, back: o.back ? 1 : 0, bnc: o.bnc || 0, aura: o.aura || 0, at: 0, tr: ctx.depth > 0, px: o.then || o.split || hasSt(o) ? { o, K, depth: ctx.depth, slot: ctx.slot } : null });
+      }
+      return true;
+    },
+    zone(s, o, ctx) {
+      const p = s.player, pt = place(s, o, ctx, {}), K = ctx.K; if (s.zones.length > 44) { const k = s.zones.findIndex((z) => z.team === 'p'); if (k >= 0) s.zones.splice(k, 1); }
+      s.zones.push({ id: s.nextId++, team: 'p', kind: o.dome ? 'slow' : 'dmg', x: pt.x, z: pt.z, r: o.r || 3, t: 0, dur: o.t || 4, dps: o.dps || 0, el: K.el, tick: 0, pull: o.zpull || 0, heal: o.zheal || 0, fury: o.fury || 0, ward: o.ward ? 1 : 0, boom: o.boom || 0,
+        px: { o, K, acc: 0, depth: ctx.depth, slot: ctx.slot, ang: ctx.ang !== undefined ? ctx.ang : yawAng(p) } });
+      if (ctx.depth === 0) s.events.push({ type: 'place', what: 'zone', x: pt.x, z: pt.z, el: K.el }); return true;
+    },
+    sum(s, o, ctx) {
+      const p = s.player, K = ctx.K, kind = SUMK.find((k) => o[k]) || 'spirito', n = o.n || 1, pt = place(s, o, ctx, {}), ang = ctx.ang !== undefined ? ctx.ang : yawAng(p);
+      const mine = s.mobs.filter((e) => e.tag === 'sum' && !e.dead); for (let k = 0; k < mine.length + n - 14; k++) if (mine[k]) mine[k].life = 0.01;
+      for (let k = 0; k < n; k++) {
+        let x, z; if (o.wall) { const off = (k - (n - 1) / 2) * 2.3; x = pt.x + Math.cos(ang) * off; z = pt.z - Math.sin(ang) * off; } else { const a = ang + 2.2 + (k * 6.283) / Math.max(n, 3), R = o.far || (n > 1 || !o.at ? 2.2 : 0); x = pt.x + Math.sin(a) * R; z = pt.z + Math.cos(a) * R; }
+        const q = freeNear(s, x, z, p.x, p.z), e = mkMob(s, kind, q.x, q.z, 'a', { el: K.el, life: o.t || 12, bd: o.d || 0, br: o.r || 4, tag: 'sum' }); if (o.hp) e.hp = e.maxHp = o.hp; e.spawn = 0.25;
+        if (o.die) e.pd = { die: o.die, K, depth: ctx.depth, slot: ctx.slot };
+      }
+      s.events.push({ type: 'summon', el: K.el, n }); return true;
+    },
+    dash(s, o, ctx) {
+      const p = s.player, K = ctx.K; if (p.dash || p.leap || p.ride) return 'Non ora'; let dx = fwdX(p.yaw), dz = fwdZ(p.yaw), dist = o.l || 9;
+      if (o.back) { dx = -dx; dz = -dz; } else if (o.totgt) { const e = aimedAny(s, o.g || 22); if (!e) return 'Nessun bersaglio'; const d = Math.hypot(e.x - p.x, e.z - p.z) || 1; dx = (e.x - p.x) / d; dz = (e.z - p.z) / d; dist = Math.max(0.5, d - e.r - 1.3); ctx.tgt = e; }
+      else if (s.inp && Math.hypot(s.inp.mx, s.inp.my) > 0.3 && !o.fwd) { const m = Math.hypot(s.inp.mx, s.inp.my), cy = Math.cos(p.yaw), sy = Math.sin(p.yaw); dx = (cy * s.inp.mx - sy * s.inp.my) / m; dz = (-sy * s.inp.mx - cy * s.inp.my) / m; }
+      p.dash = { dx, dz, t: 0, T: dist > 12.5 ? 0.26 : 0.17, dist, hit: new Set(), dmg: o.d || 0, el: K.el, then: o.then ? { prog: o.then, ctx: { K, slot: ctx.slot, depth: ctx.depth + 1, tgt: ctx.tgt, ang: Math.atan2(dx, dz) } } : null };
+      if (o.trail) for (let q = 1; q <= 3; q++) { const x = p.x + dx * dist * (q / 3.4), z = p.z + dz * dist * (q / 3.4); if (!solidAt(s, x, z)) s.zones.push({ id: s.nextId++, team: 'p', kind: 'dmg', x, z, r: 2.2, t: 0, dur: 4, dps: o.trail, el: K.el, tick: 0.2 * q }); }
+      s.events.push({ type: 'dash', el: K.el }); return true;
+    },
+    blink(s, o, ctx) {
+      const p = s.player, K = ctx.K, pt = {}, x0 = p.x, z0 = p.z; if (p.ride || p.leap) return 'Non ora';
+      if (o.behind) { const e = aimedAny(s, o.g || 20); if (!e) return 'Nessun bersaglio'; const d = Math.hypot(e.x - p.x, e.z - p.z) || 1; pt.x = e.x + ((e.x - p.x) / d) * (e.r + 1.5); pt.z = e.z + ((e.z - p.z) / d) * (e.r + 1.5); ctx.tgt = e; s.events.push({ type: 'face', x: e.x, z: e.z }); }
+      else place(s, Object.assign({ at: 'aim' }, o), ctx, pt);
+      const q = freeNear(s, pt.x, pt.z, p.x, p.z); if (Math.hypot(q.x - p.x, q.z - p.z) < 1.2 && ctx.depth === 0) return 'Nessun punto libero';
+      p.x = q.x; p.z = q.z; s.events.push({ type: 'blink', x0, z0, x1: p.x, z1: p.z, el: K.el, r: 1.5 });
+      if (o.then) run(s, o.then, sub(ctx, p.x, p.z, ctx.tgt)); if (o.left) run(s, o.left, sub(ctx, x0, z0, ctx.tgt)); return true;
+    },
+    leap(s, o, ctx) {
+      const p = s.player, K = ctx.K, pt = {}; if (p.dash || p.leap || p.ride) return 'Non ora'; place(s, Object.assign({ at: 'aim' }, o), ctx, pt);
+      const q = freeNear(s, pt.x, pt.z, p.x, p.z), d = Math.hypot(q.x - p.x, q.z - p.z); if (d < 2) return 'Nessun punto libero';
+      p.leap = { x0: p.x, z0: p.z, x1: q.x, z1: q.z, t: 0, T: o.fast ? 0.12 + d / 70 : 0.42 + d / 55, h: o.fast ? 0.6 : 2.5 + d * 0.22, dmg: 0, r: 0, el: K.el, then: o.then ? { prog: o.then, ctx: { K, slot: ctx.slot, depth: ctx.depth + 1 } } : null };
+      s.events.push({ type: 'leap', el: K.el }); return true;
+    },
+    buff(s, o, ctx) {
+      const p = s.player, t = o.t || 5, K = ctx.K; let w = 'shield';
+      if (o.haste) { p.haste = t; p.hasteMul = o.haste; w = 'haste'; } if (o.veil) { p.veil = t; p.veilBonus = o.veil === true ? 1.8 : o.veil; for (const e of s.mobs) if (e.team === 'e') e.aggro = 0; w = 'veil'; }
+      if (o.shield) { p.shield = Math.min(300, p.shield + o.shield); p.shieldT = Math.max(p.shieldT, t); } if (o.hot) { p.hot = t; p.hotRate = o.hot / t; w = 'heal'; }
+      if (o.fury) { p.fury = t; p.furyMul = o.fury; w = 'drain'; } if (o.reflect) { p.reflect = t; p.thorns = o.reflect; p.reflEl = K.el; } if (o.invuln) p.invuln = Math.max(p.invuln, t);
+      if (o.orbit) { p.orbit = t; p.orbitK = { dps: o.orbit, r: o.r || 2.8, el: K.el }; w = 'orbit'; }
+      if (o.ls) { p.lsT = t; p.lsV = o.ls; w = 'drain'; } if (o.armor) { p.armT = t; p.armV = o.armor; } if (o.cdr) { p.cdrT = t; p.cdrV = o.cdr; w = 'haste'; } if (o.resrate) { p.rrT = t; p.rrV = o.resrate; }
+      s.events.push({ type: 'buff', what: w, el: K.el }); return true;
+    },
+    trig(s, o, ctx) {
+      const p = s.player, on = ['hit', 'kill', 'hurt', 'cast', 'step', 'dashend'].find((k) => o[k]) || 'hit'; if (!o.do) return true; if (p.trigs.length >= 8) p.trigs.shift();
+      p.trigs.push({ on, t: o.t || 8, n: o.n || 0, icd: o.icd || (on === 'hit' ? 0.25 : 0), cl: 0, ev: o.ev || 1, acc: 0, prog: o.do, K: ctx.K, slot: ctx.slot });
+      s.events.push({ type: 'buff', what: 'orbit', el: ctx.K.el }); return true;
+    },
+    chain(s, o, ctx) {
+      const K = ctx.K; let cur = ctx.tgt && !ctx.tgt.dead ? ctx.tgt : aimedAny(s, o.g || 24); if (!cur) { if (ctx.depth > 0) cur = nearestFoe(s, ctx.x, ctx.z, o.r || 8); if (!cur) return 'Nessun bersaglio'; }
+      const seen = new Set(), pts = []; let d = o.d || 10;
+      for (let k = 0; cur && k < (o.n || 3); k++) { seen.add(cur.id); pts.push({ x: cur.x, z: cur.z, y: cur.boss ? 2.4 : 1.1 }); if (d > 0) applyHit(s, cur, { dmg: d, el: K.el, src: 'p', knock: 1, trig: ctx.depth > 0 }); applySt(s, cur, o, cur, K); d *= o.fall || 0.7; let nx = null, nd = o.r || 7.5; const c0 = cur; hostiles(s, (e) => { if (seen.has(e.id) || e.dead) return; const dd = Math.hypot(e.x - c0.x, e.z - c0.z) - e.r; if (dd < nd) { nd = dd; nx = e; } }); cur = nx; }
+      s.events.push({ type: 'chain', pts, el: K.el, from: ctx.depth > 0 && ctx.x !== undefined ? { x: ctx.x, z: ctx.z } : null }); return true;
+    },
+    pop(s, o, ctx) {
+      const p = s.player, K = ctx.K, k = VS.find((v) => o[v]) || 'mark', list = []; hostiles(s, (e) => { if (has(e, k) && Math.hypot(e.x - p.x, e.z - p.z) < (o.g || 24)) list.push(e); });
+      if (!list.length) return 'Nessun nemico in quello stato';
+      for (const e of list) { clearSt(e, k); s.events.push({ type: 'boom', x: e.x, z: e.z, r: o.r || 3, el: K.el }); areaHit(s, e.x, e.z, o.r || 3, { dmg: o.d || 30, el: K.el, src: 'p', knock: 5, fx: e.x, fz: e.z, trig: ctx.depth > 0 }); applySt(s, e, o, e, K); if (o.then && ctx.depth < 3) run(s, o.then, sub(ctx, e.x, e.z, e)); }
+      return true;
+    },
+    rep(s, o, ctx) { if (!o.do) return true; const n = Math.min(o.n || 3, 16), c = { K: ctx.K, slot: ctx.slot, depth: Math.max(1, ctx.depth), x: ctx.x, z: ctx.z, tgt: ctx.tgt, ang: ctx.ang }; for (let k = 0; k < n; k++) { if (k === 0) run(s, o.do, c); else if (s.timers.length < 80) s.timers.push({ t: k * (o.ev || 0.3), f: () => run(s, o.do, c) }); } return true; },
+    if(s, o, ctx) {
+      const p = s.player; let c = false;
+      if (o.tgt) c = !!aimedAny(s, 30); else if (o.hpb) c = p.hp < (p.maxHp * o.hpb) / 100; else if (o.hpa) c = p.hp >= (p.maxHp * o.hpa) / 100; else if (o.resa) c = p.res >= o.resa; else if (o.near) c = !!nearestFoe(s, p.x, p.z, o.near); else if (o.moving) c = p.moving; else if (o.still) c = !p.moving;
+      else if (o.count) { let n = 0; hostiles(s, (e) => { if (Math.hypot(e.x - p.x, e.z - p.z) < 9) n++; }); c = n >= o.count; } else if (o.shielded) c = p.shield > 0; else if (o.veiled) c = p.veil > 0;
+      else { const k = VS.find((v) => o['has' + v]), e = ctx.tgt && !ctx.tgt.dead ? ctx.tgt : aimedAny(s, 30); c = !!(k && e && has(e, k)); }
+      const pr = c ? o.do : o.else; return pr ? run(s, pr, ctx) : true;
+    },
+    nth(s, o, ctx) { const p = s.player, k = 'c' + ctx.slot; p.cnt[k] = (p.cnt[k] || 0) + 1; const pr = p.cnt[k] % (o.nth || o.n || 3) === 0 ? o.do : o.else; return pr ? run(s, pr, ctx) : true; },
+    heal(s, o) { healPlayer(s, o.v || 20); s.events.push({ type: 'buff', what: 'heal', el: 'luce' }); return true; },
+    res(s, o) { gainRes(s, o.v || 10); return true; },
+    cost(s, o) { const p = s.player; if (p.hp <= (o.v || 10) + 3) return 'Troppa poca vita'; p.hp -= o.v || 10; return true; },
+    cdr(s, o, ctx) { const p = s.player; for (let c = 1; c < 4; c++) if (c !== ctx.slot && p.cd[c] > 0) p.cd[c] = o.all ? 0 : Math.max(0, p.cd[c] - (o.v || 2)); return true; },
+    freeze(s, o) { s.freeze = Math.max(s.freeze, o.t || 2); s.events.push({ type: 'ult', what: 'timestop', el: 'gelo', dur: o.t || 2, quiet: true }); return true; },
+    mem(s, o, ctx) { const p = s.player; p.mem = { x: p.x, z: p.z }; s.events.push({ type: 'place', what: 'anchor', x: p.x, z: p.z, el: ctx.K.el }); return true; },
+    ret(s, o, ctx) { const p = s.player; if (!p.mem) return 'Nessun segno lasciato'; const x0 = p.x, z0 = p.z; p.x = p.mem.x; p.z = p.mem.z; p.mem = null; s.events.push({ type: 'blink', x0, z0, x1: p.x, z1: p.z, el: ctx.K.el, r: 2 }); if (o.then) run(s, o.then, sub(ctx, p.x, p.z)); return true; },
+    aim(s, o, ctx) { const e = aimedAny(s, o.g || 26); if (!e) return 'Nessun bersaglio'; ctx.tgt = e; return true; },
+  };
+  for (const k of ['circ', 'cone', 'line', 'ring', 'tgt', 'near']) OPS[k] = OPS.hit;
+  function run(s, prog, ctx, i0) {
+    if (!prog || ctx.depth > 3) return true;
+    for (let i = i0 || 0; i < prog.length; i++) {
+      const o = prog[i];
+      if (o.op === 'wait') { if (s.timers.length < 80) { const c = Object.assign({}, ctx, { depth: Math.max(1, ctx.depth) }), k = i + 1; s.timers.push({ t: o.t || 0.5, f: () => run(s, prog, c, k) }); } return true; }
+      const f = OPS[o.op]; if (!f) continue; const r = f(s, o, ctx);
+      if (typeof r === 'string') { if (ctx.depth === 0 && i === 0) return r; if (o.op === 'tgt' || o.op === 'aim' || o.op === 'cost') return true; }
+    }
+    return true;
+  }
+  function fire(s, on, x, z, tgt, slot) {
+    const p = s.player; if (s.firing || !p.trigs.length || p.dead > 0) return; s.firing = true;
+    for (const T of p.trigs) { if (T.on !== on || T.cl > 0 || T.t <= 0 || (on === 'cast' && T.slot === slot)) continue; T.cl = T.icd; run(s, T.prog, { K: T.K, slot: T.slot, depth: 1, x, z, tgt, ang: yawAng(p) }); if (T.n && --T.n <= 0) T.t = 0; }
+    s.firing = false;
+  }
+  function shotEnd(s, sh) {
+    const P = sh.px, o = P.o; P.done = true;
+    if (o.then && P.depth < 2) run(s, o.then, { K: P.K, slot: P.slot, depth: P.depth + 1, x: sh.x, z: sh.z, tgt: null, ang: Math.atan2(sh.vx, sh.vz) });
+    if (o.split) { const b = s.rand() * 6.283; for (let k = 0; k < o.split && s.shots.length < 220; k++) { const a = b + (k * 6.283) / o.split; s.shots.push({ id: s.nextId++, team: 'p', x: sh.x, z: sh.z, vx: Math.sin(a) * 20, vz: Math.cos(a) * 20, life: 0.45, dmg: sh.dmg * 0.5, el: sh.el, r: 0.4, hom: '', w: 0, hitSet: null, boom: 0, back: 0, bnc: 0, aura: 0, at: 0, tr: true, px: null }); } }
+  }
+  function zoneFrame(s, z, dt) {
+    const P = z.px, o = P.o, p = s.player;
+    if (o.mv) { z.x += Math.sin(P.ang) * o.mv * dt; z.z += Math.cos(P.ang) * o.mv * dt; if (opaqueAt(s, z.x, z.z) || Math.abs(z.x) > HALF || Math.abs(z.z) > HALF) z.t = z.dur; }
+    if (o.fol) { z.x = p.x; z.z = p.z; } if (o.seek) { const e = nearestFoe(s, z.x, z.z, 20); if (e) { const d = Math.hypot(e.x - z.x, e.z - z.z) || 1; z.x += ((e.x - z.x) / d) * o.seek * dt; z.z += ((e.z - z.z) / d) * o.seek * dt; } }
+    if (o.grow) z.r = Math.min(14, z.r + o.grow * dt);
+    if (o.tick && P.depth < 2) { P.acc += dt; if (P.acc >= (o.ev || 1)) { P.acc = 0; run(s, o.tick, { K: P.K, slot: P.slot, depth: P.depth + 1, x: z.x, z: z.z, tgt: null, ang: P.ang }); } }
+  }
+  function zoneTick(s, z) { const o = z.px.o; if (hasSt(o)) hostiles(s, (e) => { if (Math.hypot(e.x - z.x, e.z - z.z) < z.r + e.r) applySt(s, e, o, z, z.px.K); }); if (o.inv && Math.hypot(s.player.x - z.x, s.player.z - z.z) < z.r) s.player.veil = Math.max(s.player.veil, 0.6); if (o.armor && Math.hypot(s.player.x - z.x, s.player.z - z.z) < z.r) { s.player.armT = 0.6; s.player.armV = o.armor; } }
+  function zoneEnd(s, z) { const P = z.px; if (P.done) return; P.done = true; if (P.o.end && P.depth < 2) run(s, P.o.end, { K: P.K, slot: P.slot, depth: P.depth + 1, x: z.x, z: z.z, tgt: null, ang: P.ang }); }
+  function mobDie(s, e) { const P = e.pd; if (!P || P.done) return; P.done = true; if (P.depth < 2) run(s, P.die, { K: P.K, slot: P.slot, depth: P.depth + 1, x: e.x, z: e.z, tgt: null, ang: 0 }); }
+
   // ---------- Passo ----------
   function step(s, dt, inp) {
-    s.t += dt; const p = s.player, oc = p.oc > 0;
+    s.t += dt; const p = s.player, oc = p.oc > 0; s.inp = inp;
     p.yaw = inp.yaw; p.pitch = inp.pitch || 0;
-    const cdr = dt * (oc ? 2 : 1); for (let i = 0; i < 5; i++) if (p.cd[i] > 0) p.cd[i] -= i === 0 ? dt : cdr;
+    const cdr = dt * (oc ? 2 : 1) * (p.cdrT > 0 ? p.cdrV : 1); for (let i = 0; i < 5; i++) if (p.cd[i] > 0) p.cd[i] -= i === 0 ? dt : cdr;
     if (s.freeze > 0) { s.freeze -= dt; if (s.freeze <= 0) { s.freeze = 0; s.events.push({ type: 'timeEnd' }); } }
     if (p.dead > 0) {
       p.dead -= dt;
-      if (p.dead <= 0) { p.dead = 0; p.x = s.city.spawn.x; p.z = s.city.spawn.z; p.hp = p.maxHp; p.invuln = 2; p.res = Math.floor(p.res * 0.5); p.haste = p.veil = p.shield = p.hot = p.oc = p.eclipse = p.orbit = p.fury = p.reflect = p.phoenix = 0; p.hist.length = 0; s.echo.length = 0; p.dash = p.leap = p.ride = null; p.cam.x = p.x; p.cam.y = EYE; p.cam.z = p.z; s.events.push({ type: 'respawn' }); }
+      if (p.dead <= 0) { p.dead = 0; p.x = s.city.spawn.x; p.z = s.city.spawn.z; p.hp = p.maxHp; p.invuln = 2; p.res = Math.floor(p.res * 0.5); p.haste = p.veil = p.shield = p.hot = p.oc = p.eclipse = p.orbit = p.fury = p.reflect = p.phoenix = 0; p.hist.length = 0; s.echo.length = 0; p.trigs.length = 0; s.timers.length = 0; s.marks.length = 0; p.lsT = p.armT = p.cdrT = p.rrT = 0; p.dash = p.leap = p.ride = null; p.cam.x = p.x; p.cam.y = EYE; p.cam.z = p.z; s.events.push({ type: 'respawn' }); }
     }
     const dead = p.dead > 0;
     s.flowT -= dt; if (s.flowT <= 0) { s.flowT = 0.3; updateFlow(s); }
@@ -2987,6 +4223,7 @@ const Core = (() => {
     if (p.hot > 0) { p.hot -= dt; healPlayer(s, p.hotRate * dt); }
     if (p.oc > 0) { p.oc -= dt; if (p.oc <= 0) { p.oc = 0; s.events.push({ type: 'ultEnd', what: 'oc' }); } }
     p.hurtT += dt; if (p.hurtT > 6 && !dead) healPlayer(s, 3 * dt);
+    if (p.lsT > 0) p.lsT -= dt; if (p.armT > 0) p.armT -= dt; if (p.cdrT > 0) p.cdrT -= dt; if (p.rrT > 0) p.rrT -= dt;
     if (p.fury > 0) p.fury -= dt; if (p.reflect > 0) p.reflect -= dt; if (p.phoenix > 0) p.phoenix -= dt;
     p.histT -= dt; if (p.histT <= 0 && !dead && !p.ride) { p.histT = 0.25; p.hist.push({ x: p.x, z: p.z, hp: p.hp }); if (p.hist.length > 12) p.hist.shift(); }
     if (!dead) {
@@ -2994,13 +4231,13 @@ const Core = (() => {
       else if (p.leap) {
         const L = p.leap; L.t += dt; const k = Math.min(1, L.t / L.T);
         p.x = L.x0 + (L.x1 - L.x0) * k; p.z = L.z0 + (L.z1 - L.z0) * k; p.cam.x = p.x; p.cam.z = p.z; p.cam.y = EYE + L.h * 4 * k * (1 - k);
-        if (k >= 1 && !L.r) { p.leap = null; collide(s, p, p.r); p.cam.y = EYE; } else if (k >= 1) { p.leap = null; collide(s, p, p.r); p.cam.y = EYE; areaHit(s, p.x, p.z, L.r, { dmg: L.dmg, el: L.el, src: 'p', knock: 9, stun: 0.6, fx: p.x, fz: p.z }); s.events.push({ type: 'boom', x: p.x, z: p.z, r: L.r, el: L.el, self: true, land: true }); }
+        if (k >= 1 && !L.r) { p.leap = null; collide(s, p, p.r); p.cam.y = EYE; if (L.then) run(s, L.then.prog, Object.assign({ x: p.x, z: p.z }, L.then.ctx)); } else if (k >= 1) { p.leap = null; collide(s, p, p.r); p.cam.y = EYE; areaHit(s, p.x, p.z, L.r, { dmg: L.dmg, el: L.el, src: 'p', knock: 9, stun: 0.6, fx: p.x, fz: p.z }); s.events.push({ type: 'boom', x: p.x, z: p.z, r: L.r, el: L.el, self: true, land: true }); }
       } else {
         if (p.dash) {
           const D = p.dash; D.t += dt; const stepLen = (D.dist / D.T) * dt, n = Math.max(1, Math.ceil(stepLen / 0.5));
           for (let k = 0; k < n; k++) { p.x += (D.dx * stepLen) / n; p.z += (D.dz * stepLen) / n; collide(s, p, p.r); }
           if (D.dmg > 0) hostiles(s, (e) => { if (!D.hit.has(e.id) && Math.hypot(e.x - p.x, e.z - p.z) < e.r + 1.5) { D.hit.add(e.id); applyHit(s, e, { dmg: D.dmg, el: D.el, src: 'p', knock: 3, fx: p.x - D.dx, fz: p.z - D.dz }); } });
-          if (D.t >= D.T) p.dash = null; p.moving = true;
+          if (D.t >= D.T) { p.dash = null; if (D.then) run(s, D.then.prog, Object.assign({ x: p.x, z: p.z }, D.then.ctx)); fire(s, 'dashend', p.x, p.z, null); } p.moving = true;
         } else {
           let sx = inp.mx, fy = inp.my; const m = Math.hypot(sx, fy); if (m > 1) { sx /= m; fy /= m; }
           p.moving = m > 0.1;
@@ -3016,6 +4253,9 @@ const Core = (() => {
       if (!e || e.dead || dead || p.ride) { if (e) e.held = false; p.grab = null; p.cd[Gb.slot] = Gb.k.cd; }
       else { e.x = p.x + fwdX(p.yaw) * 3.3; e.z = p.z + fwdZ(p.yaw) * 3.3; e.fx = -fwdX(p.yaw); e.fz = -fwdZ(p.yaw); e.stun = Math.max(e.stun, 0.3); if (Gb.t <= 0) { e.held = false; e.thrown = { vx: fwdX(p.yaw) * 28, vz: fwdZ(p.yaw) * 28, t: 0.75, dmg: Gb.k.dmg, r: Gb.k.r, el: Gb.k.el }; p.grab = null; p.cd[Gb.slot] = Gb.k.cd; s.events.push({ type: 'release', slot: Gb.slot, what: 'grab' }); } }
     }
+    if (p.trigs.length) { for (const T of p.trigs) { T.t -= dt; T.cl -= dt; if (T.on === 'step' && T.t > 0 && !dead) { T.acc += dt; if (T.acc >= T.ev) { T.acc = 0; run(s, T.prog, { K: T.K, slot: T.slot, depth: 1, x: p.x, z: p.z, tgt: null, ang: yawAng(p) }); } } } if (p.trigs.some((T) => T.t <= 0)) p.trigs = p.trigs.filter((T) => T.t > 0); }
+    if (s.timers.length) { if (dead) s.timers.length = 0; else { const due = []; for (const T of s.timers) { T.t -= dt; if (T.t <= 0) due.push(T); } if (due.length) { s.timers = s.timers.filter((T) => T.t > 0); for (const T of due) T.f(); } } }
+    if (s.marks.length) { for (const M of s.marks) { M.t += dt; if (M.t >= M.wind) { M.done = true; if (!dead) hitNow(s, M.o, M.ctx, M, null); } } s.marks = s.marks.filter((M) => !M.done); }
     if (s.echo.length) { for (const E of s.echo) { E.t -= dt; if (E.t <= 0 && free && !p.dash) { E.done = true; if (s.kit[E.i] && s.kit[E.i].m === 'eco') { cast(s, E.i, inp); s.events.push({ type: 'cast', slot: E.i, kind: s.kit[E.i].kind, el: s.kit[E.i].el }); } } else if (E.t < -2) E.done = true; } s.echo = s.echo.filter((E) => !E.done); }
 
     // Mira assistita e suggerimenti di contesto
@@ -3047,7 +4287,7 @@ const Core = (() => {
         if (!inp.b[i] || p.dash) continue; const K = s.kit[i], toggle = K.kind === 'charm' || K.kind === 'possess' || K.kind === 'grab' || K.kind === 'anchor';
         if (i === 4 && p.res < 100) { s.events.push({ type: 'fizzle', slot: 4, why: 'Risonanza non ancora piena' }); continue; }
         if (p.cd[i] > 0 && !toggle) continue;
-        if (cast(s, i, inp)) { p.cd[i] = K.cd; s.stats.casts[i]++; if (i === 4) { p.res = 0; if (GENU[K.kind]) s.events.push({ type: 'ult', what: 'gen', nome: K.nome, el: K.el }); } if (K.m === 'eco' && !NOECHO[K.kind]) s.echo.push({ i, t: 0.8 }); s.events.push({ type: 'cast', slot: i, kind: K.kind, el: K.el }); audience(s); }
+        if (cast(s, i, inp)) { p.cd[i] = K.cd; s.stats.casts[i]++; if (i === 4) { p.res = 0; if (GENU[K.kind]) s.events.push({ type: 'ult', what: 'gen', nome: K.nome, el: K.el }); } if (K.m === 'eco' && !NOECHO[K.kind]) s.echo.push({ i, t: 0.8 }); if (p.trigs.length) fire(s, 'cast', p.x, p.z, null, i); s.events.push({ type: 'cast', slot: i, kind: K.kind, el: K.el }); audience(s); }
         if (p.ride || p.leap) break;
       }
       if (!p.ride && !p.leap && !p.dash) primary(s, dt, inp.fire); else { p.beam.on = false; p.cone = false; }
@@ -3083,11 +4323,11 @@ const Core = (() => {
         if (sh.bnc > 0 && Math.abs(sh.x) < HALF && Math.abs(sh.z) < HALF) { const ox = sh.x - sh.vx * dt, oz = sh.z - sh.vz * dt; if (!opaqueAt(s, sh.x, oz)) sh.vz = -sh.vz; else if (!opaqueAt(s, ox, sh.z)) sh.vx = -sh.vx; else { sh.vx = -sh.vx; sh.vz = -sh.vz; } sh.x = ox; sh.z = oz; sh.bnc--; s.events.push({ type: 'ring', x: ox, z: oz, r: 0.5, c: sh.el }); continue; }
         sh.life = 0; continue;
       }
-      if (sh.aura) { sh.at -= dt; if (sh.at <= 0) { sh.at = 0.2; areaHit(s, sh.x, sh.z, sh.aura, { dmg: sh.dmg, el: sh.el, src: 'p', tick: true, fx: sh.x, fz: sh.z }); } continue; }
+      if (sh.aura) { sh.at -= dt; if (sh.at <= 0) { sh.at = 0.2; areaHit(s, sh.x, sh.z, sh.aura, { dmg: sh.dmg, el: sh.el, src: 'p', tick: true, fx: sh.x, fz: sh.z }); if (sh.px && hasSt(sh.px.o)) hostiles(s, (e) => { if (Math.hypot(e.x - sh.x, e.z - sh.z) < sh.aura + e.r) applySt(s, e, sh.px.o, sh, sh.px.K); }); } continue; }
       if (sh.team === 'e') { let stop = false; for (const z of s.zones) if (z.ward && Math.hypot(z.x - sh.x, z.z - sh.z) < z.r) { stop = true; break; } if (stop) { sh.life = 0; continue; } }
       if (sh.team !== 'e') {
         const src = sh.team === 'p' ? 'p' : 'ally'; let stop = false;
-        hostiles(s, (e) => { if (stop || (sh.hitSet && sh.hitSet.has(e.id))) return; if (Math.hypot(e.x - sh.x, e.z - sh.z) < e.r + sh.r) { applyHit(s, e, { dmg: sh.dmg, el: sh.el, src, knock: 1.5, fx: sh.x - sh.vx, fz: sh.z - sh.vz }); if (sh.hitSet) sh.hitSet.add(e.id); else stop = true; } });
+        hostiles(s, (e) => { if (stop || (sh.hitSet && sh.hitSet.has(e.id))) return; if (Math.hypot(e.x - sh.x, e.z - sh.z) < e.r + sh.r) { if (sh.dmg > 0) applyHit(s, e, { dmg: sh.dmg, el: sh.el, src, knock: 1.5, fx: sh.x - sh.vx, fz: sh.z - sh.vz, trig: !!sh.tr }); if (sh.px) applySt(s, e, sh.px.o, sh, sh.px.K); if (sh.hitSet) sh.hitSet.add(e.id); else stop = true; } });
         if (!stop && sh.team === 'p') for (const t of s.turrets) if (t.state === 'hostile' && Math.hypot(t.x - sh.x, t.z - sh.z) < t.r + sh.r) { t.stun = 2.5; if (!sh.hitSet) stop = true; }
         if (stop) sh.life = 0;
       } else {
@@ -3098,13 +4338,14 @@ const Core = (() => {
     }
     for (const sh of s.shots) if (sh.life <= 0) {
       if (sh.back) { const dx = p.x - sh.x, dz = p.z - sh.z, d = Math.hypot(dx, dz) || 1, sp = Math.hypot(sh.vx, sh.vz); sh.back = 0; sh.vx = (dx / d) * sp; sh.vz = (dz / d) * sp; sh.life = Math.min(1.2, d / sp); sh.hitSet = new Set(); if (opaqueAt(s, sh.x, sh.z)) { sh.x -= (dx / d) * -1; sh.z -= (dz / d) * -1; } }
-      else if (sh.boom) { areaHit(s, sh.x, sh.z, sh.boom, { dmg: sh.dmg * 0.7, el: sh.el, src: 'p', knock: 6, fx: sh.x, fz: sh.z }); s.events.push({ type: 'boom', x: sh.x, z: sh.z, r: sh.boom, el: sh.el }); sh.boom = 0; }
+      else if (sh.boom) { areaHit(s, sh.x, sh.z, sh.boom, { dmg: sh.dmg * 0.7, el: sh.el, src: 'p', knock: 6, fx: sh.x, fz: sh.z, trig: !!sh.tr }); s.events.push({ type: 'boom', x: sh.x, z: sh.z, r: sh.boom, el: sh.el }); sh.boom = 0; }
+      if (sh.life <= 0 && sh.px && !sh.px.done) shotEnd(s, sh);
     }
     if (s.shots.some((sh) => sh.life <= 0)) s.shots = s.shots.filter((sh) => sh.life > 0 || (s.events.push({ type: 'shotEnd', id: sh.id, x: sh.x, z: sh.z, team: sh.team, el: sh.el, w: sh.w }), false));
     // Zone, trappole, colpi in arrivo
     for (const z of s.zones) {
       if (z.team === 'e' && s.freeze > 0) continue;
-      z.t += dt; z.tick -= dt; if (z.tick > 0) continue; z.tick = 0.4;
+      z.t += dt; if (z.px) zoneFrame(s, z, dt); z.tick -= dt; if (z.tick > 0) continue; z.tick = 0.4; if (z.px) zoneTick(s, z);
       if (z.team === 'p' && (z.pull || z.heal || z.fury)) {
         if (z.pull) hostiles(s, (e) => { const dx = z.x - e.x, dz = z.z - e.z, d = Math.hypot(dx, dz); if (d < z.r + e.r && d > 0.8 && !e.boss && !MOB[e.kind].fixed && !e.held) { e.kx += ((dx / d) * 13 * z.pull) / MOB[e.kind].mass; e.kz += ((dz / d) * 13 * z.pull) / MOB[e.kind].mass; e.slowT = 0.6; e.slow = Math.max(e.slow, 0.7); } });
         const inside = free && Math.hypot(p.x - z.x, p.z - z.z) < z.r;
@@ -3115,6 +4356,7 @@ const Core = (() => {
       if (z.team === 'p') { if (z.kind === 'slow') hostiles(s, (e) => { if (Math.hypot(e.x - z.x, e.z - z.z) < z.r + e.r) { e.slowT = 0.6; e.slow = Math.max(e.slow, e.boss ? 0.35 : 0.8); } }); else areaHit(s, z.x, z.z, z.r, { dmg: z.dps * 0.4, el: z.el, src: 'p', tick: true, fx: z.x, fz: z.z }); }
       else if (free && Math.hypot(p.x - z.x, p.z - z.z) < z.r) damagePlayer(s, z.dps * 0.4, z.x, z.z, null, 'pozza');
     }
+    for (const z of s.zones) if (z.t >= z.dur && z.px) zoneEnd(s, z);
     for (const z of s.zones) if (z.t >= z.dur && z.boom) { areaHit(s, z.x, z.z, z.r, { dmg: z.boom, el: z.el, src: 'p', knock: 14, stun: 1, hard: true, fx: z.x, fz: z.z }); s.events.push({ type: 'boom', x: z.x, z: z.z, r: z.r, el: z.el, big: true }); z.boom = 0; }
     if (s.zones.some((z) => z.t >= z.dur)) s.zones = s.zones.filter((z) => z.t < z.dur);
     for (const t of s.traps) {
@@ -3134,7 +4376,7 @@ const Core = (() => {
       if (k === 'charm') { for (const e of s.mobs) if (e.charm > act[i]) act[i] = e.charm; if (!act[i] && s.npcs.some((c) => c.st === 'follow' && c.charm)) act[i] = 1; }
       else if (k === 'possess') { for (const t of s.turrets) if (t.state === 'owned' && t.timer > act[i]) act[i] = t.timer; }
       else if (k === 'haste') act[i] = p.haste; else if (k === 'veil') act[i] = p.veil; else if (k === 'shield') act[i] = p.shieldT; else if (k === 'heal') act[i] = p.hot; else if (k === 'orbit') act[i] = p.orbit;
-      else if (k === 'drain') act[i] = p.drain ? p.drain.t : 0; else if (k === 'oc') act[i] = p.oc; else if (k === 'eclipse') act[i] = p.eclipse; else if (k === 'timestop') act[i] = s.freeze; else if (k === 'cable') act[i] = p.ride ? 1 : 0; else if (k === 'grab') act[i] = p.grab ? p.grab.t : 0; else if (k === 'anchor') act[i] = p.anchor ? 1 : 0; else if (k === 'reflect') act[i] = p.reflect; else if (k === 'rage' || k === 'sacr') act[i] = p.fury; else if (k === 'phoenix') act[i] = p.phoenix;
+      else if (k === 'drain') act[i] = p.drain ? p.drain.t : 0; else if (k === 'oc') act[i] = p.oc; else if (k === 'eclipse') act[i] = p.eclipse; else if (k === 'timestop') act[i] = s.freeze; else if (k === 'cable') act[i] = p.ride ? 1 : 0; else if (k === 'grab') act[i] = p.grab ? p.grab.t : 0; else if (k === 'anchor') act[i] = p.anchor ? 1 : 0; else if (k === 'reflect') act[i] = p.reflect; else if (k === 'rage' || k === 'sacr') act[i] = p.fury; else if (k === 'phoenix') act[i] = p.phoenix; else if (k === 'x') { for (const T of p.trigs) if (T.slot === i && T.t > act[i]) act[i] = T.t; }
       s.ready[i] = p.cd[i] <= 0 && (i < 4 || p.res >= 100);
     }
   }
@@ -3147,7 +4389,7 @@ const Core = (() => {
       const def = MOB[e.kind], hostile = e.team === 'e';
       if (hostile && s.freeze > 0) continue;
       if (e.spawn > 0) { e.spawn -= dt; continue; }
-      if (e.life > 0) { e.life -= dt; if (e.life <= 0) { e.dead = true; if (e.kind === 'esca') explodeDecoy(s, e); s.events.push({ type: 'vanish', id: e.id, x: e.x, z: e.z }); continue; } }
+      if (e.life > 0) { e.life -= dt; if (e.life <= 0) { e.dead = true; if (e.kind === 'esca') explodeDecoy(s, e); if (e.pd) mobDie(s, e); s.events.push({ type: 'vanish', id: e.id, x: e.x, z: e.z }); continue; } }
       tickStatus(s, e, dt); if (e.dead) continue;
       if (e.held) { e.moving = false; continue; }
       if (e.thrown) {
@@ -3213,13 +4455,14 @@ const Core = (() => {
         else if (tg === p && flowDir(s, e, dir)) { e.x += dir.x * sp; e.z += dir.z * sp; e.fx = dir.x; e.fz = dir.z; e.moving = true; }
         else { e.x += dx * sp; e.z += dz * sp; e.moving = true; }
       } else { // alleati: ipnotizzati, spiriti, colosso
+        if (def.healer) { e.tt = 1; e.tg = null; if (Math.hypot(p.x - e.x, p.z - e.z) < 8) healPlayer(s, (e.bd || 4) * dt); }
         e.tt -= dt;
         if (e.tt <= 0) { e.tt = 0.3; let tg = null, td = 32; hostiles(s, (o) => { const d = Math.hypot(o.x - e.x, o.z - e.z) - o.r; if (d < td) { td = d; tg = o; } }); e.tg = tg; }
         const tg = e.tg && !e.tg.dead && (!e.tg.boss || s.boss === e.tg) && e.tg.team === 'e' ? e.tg : null;
         if (tg) {
           let dx = tg.x - e.x, dz = tg.z - e.z; const d = Math.hypot(dx, dz) || 1; dx /= d; dz /= d; e.fx = dx; e.fz = dz;
           if (d > def.reach + tg.r) { if (e.root <= 0) { e.x += dx * sp * 1.2; e.z += dz * sp * 1.2; e.moving = true; } }
-          else if (e.atk <= 0) { e.atk = def.atkCd * 0.8; s.events.push({ type: 'mobAtk', id: e.id, heavy: !!def.heavy }); const dm = e.bd || def.dmg * 1.7; if (e.kind === 'colosso') { hostiles(s, (o) => { if (Math.hypot(o.x - e.x, o.z - e.z) < def.reach + o.r + 0.5) applyHit(s, o, { dmg: dm, el: e.el, src: 'ally', knock: 6, fx: e.x, fz: e.z }); }); s.events.push({ type: 'ring', x: e.x, z: e.z, r: def.reach + 1, c: e.el }); } else applyHit(s, tg, { dmg: dm, el: e.el, src: 'ally', knock: 3, fx: e.x, fz: e.z }); }
+          else if (e.atk <= 0) { e.atk = def.atkCd * 0.8; s.events.push({ type: 'mobAtk', id: e.id, heavy: !!def.heavy }); const dm = e.bd || def.dmg * 1.7; if (e.kind === 'bomba') { s.events.push({ type: 'boom', x: e.x, z: e.z, r: 3.5, el: e.el }); areaHit(s, e.x, e.z, 3.5, { dmg: dm, el: e.el, src: 'ally', knock: 6, fx: e.x, fz: e.z }); killMob(s, e, ''); } else if (def.shooter) { s.shots.push({ id: s.nextId++, team: 'a', x: e.x + dx, z: e.z + dz, vx: dx * 34, vz: dz * 34, life: 0.6, dmg: dm, el: e.el, r: 0.4, hom: '', w: 0, hitSet: null }); } else if (e.kind === 'colosso') { hostiles(s, (o) => { if (Math.hypot(o.x - e.x, o.z - e.z) < def.reach + o.r + 0.5) applyHit(s, o, { dmg: dm, el: e.el, src: 'ally', knock: 6, fx: e.x, fz: e.z }); }); s.events.push({ type: 'ring', x: e.x, z: e.z, r: def.reach + 1, c: e.el }); } else applyHit(s, tg, { dmg: dm, el: e.el, src: 'ally', knock: 3, fx: e.x, fz: e.z }); }
         } else { const dx = p.x - e.x, dz = p.z - e.z, d = Math.hypot(dx, dz) || 1; e.fx = dx / d; e.fz = dz / d; if (d > 4.5) { if (los(s, e.x, e.z, p.x, p.z) || !flowDir(s, e, dir)) { e.x += (dx / d) * sp; e.z += (dz / d) * sp; } else { e.x += dir.x * sp; e.z += dir.z * sp; } e.moving = true; } if (d > 60 && e.life > 0) { e.x = p.x - fwdX(p.yaw) * 2; e.z = p.z - fwdZ(p.yaw) * 2; } }
       }
       e.wasMoving = e.moving; collide(s, e, e.r);
@@ -3269,7 +4512,7 @@ const Core = (() => {
     }
   }
 
-  return { CELL, N, HALF, EYE, NODE_H, SAG, MOB, PSPEED, QINFO, create, step, setRecipe, cellOf, cellCenter, solidAt, opaqueAt, los, cablePoint, inTele, groundPoint, wakeBoss, bossCast, acceptQuest, pathCells, mkMob };
+  return { CELL, N, HALF, EYE, NODE_H, SAG, MOB, PSPEED, QINFO, create, step, setRecipe, cellOf, cellCenter, solidAt, opaqueAt, los, cablePoint, inTele, groundPoint, wakeBoss, bossCast, acceptQuest, pathCells, mkMob, run };
 })();
 
 // MOTORE - costruzione della citta' a partire dalla mappa generata. Tutto da codice: geometrie, texture, insegne.
@@ -3684,7 +4927,7 @@ G.buildFx = function (s) {
   const elc = (el) => { if (el && el.indexOf('+') > 0) el = el.slice(0, el.indexOf('+')); return EL[el] ? EL[el].c : 0xff5a22; };
   const glowSprite = (c, o) => new THREE.Sprite(new THREE.SpriteMaterial({ map: G.glowTex, color: c, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: o === undefined ? 1 : o }));
   G.shadowMat = new THREE.MeshBasicMaterial({ map: G.glowTex, color: 0x000000, transparent: true, opacity: 0.55, depthWrite: false });
-  const HOVER = { sgherro: 1.35, tiratore: 2.7, bruto: 2.5, spirito: 1.3, colosso: 2.1, esca: 0.1, torretta: 0, anima: 0.15 };
+  const HOVER = { muro: 1.35, sgherro: 1.35, tiratore: 2.7, bruto: 2.5, spirito: 1.3, colosso: 2.1, esca: 0.1, torretta: 0, anima: 0.15 };
   const KCOL = { sgherro: 0xff5a22, tiratore: 0xffb23a, bruto: 0xff7a20 };
   const CHARM = 0xff3fd0;
 
@@ -3708,6 +4951,7 @@ G.buildFx = function (s) {
 
   // ---------- Creature ----------
   function mobModel(kind, el) {
+    kind = { arciere: 'tiratore', bomba: 'spirito', guaritore: 'anima' }[kind] || kind;
     const root = new THREE.Group(), g = new THREE.Group(); root.add(g);
     const ec = el ? elc(el) : KCOL[kind] || 0xffffff;
     const metal = std(kind === 'tiratore' ? 0x2c2340 : kind === 'colosso' ? 0x3a3640 : 0x2a2024, 0.65, 0.4), bone = std(kind === 'anima' ? 0xd8d0c0 : 0xb8a68c, 0.1, 0.75), eye = bas(ec);
@@ -3736,6 +4980,7 @@ G.buildFx = function (s) {
       for (const sd of [-1, 1]) { mk(g, GEO.box, metal, sd * 0.5, -1.5, 0, 0.7, 1.1, 0.8); mk(g, GEO.box, bone, sd * 1.0, 1.05, 0, 0.5, 0.3, 1.0); }
       v.h = 2.0;
     } else if (kind === 'esca') { const holo = add(ec, 0.55); v.mats.push(holo); robe(g, holo, holo, 1.15); v.h = 1.8; }
+    else if (kind === 'muro') { mk(g, GEO.box, metal, 0, 0, 0, 2.2, 2.7, 0.8); mk(g, GEO.box, eye, 0, 0.9, 0, 2.25, 0.1, 0.84); mk(g, GEO.box, eye, 0, -0.9, 0, 2.25, 0.1, 0.84); for (const sd of [-1, 1]) mk(g, GEO.box, bone, sd * 0.7, 0, 0, 0.12, 2.5, 0.86); v.h = 1.5; }
     else if (kind === 'torretta') {
       for (let k = 0; k < 3; k++) { const a = (k / 3) * Math.PI * 2; mk(root, GEO.box, metal, Math.cos(a) * 0.5, 0.35, Math.sin(a) * 0.5, 0.12, 0.8, 0.12).rotation.set(Math.sin(a) * 0.5, 0, -Math.cos(a) * 0.5); }
       g.position.y = 0.95; mk(g, GEO.box, metal, 0, 0, 0, 0.55, 0.4, 0.6); mk(g, GEO.cyl, metal, 0, 0, 0.5, 0.08, 0.7, 0.08).rotation.x = Math.PI / 2; mk(g, GEO.box, eye, 0, 0.23, 0, 0.3, 0.06, 0.3); mk(g, GEO.cyl, eye, 0, 0, 0.86, 0.06, 0.03, 0.06).rotation.x = Math.PI / 2; v.h = 1.3;
@@ -3765,8 +5010,8 @@ G.buildFx = function (s) {
       seen.add(e.id);
       const v = views.get(e.id) || (views.set(e.id, mobModel(e.kind, e.team === 'a' && e.charm <= 0 ? e.el || 'luce' : '')), views.get(e.id));
       v.t += dt;
-      const k = e.kind, heavy = k === 'bruto' || k === 'colosso', hov = HOVER[k], sp = e.spawn > 0 ? Math.max(0, 1 - e.spawn / 0.5) : 1, frozen = e.stun > 0.6 && e.chill < 0;
-      const bob = k === 'torretta' ? 0 : Math.sin(v.t * (heavy ? 1.6 : 3.2)) * (heavy ? 0.12 : k === 'esca' || k === 'anima' ? 0.06 : 0.18) * (frozen || s.freeze > 0 && e.team === 'e' ? 0 : 1);
+      const k = v.kind, heavy = k === 'bruto' || k === 'colosso', hov = HOVER[k], sp = e.spawn > 0 ? Math.max(0, 1 - e.spawn / 0.5) : 1, frozen = e.stun > 0.6 && e.chill < 0;
+      const bob = k === 'torretta' || k === 'muro' ? 0 : Math.sin(v.t * (heavy ? 1.6 : 3.2)) * (heavy ? 0.12 : k === 'esca' || k === 'anima' ? 0.06 : 0.18) * (frozen || s.freeze > 0 && e.team === 'e' ? 0 : 1);
       v.root.position.set(e.x, 0, e.z); v.root.visible = Math.abs(e.x - s.player.x) < 95 && Math.abs(e.z - s.player.z) < 95;
       if (k !== 'torretta') { v.lift = (v.lift || 0) + (((e.held || e.lift > 0 ? 1.6 : e.thrown ? 0.6 : 0) - (v.lift || 0)) * Math.min(1, dt * 8)); v.g.position.y = hov * sp + bob - (1 - sp) * 1.5 + v.lift; v.g.scale.setScalar((0.2 + 0.8 * sp) * (e.poly > 0 ? 0.42 : 1)); }
       const ty = Math.atan2(e.fx, e.fz); let dy = ty - v.g.rotation.y; while (dy > Math.PI) dy -= Math.PI * 2; while (dy < -Math.PI) dy += Math.PI * 2;
@@ -3945,7 +5190,7 @@ G.buildFx = function (s) {
   const teleViews = new Map(), WARN = 0xff2a14;
   function teleView(tl) {
     const grp = new THREE.Group(); grp.position.set(tl.x, 0.07, tl.z); grp.rotation.y = tl.ang;
-    const mb = add(WARN, 0.3), mf = add(0xff5a2a, 0.55), mr = add(0xffe0d0, 0.95); let base, fill; const own = [], rims = [];
+    const fc = tl.fr ? elc(tl.el) : 0, mb = add(tl.fr ? fc : WARN, 0.3), mf = add(tl.fr ? fc : 0xff5a2a, tl.fr ? 0.3 : 0.55), mr = add(tl.fr ? fc : 0xffe0d0, 0.95); let base, fill; const own = [], rims = [];
     const rim = (g, sx, sy, sz, ry, x, z) => { const m = new THREE.Mesh(g, mr); m.scale.set(sx, sy, sz); m.rotation.y = ry || 0; m.position.set(x || 0, 0.03, z || 0); rims.push(m); };
     if (tl.shape === 'circle') { base = new THREE.Mesh(discGeo, mb); fill = new THREE.Mesh(discGeo, mf); base.scale.setScalar(tl.r); rim(rimGeo, tl.r, 1, tl.r); }
     else if (tl.shape === 'line') { base = new THREE.Mesh(lineGeo, mb); fill = new THREE.Mesh(lineGeo, mf); base.scale.set(tl.w, 1, tl.len); rim(lineGeo, 0.14, 1, tl.len, 0, -tl.w / 2, 0); rim(lineGeo, 0.14, 1, tl.len, 0, tl.w / 2, 0); rim(lineGeo, tl.w, 1, 0.14, 0, 0, tl.len); }
@@ -3956,10 +5201,10 @@ G.buildFx = function (s) {
   }
   G.syncTeles = function (s, t) {
     const seen = new Set();
-    for (const tl of s.teles) {
+    for (const tl of s.marks.length ? s.teles.concat(s.marks) : s.teles) {
       seen.add(tl.id); const v = teleViews.get(tl.id) || (teleViews.set(tl.id, teleView(tl)), teleViews.get(tl.id)), k = Math.min(1, tl.t / tl.wind), late = k > 0.75;
       if (tl.shape === 'circle') v.fill.scale.setScalar(Math.max(0.01, tl.r * k)); else if (tl.shape === 'line') v.fill.scale.set(tl.w, 1, Math.max(0.01, tl.len * k)); else if (tl.shape === 'cone') v.fill.scale.setScalar(Math.max(0.01, tl.r * k)); else v.mats[1].opacity = 0.1 + 0.55 * k;
-      v.mats[0].opacity = 0.3 + (late ? 0.2 * (0.5 + 0.5 * Math.sin(t * 34)) : 0); v.mats[2].opacity = late ? 0.6 + 0.4 * Math.sin(t * 34) : 0.95;
+      v.mats[0].opacity = (0.3 + (late ? 0.2 * (0.5 + 0.5 * Math.sin(t * 34)) : 0)) * (tl.fr ? 0.5 : 1); v.mats[2].opacity = late ? 0.6 + 0.4 * Math.sin(t * 34) : 0.95;
     }
     for (const [id, v] of teleViews) if (!seen.has(id)) { scene.remove(v.grp); for (const g of v.own) g.dispose(); for (const m of v.mats) m.dispose(); teleViews.delete(id); }
   };
@@ -4170,14 +5415,25 @@ G.initForge = function () {
     h += '<div class="sec">Elemento</div><div class="els">' + Object.keys(EL).map((k) => '<div class="eld' + (b.el === k ? ' on' : '') + '" data-el="' + k + '" style="--c:' + EL[k].css + '"></div>').join('') + '</div>';
     h += '<div id="fElTxt" style="--c:' + EL[b.el].css + '"><b>' + EL[b.el].nome.toUpperCase() + '</b> · ' + EL[b.el].fx + ' <button class="chip" type="button" data-allel="1" style="margin-left:6px">a tutti</button></div>';
     h += '<div class="sec">Innesto (1 punto): cambia come si comporta il potere</div><div class="row">' + '<button class="chip' + (!b.m ? ' mon' : '') + '" type="button" data-mod="">Nessuno</button>' + B.MODS.map((m) => '<button class="chip' + (b.m === m ? ' mon' : '') + '" type="button" data-mod="' + m + '">' + B.MOD[m].nome + '</button>').join('') + '</div><div id="fElTxt" style="margin-top:5px">' + (b.m ? '<b style="color:var(--gd)">' + B.MOD[b.m].nome.toUpperCase() + '</b> · ' + B.MOD[b.m].desc : 'Nessun innesto su questo potere.') + '</div>';
-    h += '<div class="sec">Meccaniche (' + B.LIST.filter((x) => x.slot === a.slot).length + ')</div>';
-    for (const x of B.LIST) { if (x.slot !== a.slot) continue; h += '<div class="arch' + (x.id === b.id ? ' on' : '') + (used.has(x.id) ? ' used' : '') + '" data-arch="' + x.id + '"><div class="ic">' + G.svg(x.ic) + '</div><div><b>' + x.nome + '</b><span>' + x.desc + '</span></div><div class="co">' + x.cost[0] + '-' + x.cost[2] + 'p</div></div>'; }
-    $('fPick').innerHTML = h;
+    const tot = B.LIST.filter((x) => x.slot === a.slot).length;
+    h += '<div class="sec">Meccaniche di questo tipo: ' + tot + '</div><input id="fFind" type="text" placeholder="Cerca (es: muro, veleno, scatto, evoca)" autocomplete="off" autocapitalize="off" spellcheck="false" value="' + esc(find) + '"><div id="fList"></div>';
+    $('fPick').innerHTML = h; renderList(); $('fFind').addEventListener('input', () => { find = $('fFind').value; renderList(); });
+  }
+  let find = '';
+  const norm = (t) => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  function renderList() {
+    const b = draft.slots[sel], a = B.ARCH[b.id], used = new Set(draft.slots.filter((x, i) => i !== sel).map((x) => x.id)), words = norm(find).split(/\s+/).filter(Boolean);
+    let h = '', n = 0, more = 0; const row = (x) => '<div class="arch' + (x.id === b.id ? ' on' : '') + (used.has(x.id) ? ' used' : '') + '" data-arch="' + x.id + '"><div class="ic">' + G.svg(x.ic) + '</div><div><b>' + esc(x.nome) + '</b><span>' + esc(x.desc) + '</span></div><div class="co">' + x.cost[0] + '-' + x.cost[2] + 'p</div></div>';
+    if (!words.length) h += row(a);
+    for (const x of B.LIST) { if (x.slot !== a.slot || (!words.length && x.id === a.id)) continue; if (words.length) { const t = norm(x.nome + ' ' + x.desc); if (!words.every((w) => t.includes(w))) continue; } if (n >= 70) { more++; continue; } h += row(x); n++; }
+    if (!n && words.length) h = '<div id="fElTxt">Nessuna meccanica con queste parole.</div>'; else if (more) h += '<div id="fElTxt">Altre ' + more + ': scrivi una parola per restringere.</div>';
+    $('fList').innerHTML = h;
+
   }
   const near = (t, attr) => (t && t.closest ? t.closest('[' + attr + ']') : null);
   $('forge').addEventListener('click', (e) => {
     const t = e.target; let n;
-    if ((n = near(t, 'data-slot'))) { sel = +n.dataset.slot; msg(''); render(); $('fPick').scrollTop = 0; }
+    if ((n = near(t, 'data-slot'))) { sel = +n.dataset.slot; find = ''; msg(''); render(); $('fPick').scrollTop = 0; }
     else if ((n = near(t, 'data-tier'))) { draft.slots[sel].t = +n.dataset.tier; render(); }
     else if ((n = near(t, 'data-mod'))) { if (n.dataset.mod) draft.slots[sel].m = n.dataset.mod; else delete draft.slots[sel].m; render(); }
     else if ((n = near(t, 'data-allel'))) { const el = draft.slots[sel].el; for (const b of draft.slots) b.el = el; render(); }
@@ -4197,7 +5453,7 @@ G.initForge = function () {
   $('fSave').addEventListener('click', () => { if (B.cost(draft) > budget) return msg('Troppi punti: abbassa un grado'); const list = (G.store.saved = G.store.saved || []), c = copy(draft); c.nome = (c.nome || '').trim() || 'Senza nome'; const i = list.findIndex((p) => p.nome === c.nome); if (i >= 0) list[i] = c; else { list.unshift(c); if (list.length > 12) list.pop(); } G.save(); msg('Salvato'); render(); });
   $('fUse').addEventListener('click', () => { if (B.cost(draft) > budget) return msg('Troppi punti: abbassa un grado o cambia mattoncino'); const c = copy(draft); c.nome = (c.nome || '').trim() || 'Senza nome'; $('forge').classList.add('hidden'); if (onUse) onUse(c); });
   $('fCancel').addEventListener('click', () => { $('forge').classList.add('hidden'); if (onClose) onClose(); });
-  G.forge = { open(recipe, level, use, close) { draft = copy(recipe); budget = B.budgetFor(level); sel = 0; onUse = use; onClose = close; $('fName').value = draft.nome; $('fDesc').value = draft.desc || ''; msg(B.cost(draft) > budget ? 'Troppi punti: abbassa un grado' : 'Fama livello ' + level + ': ' + budget + ' punti. ' + B.LIST.length + ' meccaniche per ' + (B.MODS.length + 1) + ' innesti: ' + B.LIST.length * (B.MODS.length + 1) + ' mattoncini, ognuno in 8 elementi'); render(); $('forge').classList.remove('hidden'); }, isOpen: () => !$('forge').classList.contains('hidden') };
+  G.forge = { open(recipe, level, use, close) { draft = copy(recipe); budget = B.budgetFor(level); sel = 0; onUse = use; onClose = close; $('fName').value = draft.nome; $('fDesc').value = draft.desc || ''; msg(B.cost(draft) > budget ? 'Troppi punti: abbassa un grado' : 'Fama livello ' + level + ': ' + budget + ' punti. ' + B.LIST.length + ' meccaniche scritte a mano, ' + B.MODS.length + ' innesti, 8 elementi'); render(); $('forge').classList.remove('hidden'); }, isOpen: () => !$('forge').classList.contains('hidden') };
 };
 
 // MOTORE - lato schermo: resa, comandi, interfaccia, suoni, ciclo principale.
@@ -4369,7 +5625,7 @@ G.start = function () {
     mg.fillStyle = '#fff'; mg.beginPath(); mg.moveTo(px + fx * 6, pz + fz * 6); mg.lineTo(px - fz * 3.2 - fx * 3, pz + fx * 3.2 - fz * 3); mg.lineTo(px + fz * 3.2 - fx * 3, pz - fx * 3.2 - fz * 3); mg.fill();
   }
   function setupButtons() {
-    s.kit.forEach((K, i) => { const b = BT[i]; b.style.setProperty('--c', css(K.el)); b.querySelector('.svg').outerHTML = '<span class="svg" style="display:contents">' + G.svg(K.ic) + '</span>'; b.querySelector('.nm').textContent = K.nome.split(' ')[0]; b.dataset.nm = K.nome.split(' ')[0]; });
+    s.kit.forEach((K, i) => { const b = BT[i]; K.gnd = K.kind === 'x' && /@aim|leap|blink g/.test(B.ARCH[K.id].src); b.style.setProperty('--c', css(K.el)); b.querySelector('.svg').outerHTML = '<span class="svg" style="display:contents">' + G.svg(K.ic) + '</span>'; b.querySelector('.nm').textContent = K.nome.split(' ')[0]; b.dataset.nm = K.nome.split(' ')[0]; });
     document.documentElement.style.setProperty('--el', css(s.kit[0].el)); G.hands.col = ec(s.kit[0].el);
     $('resTxt').textContent = s.kit[4].nome.toUpperCase();
   }
@@ -4406,7 +5662,7 @@ G.start = function () {
           break;
         }
         case 'chain': {
-          G.handWorld(hw, cam); let px = hw.x, py = hw.y, pz = hw.z; const c = ec(ev.el), j = jagOf(ev.el);
+          G.handWorld(hw, cam); let px = ev.from ? ev.from.x : hw.x, py = ev.from ? 1.2 : hw.y, pz = ev.from ? ev.from.z : hw.z; const c = ec(ev.el), j = jagOf(ev.el);
           ev.pts.forEach((pt, k) => { G.bolt(px, py, pz, pt.x, pt.y, pt.z, k ? 0.1 : 0.16, 0.14, c, j); if (!k) G.bolt(px, py, pz, pt.x, pt.y, pt.z, 0.07, 0.1, ec2(ev.el), j); G.flash(pt.x, pt.y, pt.z, c, 1.2, 3.2, 0.16); G.burst(pt.x, pt.y, pt.z, 5, ec2(ev.el), 5, 1.5, 0.3, 0.07, 0.6); px = pt.x; py = pt.y; pz = pt.z; });
           tone('zap', 'sawtooth', p.oc > 0 ? 1300 : 980, 180, 0.09, 0.07, 50); boom(0.07, 0.12, 5200, true); break;
         }
@@ -4466,6 +5722,7 @@ G.start = function () {
         case 'possess': { const tu = s.turrets[ev.id]; G.handWorld(hw, cam); G.bolt(hw.x - 0.3, hw.y, hw.z, tu.x, 1.7, tu.z, 0.14, 0.3, ec(ev.el), 0.5); G.flash(tu.x, 1.7, tu.z, ec(ev.el), 2, 7, 0.4); G.ring(tu.x, 0.1, tu.z, 0.5, 4, 0.5, ec(ev.el)); tone('pos', 'square', 300, 1200, 0.2, 0.1); tone('pos2', 'square', 600, 1800, 0.25, 0.06); break; }
         case 'marked': G.targetPos(ev.boss ? 'b' : 'e', ev.id, ev.x, ev.z, ep); G.flash(ep.x, ep.y, ep.z, ec(ev.el), 4, 0.8, 0.35); G.ring(ev.x, 0.1, ev.z, 3.5, 0.8, 0.35, ec(ev.el)); tone('mk', 'square', 1200, 600, 0.1, 0.08); break;
         case 'ult': {
+          if (ev.quiet) break;
           const nm = { oc: 'SOVRACCARICO', cata: 'CATACLISMA', storm: 'PIOGGIA', domin: 'DOMINIO', timestop: 'TEMPO FERMO', giant: 'COLOSSO', eclipse: 'ECLISSI', rage: 'IRA', judge: 'GIUDIZIO', phoenix: 'FENICE' }[ev.what] || (ev.nome || '').toUpperCase(), bn = bel(ev.el), md = ev.el !== bn ? ' · ' + B.MOD[ev.el.slice(bn.length + 1)].nome : '';
           banner(nm, EL[bn].nome + md, 'cy'); document.documentElement.style.setProperty('--el', css(ev.el)); boom(1.0, 0.8, 1600); tone('oc', 'sawtooth', 110, 880, 0.7, 0.2); flashSky = 1; shake = Math.max(shake, 0.7); pulse('flashfx'); G.sky.material.uniforms.fc.value.set(((ec(ev.el) >> 16) & 255) / 255, ((ec(ev.el) >> 8) & 255) / 255, (ec(ev.el) & 255) / 255);
           break;
@@ -4496,6 +5753,17 @@ G.start = function () {
           G.ring(ev.x, 0.1, ev.z, 1, 26, 1.2, 0xffd24a); hitStop = 0.12; flashSky = 1; setTimeout(() => banner(ev.nome.toUpperCase() + ' ABBATTUTO', 'il sigillo riposa', 'gd'), 900); chime(523, 784); setTimeout(() => chime(1046, 1568), 400); break;
         }
         case 'bossReset': toast(ev.why + ': il boss torna a dormire'); break;
+        case 'shape': {
+          if (ev.tk) { const now = performance.now(), key = 'tk' + ev.shape; if (lastS[key] && now - lastS[key] < 70) break; lastS[key] = now; G.handWorld(hw, cam); const c = Math.random() < 0.6 ? ec(ev.el) : ec2(ev.el), sx = Math.sin(ev.ang), sz = Math.cos(ev.ang);
+            if (ev.shape === 'cone') G.spray(hw.x, hw.y, hw.z, sx, Math.sin(pitch), sz, 6, c, ev.r / 0.42, ev.half * 1.5, 0.42, 0.13, 0.03);
+            else if (ev.shape === 'line') G.bolt(hw.x, hw.y, hw.z, ev.x + sx * ev.len, 1.2, ev.z + sz * ev.len, 0.18, 0.09, ec(ev.el), jagOf(ev.el));
+            else if (ev.shape === 'donut') G.ring(ev.x, 0.1, ev.z, ev.r0, ev.r, 0.25, c); else if (ev.r > 1.5) G.ring(ev.x, 0.1, ev.z, ev.r * 0.4, ev.r, 0.22, c); else { G.bolt(hw.x, hw.y, hw.z, ev.x, 1.3, ev.z, 0.14, 0.09, ec(ev.el), jagOf(ev.el)); G.flash(ev.x, 1.3, ev.z, c, 0.6, 1.8, 0.1); }
+            tone('tkb', 'sawtooth', 400, 360, 0.08, 0.03, 90); break; }
+          G.teleFlash(ev); const d = Math.hypot(ev.x - p.x, ev.z - p.z), size = ev.shape === 'line' ? ev.len * 0.4 : ev.r, vol = Math.min(0.6, 0.12 + size * 0.03) * Math.max(0.3, 1 - d / 40);
+          if (ev.shape === 'circle' && ev.r <= 1.5) { G.handWorld(hw, cam); G.bolt(hw.x, hw.y, hw.z, ev.x, 1.3, ev.z, 0.15, 0.13, ec(ev.el), jagOf(ev.el)); G.flash(ev.x, 1.3, ev.z, ec(ev.el), 1, 3.4, 0.18); tone('tg', 'square', 620, 180, 0.09, 0.07, 40); }
+          else { boom(0.2 + size * 0.03, vol, 1500, false, 40); if (ev.n && d < 20) shake = Math.max(shake, Math.min(0.5, size * 0.04)); }
+          break;
+        }
         case 'face': yaw = Math.atan2(-(ev.x - p.x), -(ev.z - p.z)); pitch = -0.05; break;
         case 'arc': G.bolt(ev.x0, 1.3, ev.z0, ev.x1, 1.3, ev.z1, 0.12, 0.16, ec(ev.el), jagOf(ev.el)); G.flash(ev.x1, 1.3, ev.z1, ec(ev.el), 0.8, 2.4, 0.15); break;
         case 'uncharm': break;
@@ -4537,7 +5805,7 @@ G.start = function () {
     if (running && p.cone) { h.hold = 1; G.handWorld(hw, cam); const cp = Math.cos(pitch); G.spray(hw.x, hw.y, hw.z, -Math.sin(yaw) * cp, Math.sin(pitch), -Math.cos(yaw) * cp, 5, Math.random() < 0.6 ? ec(K0.el) : ec2(K0.el), K0.range / 0.42, K0.half * 1.5, 0.42, 0.13, bel(K0.el) === 'fuoco' ? -0.15 : 0.05); boom(0.1, 0.07, 1800, true, 70); }
     if (running && p.drain) { drainT -= dt; if (drainT <= 0) { drainT = 0.06; G.handWorld(hw, cam); G.bolt(p.drain.x || p.x, p.drain.y || 1.2, p.drain.z || p.z, hw.x - 0.3, hw.y, hw.z, 0.14, 0.1, ec(p.drain.k.el), 0.6); } }
     if (running && p.grab) { drainT -= dt; if (drainT <= 0) { drainT = 0.05; const e = s.mobs.find((o) => o.id === p.grab.id); if (e) { G.handWorld(hw, cam); G.targetPos('e', e.id, e.x, e.z, ep); G.bolt(hw.x - 0.3, hw.y, hw.z, ep.x, ep.y, ep.z, 0.2, 0.09, ec(p.grab.k.el), 0.5); } } }
-    let gk = null; for (let i = 0; i < 5; i++) if (GROUND[s.kit[i].kind] && (i === 0 || s.ready[i])) { gk = s.kit[i]; break; }
+    let gk = null; for (let i = 0; i < 5; i++) if ((GROUND[s.kit[i].kind] || s.kit[i].gnd) && (i === 0 || s.ready[i])) { gk = s.kit[i]; break; }
     G.syncReticle(s, running && !!gk && !riding && !dead && !p.leap, gk ? ec(gk.el) : 0xffffff, gk && gk.r ? Math.min(3, gk.r * 0.5) : 1.2);
     G.updateFx(dt, t, cam.position); flushDmg(dt);
     h.visible += ((riding || dead || !running || p.leap ? 0 : 1) - h.visible) * Math.min(1, dt * 12); h.glow = ocK;
