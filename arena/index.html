@@ -29,6 +29,10 @@
   #castfx { background: radial-gradient(circle at center, transparent 25%, var(--el) 130%); } #castfx.go { animation: fade .8s ease-out; }
   #ocfx { box-shadow: inset 0 0 70px 14px var(--el); }
   #shieldfx { box-shadow: inset 0 0 0 5px rgba(200,235,255,.8), inset 0 0 50px 8px rgba(160,215,255,.45); }
+  #furyfx { background: radial-gradient(ellipse at center, rgba(255,40,20,0) 45%, rgba(255,40,10,.42) 100%); }
+  #hastefx { background: repeating-conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,0) 0deg 5deg, rgba(200,240,255,.13) 5.4deg 6deg); -webkit-mask-image: radial-gradient(ellipse at center, transparent 42%, #000 100%); mask-image: radial-gradient(ellipse at center, transparent 42%, #000 100%); }
+  #reflfx { box-shadow: inset 0 0 0 3px rgba(255,220,120,.85), inset 0 0 60px 4px rgba(255,200,80,.35); }
+  #xh.hit { border-color: #fff; width: 32px; height: 32px; margin: -16px 0 0 -16px; box-shadow: 0 0 10px #fff; }
   #veilfx { background: radial-gradient(ellipse at center, rgba(40,10,70,.05) 35%, rgba(30,6,60,.8) 100%); }
   #downfx { background: radial-gradient(ellipse at center, rgba(60,0,0,.6), rgba(10,0,0,.95)); transition: opacity .4s; }
   #timefx { background: repeating-radial-gradient(circle at center, rgba(200,220,255,0) 0 38px, rgba(200,220,255,.08) 38px 40px); }
@@ -161,7 +165,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="ride" class="fx"></div><div id="ocfx" class="fx"></div><div id="veilfx" class="fx"></div><div id="timefx" class="fx"></div><div id="shieldfx" class="fx"></div><div id="castfx" class="fx"></div><div id="flashfx" class="fx"></div><div id="vig" class="fx"></div><div id="downfx" class="fx"></div>
+<div id="ride" class="fx"></div><div id="ocfx" class="fx"></div><div id="veilfx" class="fx"></div><div id="timefx" class="fx"></div><div id="shieldfx" class="fx"></div><div id="furyfx" class="fx"></div><div id="hastefx" class="fx"></div><div id="reflfx" class="fx"></div><div id="castfx" class="fx"></div><div id="flashfx" class="fx"></div><div id="vig" class="fx"></div><div id="downfx" class="fx"></div>
 <div id="nums"></div>
 <div id="banner"></div><div id="toast"></div>
 <div id="joy"><div id="knob"></div></div>
@@ -195,7 +199,7 @@
 <div id="home" class="overlay">
   <div class="card">
     <h1>DITE</h1>
-    <div class="sub">MOTORE DI MATTONCINI · VERSIONE 3.0</div>
+    <div class="sub">MOTORE DI MATTONCINI · VERSIONE 3.1</div>
     <div id="rot">GIRA IL TELEFONO IN ORIZZONTALE</div>
     <div class="cols">
       <div>
@@ -214,6 +218,19 @@
   </div>
 </div>
 
+<div id="tips" class="overlay hidden">
+  <div class="card" style="max-width:520px">
+    <h2>COME SI GIOCA</h2>
+    <div style="font-size:14px;line-height:1.55;text-align:left;opacity:.92">
+      <p><b>Meta sinistra dello schermo</b>: ti muovi. <b>Meta destra</b>: giri lo sguardo.</p>
+      <p><b>Tasto grande</b>: il potere principale, tienilo premuto. Trascinando il dito mentre lo tieni, miri.</p>
+      <p><b>Tasti piccoli</b>: movimento, due abilita e la suprema, che si carica colpendo.</p>
+      <p>Chi ha un <b>!</b> sopra la testa offre una missione. I tre <b>sigilli</b> sulla mappa svegliano i boss: i loro colpi si vedono a terra prima di arrivare, spostati.</p>
+      <p>In <b>officina</b> cambi i cinque mattoncini del personaggio quando vuoi.</p>
+    </div>
+    <div class="row"><button class="go-btn" id="tipsOk" type="button">HO CAPITO</button></div>
+  </div>
+</div>
 <div id="menu" class="overlay hidden">
   <div class="card" style="max-width:460px">
     <h2>PAUSA</h2>
@@ -223,6 +240,8 @@
       <button class="btn2" id="menuForge" type="button">Officina: cambia personaggio</button>
       <button class="btn2" id="menuHome" type="button">Torna all'inizio (cambia citta)</button>
       <button class="btn2" id="menuMute" type="button">Audio si</button>
+      <button class="btn2" id="menuTips" type="button">Come si gioca</button>
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;opacity:.85;padding:6px 4px">Sensibilita visuale <input id="sens" type="range" min="40" max="220" step="5" style="flex:1"> <b id="sensV" style="min-width:44px;text-align:right"></b></label>
     </div>
   </div>
 </div>
@@ -2173,7 +2192,10 @@ const Bricks = (() => {
   const SLOTS = ['P', 'M', 'S', 'S', 'U'], SLOT_NAME = { P: 'Primario', M: 'Mobilita', S: 'Abilita', U: 'Suprema' };
   const val = (v, t) => (Array.isArray(v) ? v[t - 1] : v);
   // parametri effettivi di un mattoncino al suo grado
-  function params(b) { const a = ARCH[b.id], o = { cd: val(a.cd, b.t) }; for (const k in a.p) o[k] = val(a.p[k], b.t); if (a.prog) o.prog = tierOf(a.prog, b.t); return o; }
+  const BAL = {}, DK = { d: 1, dps: 1, boom: 1, fling: 1, orbit: 1 }, DK0 = { dmg: 1, dps: 1, boom: 1, trail: 1 };
+  const scaleProg = (v, f) => (Array.isArray(v) ? v.map((x) => scaleProg(x, f)) : v && typeof v === 'object' ? Object.keys(v).reduce((o, k) => { o[k] = DK[k] && typeof v[k] === 'number' ? Math.round(v[k] * f * 100) / 100 : scaleProg(v[k], f); return o; }, {}) : v);
+  function balance(map) { for (const k in map) BAL[k] = map[k]; }
+  function params(b, raw) { const a = ARCH[b.id], o = { cd: val(a.cd, b.t) }, f = raw ? 1 : BAL[b.id] || 1; for (const k in a.p) { o[k] = val(a.p[k], b.t); if (f !== 1 && DK0[k] && typeof o[k] === 'number') o[k] *= f; } if (a.prog) { o.prog = tierOf(a.prog, b.t); if (f !== 1) o.prog = scaleProg(o.prog, f); } return o; }
   const cost = (r) => r.slots.reduce((s, b) => s + ARCH[b.id].cost[b.t - 1] + (b.m ? 1 : 0), 0);
   const budgetFor = (level) => Math.min(24, 12 + 2 * level);
   const FAME_STEPS = [0, 25, 60, 110, 170, 240, 320];
@@ -2278,7 +2300,7 @@ const Bricks = (() => {
       fasi: [{ fino: 0.6, seq: ['picchiata', 'pozze', 'coda', 'picchiata'], pausa: 1.4 }, { fino: 0.3, seq: ['picchiata', 'spirale', 'pozze', 'coda'], pausa: 1.1 }, { fino: 0, seq: ['picchiata', 'pioggia', 'spirale', 'pozze', 'picchiata'], pausa: 0.8 }] },
   };
 
-  return { ELEM, ARCH, MOD, MODS, load, parseProg, errors, LIST: A, SLOTS, SLOT_NAME, PRESETS, ATK, BOSSES, FAME_STEPS, params, cost, budgetFor, levelFor, fit, upgrade, fromText, randomRecipe, valid };
+  return { ELEM, ARCH, MOD, MODS, load, balance, BAL, parseProg, errors, LIST: A, SLOTS, SLOT_NAME, PRESETS, ATK, BOSSES, FAME_STEPS, params, cost, budgetFor, levelFor, fit, upgrade, fromText, randomRecipe, valid };
 })();
 
 Bricks.load(String.raw`
@@ -3265,6 +3287,9 @@ U|Eclissi di sangue|c|1|Per otto secondi un'aura ti segue: ruba vita a tutti e t
 U|Ultima parola|c|1|Un colpo che ignora tutto sul bersaglio; se muore, esplode e la Risonanza torna a meta.|tgt d220/275/330 then(trig kill t.5 n1 do(circ r9 d100/125/150; res v50))
 `);
 
+// Generato da tbal.js: correzioni di danno misurate dai bot. Non si scrive a mano.
+Bricks.balance({"raggio":1.37,"artigli":0.82,"mortaio":0.78,"scatto":0.52,"condotto":0.3,"velo":3,"nova":0.69,"zona":0.64,"trappola":0.37,"catene":2.73,"presa":2.53,"spinta":1.29,"evoca":0.68,"esca":1.19,"marchio":0.71,"orbite":0.4,"fulmine":0.52,"risucchio":2.15,"torretta":1.19,"sovraccarico":1.24,"pioggia":1.37,"colosso":0.68,"eclissi":1.26,"pompa":0.83,"mitraglia":1.27,"razzo":0.62,"rimbalzo":1.46,"globo":1.48,"martello":0.59,"lancia":2.2,"passo":1.34,"scia":0.39,"carica":0.73,"ritirata":0.68,"ancora":1.13,"tentacolo":1.51,"scambio":2.13,"pozzo":1.81,"stendardo":2.16,"sisma":0.83,"meteora":0.48,"levita":2.1,"specchio":3,"gemello":0.82,"schiera":1.66,"esercito":0.49,"meteorite":0.62,"ira":1.44,"turbine":0.43,"spillo":1.14,"chiodo_rovente":1.45,"dardo_gelido":1.42,"spina_tossica":1.12,"dardo_fiacco":1.44,"segnatore":1.74,"bolas":2.11,"zavorra":1.69,"colpo_di_maglio_a_distanza":1.84,"arpione_corto":2.18,"doppietta":1.19,"stormo":1.2,"cerca_calore":1.69,"grandine":2,"palla_da_biliardo":1.86,"granata_a_mano":0.74,"granata_a_grappolo":0.58,"seme_esplosivo":0.6,"lancia_mine":0.79,"sfera_gravitazionale":1.23,"sfera_di_brina":1.28,"falce_lunare":1.2,"onda_fredda":1.34,"colpo_a_catena":1.14,"proiettile_ombra":1.31,"dardo_vampiro":1.98,"colpo_risonante":2.41,"spara_chiodi":1.24,"sputo_acido":2.18,"scintilla_nervosa":1.94,"freccia_tripla_in_fila":1.35,"colpo_e_contraccolpo":1.36,"lanciadardi_a_corona":1.96,"stella_rotante":1.86,"colpo_ad_arco_lento":0.68,"bengala":2.88,"globo_instabile":1.64,"lama_boomerang_doppia":0.78,"colpo_perforante_marchiante":2.1,"proiettile_che_spaventa":3,"rotaia":1.15,"taglio_largo":0.59,"morso":0.87,"artiglio_avvelenato":0.64,"lama_ardente":0.87,"lama_di_ghiaccio":0.86,"mazzata_stordente":0.74,"colpo_esecutore":0.88,"colpo_ravvicinato":0.6,"tiro_lungo":1.28,"frustata_che_avvicina":1.56,"dito_puntato":1.3,"dito_che_brucia":2.3,"tocco_che_consuma":2.42,"sguardo_che_pesa":2.76,"auto_mira":2.25,"scossa_di_prossimita":2.25,"arco_voltaico":1.31,"arco_gelido":1.92,"contagio_di_fiamme":2.28,"colpo_tellurico":0.76,"geyser":1.72,"fendente_che_risuona":1.12,"lama_che_protegge":1.16,"lama_frenetica":1.12,"colpo_di_scudo":1.83,"lama_e_pistola":0.78,"fucile_a_baionetta":0.89,"mano_tesa":1.51,"furia_del_ferito":1.5,"colpo_sereno":1.23,"passo_e_tiro":1.17,"colpo_in_corsa":1.69,"accerchiato":0.81,"risonanza_alta":1.63,"colpo_sul_congelato":1.36,"colpo_sul_marchiato":1.8,"colpo_che_approfitta":1.25,"sangue_per_sangue":0.89,"patto_di_lama":0.48,"scudo_che_spara":2.21,"colpo_dall_ombra":2.02,"semina_braci":0.58,"pozza_di_melma":0.75,"tornado_tascabile":3,"nube_che_insegue":0.83,"lancia_spiriti":1.22,"trottola":0.62,"chiodo_e_martello":1.36,"lanciafiamme":1.3,"getto_criogenico":1.58,"raggio_trattore":2.29,"raggio_repulsore":1.73,"raggio_che_cura":1.28,"aura_che_consuma":2.53,"sguardo_fisso":2.03,"trapano":0.89,"laser_da_cecchino":1.74,"scarica_continua_a_catena":1.67,"mietitrebbia":1.85,"colpo_di_tosse_velenosa":0.64,"tuono_a_mani_giunte":1.45,"urlo":2.65,"colpo_che_scambia":2.64,"lancio_del_nemico":1.12,"pioggerella":0.87,"tiro_al_piattello":1.21,"spari_dal_cielo":0.75,"mina_vagante":0.87,"sciabolata_che_lascia_il_segno":0.56,"lama_che_allunga":0.79,"raffica_che_stringe":1.17,"tiro_e_scatto_corto":1.94,"doppio_dito":1.31,"mazza_a_catena":1.21,"onda_sismica":1.9,"scatto_tagliente":0.56,"scatto_con_onda":1.72,"scatto_incendiario":0.37,"scatto_a_boomerang":1.17,"scatto_sul_bersaglio":1.16,"assalto":1.38,"placcaggio":0.74,"scatto_che_ruba_vita":1.87,"scatto_con_cloni":1.2,"scatto_del_lampo":3,"scatto_del_predatore":1.13,"scatto_che_carica":1.85,"scatto_marchiante":3,"scatto_corazzato":1.93,"scatto_a_zig_zag":1.34,"ritirata_con_spinta":2.42,"ritirata_e_contrattacco":2.16,"capriola_con_granata":3,"scivolata":2.83,"sfondamento":0.97,"varco_esplosivo":1.14,"pugnalata_alle_spalle":1.21,"agguato_e_marchio":0.51,"salto_con_seguito":0.85,"salto_del_vulcano":1.27,"corsa_bruciante":0.3,"corsa_travolgente":0.67,"spinta_e_fuga":3,"elastico":1.96,"fuga_col_botto":0.79,"onda_cavalcata":1.5,"onda_d_urto":0.88,"implosione":1.45,"colpo_di_tuono":3,"vampata":0.8,"soffio_polare":1.99,"sputo_corrosivo":1.75,"lama_di_luce":0.87,"fenditura":1.67,"corridoio_di_vento":2.43,"linea_di_sutura":1.95,"anello_di_fuoco":1.57,"sentenza":1.77,"colpo_al_cuore":2.6,"maledizione":1.61,"fulmine_a_ciel_sereno":0.58,"pilastro_di_ghiaccio":1.17,"colpo_e_risacca":1.24,"tre_onde":1.48,"onde_che_si_stringono":1.5,"croce":1.43,"pugno_del_gigante":0.84,"grido_di_guerra_che_ferisce":2.85,"morso_del_branco":2.06,"mietitura":2.3,"colpo_che_ispira":1.65,"rasoiata_frenetica":1.84,"giudizio_dei_fermi":1.58,"frantuma":1.76,"deflagrazione":1.13,"colpo_dell_untore":1.92,"colpo_di_rimbalzo":1.38,"fulmine_ramificato":1.24,"catena_di_ghiaccio":2.64,"stella_di_schegge":2.1,"corona_di_lame":1.44,"tre_razzi":0.76,"sciame_cercatore":1.23,"missile_pesante":0.77,"lama_d_aria":0.49,"onda_di_marea":1.57,"onda_che_gela":1.64,"palla_di_cannone":1.23,"seme_di_vortice":1.9,"spora":0.33,"arpione":2.33,"colpo_telecinetico":1.03,"bolas_grande":2,"bomba_a_orologeria":0.42,"granata_stordente":1.9,"molotov":0.55,"fiala_di_gelo":2.04,"boccetta_d_acido":0.39,"cerchio_di_fiamme":0.63,"palude":1.82,"nube_di_spore":0.32,"campo_di_debolezza":2.22,"vortice_mobile":3,"muro_di_fuoco_che_avanza":3,"fronte_freddo":3,"segugio_di_fiamma":0.71,"aura_rovente":0.72,"aura_velenosa":0.48,"cerchio_di_potere":2.37,"zona_che_cresce":0.87,"mina_di_prossimita_gigante":0.7,"faro":0.83,"geyser_a_tempo":1.6,"trappola_a_strappo":2.31,"nido":1.12,"tempesta_di_fulmini_locale":1.25,"grandinata":2.08,"scia_di_lava":1.12,"fossato":2.6,"occhio_del_ciclone":2.08,"brace_che_cova":0.65,"gelo_che_stringe":2.66,"rovi":1.18,"altare_del_sangue":1.49,"specchio_d_acqua":2.68,"zona_di_caccia":1.69,"branco":0.62,"guardia_del_corpo":0.62,"due_nidi_di_mitragliatrice":0.91,"kamikaze":0.61,"arcieri":0.64,"linea_di_tiro":0.76,"muro_che_esplode":1.44,"spiriti_vendicativi":0.64,"torretta_autodistruttiva":0.79,"esca_gelida":2.29,"esca_velenosa":0.44,"esca_che_chiama_rinforzi":1.14,"colosso_instabile":0.58,"postazione_fortificata":1.12,"evocazione_sul_bersaglio":0.77,"bomba_sul_bersaglio":0.64,"chiamata_del_sangue":0.33,"un_soldato_per_nemico":1.25,"spiriti_a_ondate":0.65,"furia":1.83,"spine":2.82,"lame_in_orbita":0.39,"mantello":3,"vampiro":3,"fortezza":3,"sangue_in_potere":0.69,"circondato":3,"colpi_esplosivi":0.37,"colpi_a_catena":0.77,"colpi_venefici":1.77,"colpi_incendiari":0.3,"colpi_che_marchiano":1.64,"colpi_che_respingono":1.2,"colpi_doppi":1.8,"colpi_dal_cielo":0.59,"colpo_carico":0.57,"prossimo_colpo_a_frammenti":1.2,"uccisioni_contagiose":1.64,"vendetta":0.36,"pelle_elettrica":0.84,"sangue_acido":0.3,"contraccolpo":0.91,"guardiani_feriti":0.86,"pulsazione":0.88,"semina":0.61,"torretta_umana":0.84,"aura_che_ruba":1.35,"tamburo_di_guerra":1.91,"strattone":2.58,"sollevamento":3,"capro_espiatorio":2.38,"bersaglio_prioritario":0.38,"scambio_e_inferno":1.36,"palla_da_bowling":1.4,"chiodo":1.85,"tortura":2.57,"legame_di_sangue":3,"furto":2.34,"colpo_che_resetta":2.72,"presa_e_schianto":1.27,"spazzata_telecinetica":1.73,"dispersione":2.91,"presa_al_collo":2.06,"colpo_al_piu_vicino":0.86,"combustione":0.51,"marchia_e_detona":0.3,"accendi_e_detona":0.44,"gela_e_frantuma":0.72,"se_brucia_esplode":0.88,"se_e_avvelenato_contagia":2.46,"attacco_o_difesa":1.28,"bestia_ferita":1.59,"in_corsa_o_da_fermo":0.51,"colpo_dal_buio":3,"bombardamento_a_tappeto":2.06,"raffica_di_lame":0.78,"mitragliata":1.24,"tre_respiri_di_fuoco":1.25,"pugni_a_raffica":2.09,"terremoto":1.37,"fuochi_d_artificio":1.61,"colpo_pausa_colpo":0.87,"conto_alla_rovescia":0.66,"prima_il_gelo_poi_il_martello":1.28,"tira_colpisci_respingi":1.52,"marchia_attira_esplodi":0.69,"avvelena_e_aspetta":0.53,"raggio_rotante":2.17,"tre_catene":2.04,"cerchio_che_si_chiude":1.31,"colpo_con_replica":1.15,"prima_lo_scudo_poi_lo_schianto":1.16,"fermo_immagine_e_colpo":1.13,"sacrificio_dell_esca":1.2,"colpo_e_fuga":2.14,"mordi_e_fuggi":1.29,"giro_della_morte":1.62,"rimbalzo_sul_nemico":2.08,"affondo_che_attraversa":1.53,"colpo_che_protegge":1.84,"colpo_che_nasconde":2.04,"colpo_che_accelera":1.75,"onda_che_ricarica":1.36,"schianto_corazzato":2.53,"colpo_e_orbite":0.71,"schianto_riflettente":2.32,"sfera_di_plasma":2.13,"sfera_di_gelo_errante":2.9,"sfera_calamita":3,"disco_rimbalzante":1.43,"giavellotto":2.16,"giavellotto_esplosivo":2.36,"colpo_che_torna_con_gli_interessi":1.12,"ventaglio_che_incendia":1.97,"dardi_storditori":2.15,"seme_di_spine":1.41,"colpo_boomerang_che_cura":1.13,"onda_doppia":1.2,"onda_che_blocca":2.11,"onda_che_terrorizza":2.39,"onda_che_marchia":0.9,"spiriti_e_furia":0.58,"torretta_e_mantello":1.14,"esca_e_trappola":3,"muro_e_mine":2.27,"guaritore_e_cerchio":3,"arcieri_sul_muro":1.43,"colosso_e_catene":0.87,"spiriti_dal_bersaglio":1.23,"esercito_di_carta":3,"occhio_per_occhio":1.3,"scudo_a_molla":1.02,"falo":2.97,"festa_del_boia":3,"ogni_terzo_colpo":0.34,"colpi_che_seminano":0.62,"radar":3,"campo_statico":1.55,"mortaio_automatico":0.75,"pioggia_personale":1.96,"fabbrica_di_esche":1.27,"colpo_proporzionale":1.44,"risucchio_di_gruppo":2.54,"linea_che_carica":2,"colpo_che_ricarica":2.08,"solo_il_piu_vicino_col_botto":1.21,"doppio_bersaglio":1.14,"colpo_e_maledizione_dei_vicini":1.84,"miccia":2.31,"epidemia":1.58,"anello_e_centro":1.37,"tre_linee_a_ventaglio":1.53,"griglia":1.4,"morsa":1.75,"colpo_cieco":0.9,"scossa_di_assestamento":1.57,"fischio":3,"collasso":0.74,"tempesta_perfetta":1.61,"raggio_della_fine":0.84,"raggio_rotante_supremo":0.77,"cometa":0.59,"catena_del_giudizio":1.65,"inferno":0.57,"era_glaciale":2.62,"pestilenza":0.61,"mietitura_delle_anime":2.32,"sentenza_di_morte":2.04,"terremoto_supremo":0.79,"onda_anomala":0.88,"stella_cadente_multipla":0.58,"anelli_concentrici":2.39,"vulcano_supremo":0.51,"buco_nero_supremo":0.71,"pioggia_di_lame":0.39,"detonazione_universale":0.61,"rogo":0.67,"zero_assoluto":0.62,"piaga":0.67,"avatar":2.07,"dio_della_guerra":1.47,"fortezza_vivente":3,"tempesta_di_lame_personale":0.43,"frenesia":1.49,"ogni_colpo_un_esplosione":0.3,"ogni_colpo_un_fulmine":0.36,"ogni_colpo_uno_spirito":0.44,"ogni_morte_un_esplosione":2.17,"ogni_morte_un_servo":1.49,"vendetta_suprema":0.33,"specchio_della_sofferenza":0.3,"passo_del_titano":0.67,"sole_portatile":0.58,"faro_della_morte":0.33,"legione":0.34,"titano":0.34,"due_titani":0.35,"batteria_d_assedio":0.32,"reggimento_di_tiratori":0.36,"ondata_kamikaze":0.6,"cittadella":0.82,"corte_reale":0.51,"esercito_che_non_muore":0.3,"sciame_senza_fine":0.44,"ombre_di_te":1.36,"chiamata_del_branco":1.67,"tempo_spezzato_con_sorpresa":0.9,"gravita_zero":3,"radici_del_mondo":1.41,"mano_del_gigante":0.9,"tutti_a_me":3,"ragnatela":1.74,"meteora_umana":0.85,"carica_inarrestabile":1.16,"danza_delle_ombre":0.87,"apparizione":1.64,"ritorno_del_re":0.51,"fine_del_mondo_locale":0.52,"croce_di_luce":1.19,"nugolo_di_missili":0.77,"sfera_del_giudizio":1.85,"lama_dell_orizzonte":0.87,"lama_che_torna":0.87,"disco_della_fine":1.65,"colpo_unico":1.21,"frusta_di_fuoco":0.9,"respiro_del_drago":0.5,"raggio_continuo_supremo":0.43,"disintegratore":0.56,"tornado":1.22,"tre_tornado":0.3,"nube_del_giudizio":0.3,"santuario_supremo":3,"mare_di_lava":0.34,"inverno_eterno":3,"epicentro":0.68,"faglia":0.88,"capro_del_mondo":3,"catena_dei_dannati":2.28,"catena_di_fuoco_e_veleno":2.93,"furia_e_fulmini":1.55,"mantello_e_pugnale":0.9,"scudo_e_vendetta":0.83,"mano_veloce":0.38,"pelle_del_drago":0.76,"signore_del_gelo":0.82,"signore_della_peste":1.3,"signore_del_fuoco":2.39,"collezionista_di_anime":3,"cuore_di_stella":0.68,"ira_del_cielo":0.75,"vortice_di_lame_e_fuoco":0.34,"colpo_di_grazia":1.97,"giocata_d_azzardo":0.74,"assedio_o_ritirata":1.19,"fermo_o_in_corsa":0.42,"furia_del_martire":0.54,"patto_finale":0.33,"rinascita":3,"colpo_doppio_temporale":0.9,"istante_eterno":3,"assedio":0.35,"parata":0.74,"orda_esplosiva_a_ondate":0.5,"guardia_d_onore":0.3,"trappola_suprema":0.77,"battaglione":0.45,"il_gigante_e_i_nani":0.34,"assalto_coordinato":0.57,"cometa_cavalcata":0.63,"sette_passi":0.61,"ritirata_strategica":0.63,"doppio_di_te":0.47,"tutto_in_uno":3,"colpo_cura_scudo":1.16,"raccolta_suprema":1.22,"divoratore":1.22,"anello_della_fine":2.42,"tre_giudizi":0.58,"vendetta_del_branco":0.31,"mietitore_supremo":1.13,"boia_dei_fermi":0.47,"paura_e_morte":0.55,"risveglio":0.62,"zappa_e_semina":0.87,"colpo_di_frusta_lungo":1.44,"abbraccio":2.68,"ruggito_del_capo":1.1,"scintilla":2.14,"risacca":1.13,"salva_di_mortai":3,"zolla":3,"punizione_dei_vicini":1.42,"macigno":1.32,"fiotto":1.6,"giro_di_boa":2.37,"colpo_basso":1.75,"squarcio":2.37,"onda_sonica":1.67,"stretta_finale":3,"doppia_mandata":3,"gabbia_di_fulmini":0.74,"mareggiata":0.77,"sguardo_che_uccide":1.74,"colonna_infinita":0.51,"parola_di_potere":3,"contrappasso":0.51,"mano_sinistra_del_buio":2.74,"legioni_alle_porte":0.41,"eclissi_di_sangue":0.44,"ultima_parola":1.03});
+
 'use strict';
 // MOTORE - generatore di citta'. Da un seme e un tema esce una citta' intera: strade, piazze, arene, canali, cavi, schermi.
 const City = (() => {
@@ -4060,7 +4085,7 @@ const Core = (() => {
     }
     if (o.op !== 'tgt' && o.op !== 'near') for (const t of s.turrets) if (t.state === 'hostile' && inTele(T, t.x, t.z, t.r)) t.stun = 2.5;
     if (o.ls) healPlayer(s, tot * o.ls);
-    s.events.push({ type: 'shape', tk: !!o.tk, shape: T.shape, x: T.x, z: T.z, ang: T.ang, r: tg || o.op === 'near' ? 1.3 : T.r, r0: T.r0, half: T.half, len: T.len, w: T.w, el: K.el, n: list.length });
+    s.events.push({ type: 'shape', late: !!T.fr, tk: !!o.tk, shape: T.shape, x: T.x, z: T.z, ang: T.ang, r: tg || o.op === 'near' ? 1.3 : T.r, r0: T.r0, half: T.half, len: T.len, w: T.w, el: K.el, n: list.length });
     if (list.length && o.then && ctx.depth < 3) run(s, o.then, sub(ctx, T.x, T.z, list[0], T.ang));
     if (!list.length && o.miss && ctx.depth < 3) run(s, o.miss, sub(ctx, T.x, T.z, null, T.ang));
     return true;
@@ -5256,10 +5281,8 @@ G.buildFx = function (s) {
     let seen = new Set();
     for (const sh of s.shots) {
       seen.add(sh.id); let v = pools.shot.get(sh.id);
-      const c = sh.team === 'e' ? 0xff6a20 : elc(sh.el);
-      if (!v) { let o; if (sh.w) { const m = add(c, 0.85); m.map = G.glowTex; o = new THREE.Mesh(GEO.plane, m); o.scale.set(sh.w * 3.2, 2.2, 1); o.rotation.y = Math.atan2(sh.vx, sh.vz); v = { o, mats: [m], c }; } else { o = glowSprite(c); o.scale.setScalar(sh.team === 'e' ? 1.6 : 1.25); v = { o, mats: [o.material], c }; } scene.add(o); pools.shot.set(sh.id, v); }
-      v.o.position.set(sh.x, sh.w ? 1.1 : 1.4, sh.z);
-      if (Math.random() < 0.6) G.burst(sh.x, 1.4, sh.z, 1, c, 0.6, 0.3, 0.3, 0.07, 0.2);
+      if (!v) { v = G.shotView(sh); scene.add(v.o); pools.shot.set(sh.id, v); }
+      v.upd(sh, dt);
     }
     for (const id of [...pools.shot.keys()]) if (!seen.has(id)) drop(pools.shot, id);
     seen = new Set();
@@ -5354,7 +5377,7 @@ G.buildHands = function () {
     const t1 = new THREE.Group(); t1.position.set(side * -0.055, -0.004, -0.06); t1.rotation.y = side * 0.9; root.add(t1);
     mk(t1, GEO.box, iron, 0, 0, -0.03, 0.022, 0.022, 0.06); o.thumb = t1; hs.add(root); return o;
   }
-  const HR = hand(1), HL = hand(-1);
+  const HR = hand(1), HL = hand(-1); G.handR = HR.root; G.handL = HL.root;
   // zap: rinculo della destra; lift: la sinistra si alza a palmo aperto; push: la sinistra spinge; both: tutte e due in alto (supreme)
   G.hands = { zap: 0, hold: 0, lift: 0, push: 0, both: 0, bob: 0, visible: 1, glow: 0, col: 0xd8601c };
   G.updateHands = function (dt, t, moving, aspect) {
@@ -5373,9 +5396,136 @@ G.buildHands = function () {
     HL.fingers.forEach(([a, b], k) => { a.rotation.x = -curlL * (0.8 + k * 0.08); b.rotation.x = -curlL * 1.1; a.rotation.y = -(k - 1.5) * 0.1 * (1 + lu * 1.5); });
     HR.thumb.rotation.x = -curlR * 0.5; HL.thumb.rotation.x = -curlL * 0.5;
     hp.intensity = Math.max(z * 2.2, bo * 3, h.glow * (1 + Math.sin(t * 30) * 0.4)); hp.color.setHex(h.col); emb.color.setHex(h.col);
+    if (G.animHands) G.animHands(dt);
     HR.root.visible = HL.root.visible = h.visible > 0.02;
   };
   G.handWorld = function (out, cam) { out.set(0.34, -0.3, -0.75).applyQuaternion(cam.quaternion).add(cam.position); return out; };
+};
+
+// MOTORE - animazioni dei poteri: ogni elemento ha il suo modo di colpire, ogni forma il suo gesto, ogni proiettile il suo corpo.
+G.buildAnim = function (s) {
+  const scene = G.scene, EL = Bricks.ELEM, R = Math.random;
+  const bel = (el) => (el && el.indexOf('+') > 0 ? el.slice(0, el.indexOf('+')) : el);
+  const col = (el) => { el = bel(el); return EL[el] ? EL[el].c : 0xff6a20; }, col2 = (el) => { el = bel(el); return EL[el] ? EL[el].c2 : 0xffd0a0; };
+  const add = (c, o) => new THREE.MeshBasicMaterial({ color: c, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: o === undefined ? 1 : o, side: THREE.DoubleSide });
+  const A = (G.AGEO = G.AGEO || (() => {
+    const cres = (() => { const pos = [], idx = [], n = 18; for (let i = 0; i <= n; i++) { const a = -1.15 + (2.3 * i) / n, w = Math.sin((i / n) * Math.PI), r0 = 1 - 0.3 * w; pos.push(Math.sin(a) * r0, -0.32 * w, Math.cos(a) * r0, Math.sin(a), 0.32 * w, Math.cos(a)); if (i < n) { const k = i * 2; idx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2); } } const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3)); g.setIndex(idx); return g; })();
+    const o = { wall: new THREE.CylinderGeometry(1, 1, 1, 30, 1, true).translate(0, 0.5, 0), spike: new THREE.ConeGeometry(0.5, 1, 4).translate(0, 0.5, 0), cres, oct: new THREE.OctahedronGeometry(1, 0), ico: new THREE.IcosahedronGeometry(1, 1), sph: new THREE.SphereGeometry(1, 14, 10), tor: new THREE.TorusGeometry(1, 0.055, 6, 30).rotateX(Math.PI / 2), box: new THREE.BoxGeometry(1, 1, 1), plane: new THREE.PlaneGeometry(1, 1) };
+    for (const k in o) o[k].keep = true; return o;
+  })());
+  // effetti a tempo: un oggetto, i suoi materiali, e una funzione che lo muove da 0 a 1
+  const fxs = [];
+  const kill = (e) => { scene.remove(e.o); for (const m of e.mats) m.dispose(); };
+  function spawn(o, mats, life, f) { if (fxs.length > 120) kill(fxs.shift()); scene.add(o); const e = { o, mats, life, max: life, f }; f(0, o, mats); fxs.push(e); return e; }
+  const mesh = (geo, c, op) => { const m = add(c, op * 0.8); return [new THREE.Mesh(geo, m), m]; };
+  const out = (k) => 1 - (1 - k) * (1 - k);
+  G.animUpdate = function (dt) { for (let i = fxs.length - 1; i >= 0; i--) { const e = fxs[i]; e.life -= dt; if (e.life <= 0) { kill(e); fxs.splice(i, 1); } else e.f(1 - e.life / e.max, e.o, e.mats); } };
+  const near = (x, z) => Math.abs(x - s.player.x) < 70 && Math.abs(z - s.player.z) < 70;
+
+  // ---------- Ogni elemento colpisce a modo suo ----------
+  G.elemFx = function (el, x, z, r, pw) {
+    if (!near(x, z)) return; const e = bel(el), c = col(el), c2 = col2(el), n = Math.max(2, Math.min(7, Math.round(r * 0.9 * (pw || 1)))), rp = () => { const a = R() * 6.283, d = Math.sqrt(R()) * r * 0.85; return [x + Math.sin(a) * d, z + Math.cos(a) * d]; };
+    if (e === 'fuoco') { for (let i = 0; i < n; i++) { const [px, pz] = rp(), h = (1.2 + R() * 1.6) * (0.7 + 0.3 * (pw || 1)), w = 0.5 + R() * 0.4, [m, mt] = mesh(A.spike, i % 2 ? c : c2, 0.6), ph = R() * 6; m.position.set(px, 0, pz); spawn(m, [mt], 0.5 + R() * 0.25, (k, o, ms) => { const g = Math.sin(Math.min(1, k * 1.15) * Math.PI); o.scale.set(w * (1 - k * 0.5), h * (0.3 + g) + 0.01, w * (1 - k * 0.5)); o.rotation.set(Math.sin(k * 14 + ph) * 0.2, k * 3 + ph, Math.cos(k * 11 + ph) * 0.2); o.position.y = k * 0.8; ms[0].opacity = 0.6 * (1 - k * k); }); G.burst(px, 0.3, pz, 5, i % 2 ? c : c2, 1.6, 4.6, 0.75, 0.17, -0.25); G.burst(px, 0.4, pz, 2, 0xffe2a0, 5, 3, 0.5, 0.06, 0.4); } G.flash(x, 0.9, z, c, 1, r * 1.7, 0.32); }
+    else if (e === 'gelo') {
+      for (let i = 0; i < n + 1; i++) { const [px, pz] = rp(), h = (1 + R() * 1.9) * (0.7 + 0.3 * (pw || 1)), w = 0.35 + R() * 0.3, [m, mt] = mesh(A.spike, i % 2 ? 0x3f9cff : 0x7fd0ff, 0.42); m.position.set(px, 0, pz); m.rotation.set((R() - 0.5) * 0.5, R() * 3, (R() - 0.5) * 0.5); spawn(m, [mt], 0.9 + R() * 0.4, (k, o, ms) => { const g = k < 0.12 ? k / 0.12 : k > 0.7 ? Math.max(0, 1 - (k - 0.7) / 0.3) : 1; o.scale.set(w, h * g + 0.01, w); ms[0].opacity = 0.28 * (k > 0.7 ? g : 1); }); }
+      G.burst(x, 0.5, z, 8, 0xeaf4ff, 4, 2, 0.6, 0.09, 0.7); G.ring(x, 0.08, z, 0.3, r, 0.4, c2);
+    } else if (e === 'folgore') { for (let i = 0; i < Math.min(4, n); i++) { const [px, pz] = rp(); G.bolt(px + (R() - 0.5) * 4, 22, pz + (R() - 0.5) * 4, px, 0, pz, 0.34, 0.24, c, 1.5); G.flash(px, 0.5, pz, c2, 1.5, 5, 0.25); G.burst(px, 0.3, pz, 6, c2, 8, 3, 0.35, 0.07, 0.8); } }
+    else if (e === 'veleno') {
+      for (let i = 0; i < n; i++) { const [px, pz] = rp(); G.burst(px, 0.2, pz, 4, i % 2 ? c : c2, 0.8, 1.3, 1.3, 0.2, -0.07); }
+      const [m, mt] = mesh(A.sph, c, 0.24); m.position.set(x, 0.4, z); spawn(m, [mt], 1.1, (k, o, ms) => { const g = r * (0.4 + 0.7 * out(k)); o.scale.set(g, 0.5 + k * 0.5, g); ms[0].opacity = 0.24 * (1 - k); });
+    } else if (e === 'ombra') {
+      for (let i = 0; i < n; i++) { const [px, pz] = rp(), h = 2 + R() * 2.4, [m, mt] = mesh(A.spike, i % 2 ? c : 0x3a1a70, 0.55); m.position.set(px, 0, pz); m.rotation.set((R() - 0.5) * 0.9, R() * 3, (R() - 0.5) * 0.9); spawn(m, [mt], 0.7, (k, o, ms) => { const g = Math.sin(Math.min(1, k * 1.3) * Math.PI); o.scale.set(0.22, h * g + 0.01, 0.22); ms[0].opacity = 0.55 * g; }); }
+      const [m, mt] = mesh(A.sph, c, 0.3); m.position.set(x, 1, z); spawn(m, [mt], 0.45, (k, o, ms) => { o.scale.setScalar(Math.max(0.05, r * (1 - out(k)))); ms[0].opacity = 0.1 + 0.4 * k; });
+    } else if (e === 'luce') {
+      const [m, mt] = mesh(A.wall, c, 0.3); m.position.set(x, 0, z); spawn(m, [mt], 0.55, (k, o, ms) => { const g = Math.max(0.05, r * 0.4 * (1 - k * 0.7)); o.scale.set(g, 22, g); ms[0].opacity = 0.2 * (1 - k); });
+      G.burst(x, 0.4, z, 8, c, 2.5, 7, 0.7, 0.08, -0.2); G.ring(x, 0.1, z, 0.2, r * 1.1, 0.45, c);
+    } else if (e === 'sangue') {
+      G.burst(x, 1, z, 12 + n, c, 6, 4.5, 0.85, 0.12, 1.7); G.burst(x, 1, z, 5, 0x5a0612, 4, 3, 0.9, 0.18, 1.5);
+      for (const rz of [0.7, -0.7]) { const [m, mt] = mesh(A.plane, c, 0.9); m.position.set(x, 1.3, z); m.rotation.set(0, R() * 3, rz); spawn(m, [mt], 0.22, (k, o, ms) => { o.scale.set(r * 1.6 * (0.3 + k), 0.12 * (1 - k) + 0.01, 1); ms[0].opacity = 0.9 * (1 - k); }); }
+    } else { // vento
+      for (let i = 0; i < 3; i++) { const [m, mt] = mesh(A.tor, i % 2 ? c2 : c, 0.7), y0 = 0.4 + i * 0.9, rr = r * (0.45 + i * 0.22), sp = (i % 2 ? -1 : 1) * (7 + i * 2); m.position.set(x, y0, z); spawn(m, [mt], 0.6, (k, o, ms) => { o.position.y = y0 + k * 1.6; o.rotation.y = k * sp; o.scale.setScalar(rr * (0.6 + 0.5 * k)); ms[0].opacity = 0.7 * (1 - k); }); }
+      for (let i = 0; i < 6; i++) { const a = R() * 6.283; G.spray(x + Math.sin(a) * r * 0.6, 0.5 + R() * 1.5, z + Math.cos(a) * r * 0.6, Math.cos(a), 0.1, -Math.sin(a), 2, c2, 9, 0.3, 0.35, 0.08, 0); }
+    }
+  };
+  // ---------- Ogni forma ha il suo gesto ----------
+  G.shapeFx = function (ev) {
+    if (!near(ev.x, ev.z)) return; const c = col(ev.el), c2 = col2(ev.el), sx = Math.sin(ev.ang), sz = Math.cos(ev.ang);
+    const own = Math.hypot(ev.x - s.player.x, ev.z - s.player.z) < 2; const wall = (rad, hgt, op, life) => { if (own) { op *= 0.5; hgt *= 0.6; } const [m, mt] = mesh(A.wall, c, op); m.position.set(ev.x, 0, ev.z); spawn(m, [mt], life, (k, o, ms) => { const g = rad * (0.25 + 0.75 * out(k)); o.scale.set(g, hgt * (1 - k) + 0.15, g); ms[0].opacity = op * (1 - k); }); };
+    if (ev.shape === 'circle') {
+      if (ev.r <= 1.5) { G.elemFx(ev.el, ev.x, ev.z, 1.3, 0.6); return; }
+      wall(ev.r, 1.8, 0.5, 0.4); if (ev.r > 6) wall(ev.r * 0.6, 3, 0.35, 0.55);
+      if (ev.late) { const [m, mt] = mesh(A.wall, c, 0.45); m.position.set(ev.x, 0, ev.z); spawn(m, [mt], 0.35, (k, o, ms) => { const g = Math.max(0.05, ev.r * 0.4 * (1 - k)); o.scale.set(g, 40, g); ms[0].opacity = 0.36 * (1 - k * k); }); }
+      G.elemFx(ev.el, ev.x, ev.z, ev.r, ev.late ? 1.3 : 1);
+    } else if (ev.shape === 'cone') {
+      const dir = R() < 0.5 ? 1 : -1;
+      for (const [sc, cc, op] of [[1, c, 0.8], [0.72, c2, 0.6]]) { const [m, mt] = mesh(A.cres, cc, op); m.position.set(ev.x, 1.15, ev.z); spawn(m, [mt], 0.26, (k, o, ms) => { o.rotation.set(0, ev.ang + (k - 0.5) * ev.half * 1.5 * dir, 0.22 * dir); const g = ev.r * sc * (0.55 + 0.45 * out(k)); o.scale.set(g, 1.6 + ev.r * 0.12, g); ms[0].opacity = op * (1 - k * k); }); }
+      for (const f of [0.45, 0.8]) { const a = ev.ang + (R() - 0.5) * ev.half; G.elemFx(ev.el, ev.x + Math.sin(a) * ev.r * f, ev.z + Math.cos(a) * ev.r * f, Math.max(1.2, ev.r * 0.22), 0.6); }
+    } else if (ev.shape === 'line') {
+      for (const [ws, cc, op] of [[0.5, c, 0.5], [0.16, c2, 0.8]]) { const [m, mt] = mesh(A.box, cc, op); const st = own ? Math.min(1.6, ev.len * 0.3) : 0, L = ev.len - st; m.position.set(ev.x + sx * (st + L / 2), 1.0, ev.z + sz * (st + L / 2)); m.rotation.y = ev.ang; spawn(m, [mt], 0.28, (k, o, ms) => { const g = Math.max(0.02, Math.min(1.4, ev.w * ws) * (1 - k)); o.scale.set(g, g * 0.6 + 0.03, L); ms[0].opacity = op * (1 - k); }); }
+      const n = Math.min(4, Math.max(2, Math.round(ev.len / 8))); for (let i = 0; i < n; i++) { const d = ((i + 0.6) / n) * ev.len; G.elemFx(ev.el, ev.x + sx * d, ev.z + sz * d, Math.max(1.2, ev.w * 0.7), 0.5); }
+    } else { wall(ev.r, 1.6, 0.45, 0.4); wall(ev.r0, 1.2, 0.3, 0.3); const mid = (ev.r0 + ev.r) / 2; for (let i = 0; i < 5; i++) { const a = (i / 5) * 6.283 + R(); G.elemFx(ev.el, ev.x + Math.sin(a) * mid, ev.z + Math.cos(a) * mid, Math.max(1.3, (ev.r - ev.r0) * 0.4), 0.5); } }
+  };
+
+  // ---------- Proiettili con un corpo ----------
+  G.shotView = function (sh) {
+    const o = new THREE.Group(), mats = [], enemy = sh.team === 'e', c = enemy ? 0xff5a18 : col(sh.el), c2 = enemy ? 0xffd0a0 : col2(sh.el), sp = Math.hypot(sh.vx, sh.vz);
+    const put = (geo, cc, op, x, y, z, sx, sy, sz) => { const mt = new THREE.MeshBasicMaterial({ color: cc, transparent: op < 0.5, opacity: op < 0.5 ? op : 1, depthWrite: op >= 0.5, side: THREE.DoubleSide }), m = new THREE.Mesh(geo, mt); m.position.set(x, y, z); m.scale.set(sx, sy, sz); o.add(m); mats.push(mt); return m; };
+    const glow = (size, op) => { const g = new THREE.Sprite(new THREE.SpriteMaterial({ map: G.glowTex, color: c, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: op })); g.scale.setScalar(size); o.add(g); mats.push(g.material); return g; };
+    let kind = 'orb', spin = null, y = 1.35;
+    if (sh.w) { kind = 'wave'; y = 1.1; const big = sh.w > 3; put(A.cres, c, big ? 0.4 : 0.85, 0, 0, -sh.w * 0.75, sh.w * 1.25, 1, sh.w * 1.25); put(A.cres, c2, big ? 0.3 : 0.6, 0, 0.02, -sh.w * 0.5, sh.w * 0.95, 1, sh.w * 0.95); glow(sh.w * 1.6, 0.2); }
+    else if (sh.aura) { kind = 'aura'; put(A.sph, c, 0.14, 0, 0, 0, sh.aura, sh.aura * 0.7, sh.aura); put(A.ico, c2, 0.9, 0, 0, 0, 0.55, 0.55, 0.55); spin = put(A.tor, c, 0.8, 0, 0, 0, sh.aura * 0.9, sh.aura * 0.9, sh.aura * 0.9); glow(sh.aura * 1.6, 0.4); }
+    else if (sh.boom) { kind = 'rocket'; put(A.oct, 0x2a2630, 1, 0, 0, 0, 0.3, 0.3, 0.8); put(A.oct, c, 0.9, 0, 0, -0.75, 0.24, 0.24, 0.7); put(A.tor, c2, 0.8, 0, 0, 0.15, 0.36, 0.36, 0.36).rotation.x = Math.PI / 2; glow(1.2, 0.45); }
+    else if (sp > 38 || (sh.hitSet && !sh.back)) { kind = 'lance'; put(A.oct, c2, 0.9, 0, 0, 0, 0.09, 0.09, 1.5); put(A.oct, c, 0.6, 0, 0, -0.7, 0.22, 0.22, 2.2); glow(0.8, 0.3); }
+    else if (sh.back) { kind = 'disc'; spin = put(A.tor, c, 0.95, 0, 0, 0, 0.9, 0.9, 0.9); put(A.oct, c2, 0.9, 0, 0, 0, 0.85, 0.08, 0.85); glow(1.4, 0.25); }
+    else { put(A.ico, enemy ? c : c2, 0.95, 0, 0, 0, 0.26, 0.26, 0.26); spin = put(A.tor, c, 0.7, 0, 0, 0, 0.42, 0.42, 0.42); spin.rotation.x = 1.2; glow(enemy ? 1.4 : 0.9, 0.4); if (sh.hom) kind = 'hom'; }
+    o.rotation.y = Math.atan2(sh.vx, sh.vz); let tt = R() * 6, pt = 0;
+    return { o, mats, c, upd(sh2, dt) {
+      tt += dt; o.position.set(sh2.x, y + (kind === 'hom' ? Math.sin(tt * 14) * 0.18 : 0), sh2.z); o.rotation.y = Math.atan2(sh2.vx, sh2.vz);
+      if (spin) spin.rotation.y += dt * 12; if (kind === 'wave') o.rotation.z = Math.sin(tt * 9) * 0.12;
+      pt -= dt; if (pt <= 0 && near(sh2.x, sh2.z)) { pt = kind === 'aura' ? 0.1 : kind === 'wave' ? 0.12 : 0.06; const e = enemy ? '' : bel(sh2.el);
+        if (kind === 'aura') { const a = R() * 6.283; G.burst(sh2.x + Math.sin(a) * sh2.aura * 0.8, 0.3 + R() * 1.6, sh2.z + Math.cos(a) * sh2.aura * 0.8, 1, c, 0.6, e === 'fuoco' ? 1.5 : 0.2, 0.5, 0.11, e === 'fuoco' ? -0.2 : 0.1); }
+        else G.burst(sh2.x, y, sh2.z, 1, R() < 0.5 ? c : c2, 0.5, e === 'fuoco' ? 0.9 : e === 'gelo' || e === 'sangue' ? -0.5 : 0.2, kind === 'rocket' ? 0.45 : 0.25, kind === 'rocket' ? 0.1 : 0.05, e === 'fuoco' || e === 'veleno' ? -0.15 : e === 'sangue' ? 1 : 0.15); }
+    } };
+  };
+
+  // ---------- Zone: vortici e trombe d'aria hanno un corpo ----------
+  const zv = new Map(); let zt = 0;
+  G.animZones = function (st, dt, t) {
+    const seen = new Set(); zt -= dt; const puff = zt <= 0; if (puff) zt = 0.3; let budget = 5;
+    for (const z of st.zones) {
+      if (z.team !== 'p' || !near(z.x, z.z)) continue; const o = z.px ? z.px.o : null, twist = z.pull || (o && (o.mv || o.seek));
+      if (twist) {
+        seen.add(z.id); let v = zv.get(z.id);
+        if (!v) { const g = new THREE.Group(), mats = [], tall = !!(o && (o.mv || o.seek)); for (let i = 0; i < (tall ? 5 : 3); i++) { const [m, mt] = mesh(A.tor, i % 2 ? col2(z.el) : col(z.el), 0.65); m.userData = { h: tall ? 0.4 + i * 1.1 : 0.25 + i * 0.3, r: tall ? 0.35 + i * 0.17 : 1 - i * 0.28, sp: (i % 2 ? -1 : 1) * (3 + i) }; g.add(m); mats.push(mt); } scene.add(g); v = { o: g, mats }; zv.set(z.id, v); }
+        v.o.position.set(z.x, 0, z.z); for (const m of v.o.children) { const u = m.userData; m.position.y = u.h + Math.sin(t * 3 + u.h) * 0.12; m.rotation.y = t * u.sp; m.scale.setScalar(Math.max(0.2, z.r * u.r * (z.pull && !u.h ? 1 : 0.9 + Math.sin(t * 5 + u.h) * 0.1))); m.rotation.x = Math.sin(t * 2 + u.h) * 0.15; }
+        const left = z.dur - z.t; for (const m of v.mats) m.opacity = 0.65 * Math.min(1, left);
+      }
+      if (puff && budget > 0 && (z.dps > 0 || z.px) && !z.mini) { budget--; const a = R() * 6.283, d = Math.sqrt(R()) * z.r * 0.8, e = bel(z.el), px = z.x + Math.sin(a) * d, pz = z.z + Math.cos(a) * d, c = col(z.el);
+        if (e === 'fuoco') G.burst(px, 0.2, pz, 4, R() < 0.5 ? c : col2(z.el), 1, 4, 0.7, 0.16, -0.25); else if (e === 'gelo') G.burst(px, 2.5, pz, 3, 0xeaf4ff, 0.6, -1.5, 0.9, 0.08, 0.1); else if (e === 'folgore') { G.bolt(px, 0.1, pz, px + (R() - 0.5) * 3, 1.4 + R() * 1.5, pz + (R() - 0.5) * 3, 0.1, 0.14, c, 1.2); } else if (e === 'veleno') G.burst(px, 0.2, pz, 3, c, 0.5, 1, 1.4, 0.2, -0.06); else if (e === 'ombra') G.burst(px, 2.2, pz, 3, c, 0.4, -2.2, 0.8, 0.12, 0); else if (e === 'luce') G.burst(px, 0.2, pz, 3, col2(z.el), 0.5, 6, 0.6, 0.07, -0.2); else if (e === 'sangue') G.burst(px, 1.6, pz, 3, c, 1.5, 1, 0.8, 0.11, 1.6); else G.spray(px, 0.5 + R(), pz, Math.cos(a), 0.15, -Math.sin(a), 3, col2(z.el), 7, 0.3, 0.4, 0.08, 0); }
+    }
+    for (const [id, v] of zv) if (!seen.has(id)) { scene.remove(v.o); for (const m of v.mats) m.dispose(); zv.delete(id); }
+  };
+  // ---------- Evocazioni: una colonna di luce quando arrivano ----------
+  const known = new Set(); let first = true;
+  G.animMobs = function (st) {
+    for (const e of st.mobs) { if (known.has(e.id)) { if (e.thrown && R() < 0.6) G.burst(e.x, 1.6, e.z, 1, col(e.thrown.el), 1, 0.5, 0.4, 0.14, 0.2); continue; } known.add(e.id); if (first || e.team !== 'a' || e.charm > 0 || !near(e.x, e.z)) continue;
+      const c = col(e.el || 'luce'), [m, mt] = mesh(A.wall, c, 0.6); m.position.set(e.x, 0, e.z); spawn(m, [mt], 0.5, (k, o, ms) => { const g = Math.max(0.05, (e.r + 0.5) * (1 - k * 0.6)); o.scale.set(g, 9 * (1 - k * 0.5), g); ms[0].opacity = 0.6 * (1 - k); }); G.ring(e.x, 0.1, e.z, 0.2, e.r + 1.6, 0.4, c); G.burst(e.x, 0.3, e.z, 8, c, 2, 5, 0.6, 0.09, -0.1); }
+    first = false; if (known.size > 600) known.clear();
+  };
+
+  // ---------- Mani: fendente, schianto, lancio ----------
+  if (!G.slashArc) {
+    const hsMat = add(0xffffff, 0), hsMat2 = add(0xffffff, 0), g = new THREE.Group(), a = new THREE.Mesh(A.cres, hsMat), b = new THREE.Mesh(A.cres, hsMat2);
+    b.scale.setScalar(0.8); g.add(a, b); g.rotation.x = Math.PI / 2; const piv = new THREE.Group(); piv.add(g); piv.position.set(0, -0.06, -0.62); piv.scale.setScalar(0.42); G.handScene.add(piv); G.slashArc = { piv, hsMat, hsMat2, dir: 1 };
+    G.hands.slash = 0; G.hands.slam = 0; G.hands.toss = 0;
+  }
+  G.gesture = function (what, el) { const h = G.hands, S = G.slashArc; if (what === 'slash') { h.slash = 0.2; S.dir = R() < 0.5 ? 1 : -1; S.hsMat.color.setHex(col(el)); S.hsMat2.color.setHex(col2(el)); S.tilt = (R() - 0.5) * 0.9; } else if (what === 'slam') h.slam = 0.34; else h.toss = 0.26; };
+  G.animHands = function (dt) {
+    const h = G.hands, S = G.slashArc, HR = G.handR, HL = G.handL; if (!HR) return;
+    if (h.slash > 0) { h.slash = Math.max(0, h.slash - dt); const k = 1 - h.slash / 0.2; HR.position.x += (0.5 - k) * 0.3 * S.dir; HR.position.y += Math.sin(k * Math.PI) * 0.05; HR.rotation.z += (k - 0.5) * 1.5 * S.dir; S.piv.rotation.z = S.tilt + (0.5 - k) * 2.1 * S.dir; S.hsMat.opacity = 0.85 * Math.sin(k * Math.PI); S.hsMat2.opacity = 0.6 * Math.sin(k * Math.PI); } else { S.hsMat.opacity = 0; S.hsMat2.opacity = 0; }
+    if (h.slam > 0) { h.slam = Math.max(0, h.slam - dt); const k = 1 - h.slam / 0.34, up = k < 0.35 ? k / 0.35 : Math.max(0, 1 - (k - 0.35) / 0.2) - Math.min(1, Math.max(0, (k - 0.55) / 0.2)) * 0.6 * (1 - Math.max(0, (k - 0.75) / 0.25)); for (const H of [HR, HL]) { H.position.y += up * 0.13; H.rotation.x += up * 0.7; } }
+    if (h.toss > 0) { h.toss = Math.max(0, h.toss - dt); const k = 1 - h.toss / 0.26, a = Math.sin(k * Math.PI); HR.position.y += a * 0.09; HR.position.z -= a * 0.14; HR.rotation.x += (0.5 - k) * 1.3; }
+  };
 };
 
 // MOTORE - icone, memoria locale, officina dei personaggi.
@@ -5522,11 +5672,23 @@ G.start = function () {
     if (!ac || muted || !G.noiseBuf) return; if (gap) { const now = performance.now(); if (lastS['b' + freq] && now - lastS['b' + freq] < gap) return; lastS['b' + freq] = now; }
     try { const t = ac.currentTime, src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain(); src.buffer = G.noiseBuf; f.type = hp ? 'highpass' : 'lowpass'; f.frequency.setValueAtTime(freq, t); if (!hp) f.frequency.exponentialRampToValueAtTime(Math.max(60, freq * 0.2), t + dur); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur); src.connect(f); f.connect(g); g.connect(master); src.start(t, Math.random()); src.stop(t + dur + 0.05); } catch (e) { /* audio non disponibile */ }
   }
+  // Ogni elemento ha la sua voce: k = grandezza (0..1), v = volume
+  function elSound(el, k, v) {
+    const i = el ? el.indexOf('+') : -1, e = i > 0 ? el.slice(0, i) : el, now = performance.now(); if (lastS['el' + e] && now - lastS['el' + e] < 55) return; lastS['el' + e] = now; k = Math.max(0, Math.min(1, k));
+    if (e === 'fuoco') { boom(0.25 + k * 0.5, v, 700 + k * 500); tone('ef', 'sawtooth', 110, 45, 0.25 + k * 0.3, v * 0.35); }
+    else if (e === 'gelo') { tone('eg', 'triangle', 2400 - k * 600, 900, 0.1, v * 0.3); tone('eg2', 'sine', 3300, 1500, 0.16, v * 0.18); boom(0.09 + k * 0.1, v * 0.6, 4200, true); }
+    else if (e === 'folgore') { boom(0.06, v * 0.8, 5200, true); tone('el', 'sawtooth', 1500, 110, 0.1 + k * 0.1, v * 0.3); if (k > 0.4) boom(0.5, v * 0.7, 420); }
+    else if (e === 'veleno') { tone('ev', 'sine', 150, 420, 0.16, v * 0.4); tone('ev2', 'sine', 240, 620, 0.22, v * 0.25); boom(0.3 + k * 0.3, v * 0.35, 520); }
+    else if (e === 'ombra') { tone('eo', 'sine', 70, 190, 0.3 + k * 0.3, v * 0.6); tone('eo2', 'triangle', 320, 60, 0.4, v * 0.2); }
+    else if (e === 'luce') { tone('eu', 'sine', 880, 880, 0.3, v * 0.25); tone('eu2', 'sine', 1320, 1320, 0.4, v * 0.2); tone('eu3', 'sine', 1760, 1760, 0.5, v * 0.12); boom(0.12, v * 0.3, 3000, true); }
+    else if (e === 'sangue') { boom(0.1, v * 0.8, 1700); tone('es', 'square', 140, 55, 0.14, v * 0.35); boom(0.2, v * 0.3, 380); }
+    else { boom(0.3 + k * 0.4, v * 0.7, 2400, true); tone('ew', 'sine', 500, 1300, 0.25, v * 0.12); }
+  }
   const chime = (a, b) => { tone('ch' + a, 'sine', a, a, 0.18, 0.1); setTimeout(() => tone('ch' + b, 'sine', b, b, 0.3, 0.1), 110); };
 
   // ---------- Stato e comandi ----------
   const STEP = 1 / 60;
-  let acc = 0, last = 0, hitStop = 0, shake = 0, yaw = Math.PI, pitch = 0, fov = 72, bobT = 0, rideK = 0, flashSky = 0, ocK = 0, veilK = 0, timeK = 0, kick = 0, paused = false;
+  let acc = 0, last = 0, hitStop = 0, shake = 0, yaw = Math.PI, pitch = 0, fov = 72, bobT = 0, rideK = 0, flashSky = 0, ocK = 0, veilK = 0, timeK = 0, kick = 0, paused = false, hitMark = 0, furyK = 0, hasteK = 0;
   const keys = new Set(), buf = [0, 0, 0, 0, 0]; let useBuf = 0;
   const joy = { id: null, ox: 0, oy: 0, x: 0, y: 0 }, look = { id: null, x: 0, y: 0 };
   let W = 0, Hh = 0, locked = false, fireBtn = false, fireMouse = false; const zp = { id: null, x: 0, y: 0 };
@@ -5547,7 +5709,7 @@ G.start = function () {
     try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* ignora */ }
   });
   canvas.addEventListener('pointermove', (e) => {
-    if (e.pointerId === look.id && !locked) { turn(e.clientX - look.x, e.clientY - look.y, e.pointerType === 'mouse' ? 0.004 : 0.0062); look.x = e.clientX; look.y = e.clientY; return; }
+    if (e.pointerId === look.id && !locked) { turn(e.clientX - look.x, e.clientY - look.y, (e.pointerType === 'mouse' ? 0.004 : 0.0062) * (st.sens || 1)); look.x = e.clientX; look.y = e.clientY; return; }
     if (e.pointerId !== joy.id) return;
     let dx = e.clientX - joy.ox, dy = e.clientY - joy.oy; const d = Math.hypot(dx, dy), R = 46; if (d > R) { dx = (dx / d) * R; dy = (dy / d) * R; }
     joy.x = dx / R; joy.y = dy / R; knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
@@ -5555,7 +5717,7 @@ G.start = function () {
   const ptrEnd = (e) => { if (e.pointerType === 'mouse') fireMouse = false; if (e.pointerId === look.id) look.id = null; if (e.pointerId === joy.id) { joy.id = null; joy.x = joy.y = 0; joyEl.style.display = 'none'; } };
   canvas.addEventListener('pointerup', ptrEnd); canvas.addEventListener('pointercancel', ptrEnd);
   document.addEventListener('pointerlockchange', () => { locked = document.pointerLockElement === canvas; });
-  document.addEventListener('mousemove', (e) => { if (locked && active()) turn(e.movementX, e.movementY, 0.0024); });
+  document.addEventListener('mousemove', (e) => { if (locked && active()) turn(e.movementX, e.movementY, 0.0024 * (st.sens || 1)); });
   document.addEventListener('mousedown', (e) => { if (locked && e.button === 0) fireMouse = true; });
   document.addEventListener('mouseup', (e) => { if (e.button === 0) fireMouse = false; });
   // Il tasto grande si tiene premuto e, trascinando lo stesso dito, si continua a mirare.
@@ -5647,6 +5809,7 @@ G.start = function () {
     const n = Math.min(9, Math.round(R * 1.2));
     for (let k = 0; k < n; k++) { const a = (k / n) * 6.283 + Math.random(), r = self ? R * (0.45 + Math.random() * 0.4) : Math.random() * R * 0.7, x = ev.x + Math.sin(a) * r, z = ev.z + Math.cos(a) * r; G.burst(x, 0.3, z, soft ? 3 : 7, k % 2 ? c : c2, soft ? 2 : 6, soft ? 2 : 5, 0.7, 0.11, soft ? -0.05 : 0.8); if (!soft && (k % 2 === 0 || !self)) G.flash(x, 0.6, z, c, 1.5, R * 0.9, 0.35); if (ev.sky && k < 2) G.bolt(x + (Math.random() - 0.5) * 3, 26, z + (Math.random() - 0.5) * 3, ev.x, 0, ev.z, 0.5, 0.3, c, jagOf(ev.el) + 0.3); }
     if (!self && !soft) G.flash(ev.x, 1, ev.z, c2, 2, R * 2.2, 0.3);
+    if (!soft) { G.elemFx(ev.el, ev.x, ev.z, R * (self ? 0.8 : 0.7), ev.big ? 1.3 : 0.8); elSound(ev.el, R / 12, 0.3 * (0.3 + Math.max(0, 1 - Math.hypot(ev.x - s.player.x, ev.z - s.player.z) / 30))); }
     const d = Math.hypot(ev.x - s.player.x, ev.z - s.player.z), near = Math.max(0, 1 - d / 30);
     if (soft) tone('soft', 'sine', 300, 120, 0.5, 0.14); else { boom(ev.big ? 1.1 : 0.5, (ev.big ? 0.9 : 0.5) * (0.3 + near), ev.big ? 900 : 1300, false, 40); shake = Math.max(shake, (ev.big ? 1.1 : 0.45) * near); }
     if (ev.big) { flashSky = 1; pulse('flashfx'); hitStop = Math.max(hitStop, 0.05); }
@@ -5670,7 +5833,7 @@ G.start = function () {
         case 'swing': { const fx = -Math.sin(yaw), fz = -Math.cos(yaw), c = ec(ev.el); for (let k = -3; k <= 3; k++) { const a = k * 0.28, dx = fx * Math.cos(a) - fz * Math.sin(a), dz = fz * Math.cos(a) + fx * Math.sin(a); G.spray(p.x + dx * 1.4, 1.25 + k * 0.08, p.z + dz * 1.4, dx, 0.05, dz, 2, k % 2 ? c : ec2(ev.el), 7, 0.35, 0.22, 0.13, 0.2); } kick = Math.max(kick, 0.25); tone('sw', 'sawtooth', 340, 90, 0.1, 0.09, 60); boom(0.08, ev.n ? 0.25 : 0.1, 2600, true); if (ev.n) shake = Math.max(shake, 0.18); break; }
         case 'hit': {
           if (ev.boss) { if (G.bossView) G.bossView.flash = 0.07; } else { const v = G.mobViews.get(ev.id); if (v) v.flash = 0.08; }
-          addDmg(ev); if (!ev.tick) { G.targetPos(ev.boss ? 'b' : 'e', ev.id, ev.x, ev.z, ep); G.burst(ep.x, ep.y, ep.z, 3, ec(ev.el), 4, 1.5, 0.3, 0.08, 0.5); tone('hit', 'square', 210, 90, 0.05, 0.05, 40); } else tone('tk', 'square', 320, 200, 0.03, 0.02, 90);
+          addDmg(ev); if (!ev.tick) { hitMark = 0.14; G.targetPos(ev.boss ? 'b' : 'e', ev.id, ev.x, ev.z, ep); G.burst(ep.x, ep.y, ep.z, 3, ec(ev.el), 4, 1.5, 0.3, 0.08, 0.5); tone('hit', 'square', 210, 90, 0.05, 0.05, 40); } else tone('tk', 'square', 320, 200, 0.03, 0.02, 90);
           break;
         }
         case 'kill': {
@@ -5759,9 +5922,11 @@ G.start = function () {
             else if (ev.shape === 'line') G.bolt(hw.x, hw.y, hw.z, ev.x + sx * ev.len, 1.2, ev.z + sz * ev.len, 0.18, 0.09, ec(ev.el), jagOf(ev.el));
             else if (ev.shape === 'donut') G.ring(ev.x, 0.1, ev.z, ev.r0, ev.r, 0.25, c); else if (ev.r > 1.5) G.ring(ev.x, 0.1, ev.z, ev.r * 0.4, ev.r, 0.22, c); else { G.bolt(hw.x, hw.y, hw.z, ev.x, 1.3, ev.z, 0.14, 0.09, ec(ev.el), jagOf(ev.el)); G.flash(ev.x, 1.3, ev.z, c, 0.6, 1.8, 0.1); }
             tone('tkb', 'sawtooth', 400, 360, 0.08, 0.03, 90); break; }
-          G.teleFlash(ev); const d = Math.hypot(ev.x - p.x, ev.z - p.z), size = ev.shape === 'line' ? ev.len * 0.4 : ev.r, vol = Math.min(0.6, 0.12 + size * 0.03) * Math.max(0.3, 1 - d / 40);
+          G.shapeFx(ev); const d = Math.hypot(ev.x - p.x, ev.z - p.z), size = ev.shape === 'line' ? ev.len * 0.4 : ev.r, vol = Math.min(0.6, 0.12 + size * 0.03) * Math.max(0.3, 1 - d / 40);
           if (ev.shape === 'circle' && ev.r <= 1.5) { G.handWorld(hw, cam); G.bolt(hw.x, hw.y, hw.z, ev.x, 1.3, ev.z, 0.15, 0.13, ec(ev.el), jagOf(ev.el)); G.flash(ev.x, 1.3, ev.z, ec(ev.el), 1, 3.4, 0.18); tone('tg', 'square', 620, 180, 0.09, 0.07, 40); }
-          else { boom(0.2 + size * 0.03, vol, 1500, false, 40); if (ev.n && d < 20) shake = Math.max(shake, Math.min(0.5, size * 0.04)); }
+          else { elSound(ev.el, size / 12, vol); if (ev.n && d < 20) shake = Math.max(shake, Math.min(0.5, size * 0.04));
+            if (d < 2.5 && !ev.late) { if (ev.shape === 'cone') { G.gesture('slash', ev.el); kick = Math.max(kick, 0.2); } else if (ev.shape === 'circle' || ev.shape === 'donut') { G.gesture('slam', ev.el); kick = Math.max(kick, 0.3); } else G.gesture('toss', ev.el); }
+            if (ev.late && d < 30) { shake = Math.max(shake, Math.min(0.7, size * 0.06)); if (size > 5) flashSky = Math.max(flashSky, 0.5); } }
           break;
         }
         case 'face': yaw = Math.atan2(-(ev.x - p.x), -(ev.z - p.z)); pitch = -0.05; break;
@@ -5796,7 +5961,7 @@ G.start = function () {
     G.beaconMat.color.setHex(Math.sin(t * 3) > 0.2 ? 0xff2a18 : 0x3a0806);
     G.towerLight.intensity = 1.1 + Math.sin(t * 2) * 0.3 + (G.hypT > 0 ? 1.5 : 0);
 
-    G.syncMobs(s, dt, t); G.syncNpcs(s, dt, t); G.syncGivers(s, t); G.syncTurrets(s, dt, t); G.syncBoss(s, dt, t); G.syncSeals(s, t); G.syncTeles(s, t); G.syncThings(s, dt, t); G.syncBeacon(s, t); G.syncOrbs(s, t); G.drawScreens(dt, t);
+    G.syncMobs(s, dt, t); G.syncNpcs(s, dt, t); G.syncGivers(s, t); G.syncTurrets(s, dt, t); G.syncBoss(s, dt, t); G.syncSeals(s, t); G.syncTeles(s, t); G.syncThings(s, dt, t); G.animZones(s, dt, t); G.animMobs(s); G.syncBeacon(s, t); G.syncOrbs(s, t); G.drawScreens(dt, t);
     G.nodeGlows.forEach((sp, i) => { const on = s.hint.node === i; sp.scale.setScalar((on ? 5 : 2.4) + Math.sin(t * 5 + i) * 0.4); sp.material.color.setHex(on ? 0xffffff : 0x55f0ff); });
     if (riding && Math.random() < 0.7) G.burst(p.cam.x, p.cam.y - 0.4, p.cam.z, 1, 0xbfefff, 2, 0, 0.3, 0.06, 0.5);
     // poteri continui: raggio, soffio, risucchio
@@ -5807,7 +5972,7 @@ G.start = function () {
     if (running && p.grab) { drainT -= dt; if (drainT <= 0) { drainT = 0.05; const e = s.mobs.find((o) => o.id === p.grab.id); if (e) { G.handWorld(hw, cam); G.targetPos('e', e.id, e.x, e.z, ep); G.bolt(hw.x - 0.3, hw.y, hw.z, ep.x, ep.y, ep.z, 0.2, 0.09, ec(p.grab.k.el), 0.5); } } }
     let gk = null; for (let i = 0; i < 5; i++) if ((GROUND[s.kit[i].kind] || s.kit[i].gnd) && (i === 0 || s.ready[i])) { gk = s.kit[i]; break; }
     G.syncReticle(s, running && !!gk && !riding && !dead && !p.leap, gk ? ec(gk.el) : 0xffffff, gk && gk.r ? Math.min(3, gk.r * 0.5) : 1.2);
-    G.updateFx(dt, t, cam.position); flushDmg(dt);
+    G.updateFx(dt, t, cam.position); G.animUpdate(dt); flushDmg(dt);
     h.visible += ((riding || dead || !running || p.leap ? 0 : 1) - h.visible) * Math.min(1, dt * 12); h.glow = ocK;
     G.updateHands(dt, t, p.moving && !riding, W / Hh);
 
@@ -5835,6 +6000,9 @@ G.start = function () {
       if (txtCache['l' + i] !== lab) { txtCache['l' + i] = lab; b.querySelector('.nm').textContent = lab; }
       if (i > 0) { const hh = Math.round(cdh * 100); if (txtCache['c' + i] !== hh) { txtCache['c' + i] = hh; b.querySelector('.cd').style.height = hh + '%'; } }
     }
+    furyK += ((p.fury > 0 ? 1 : 0) - furyK) * Math.min(1, dt * 6); hasteK += ((p.haste > 0 ? 1 : 0) - hasteK) * Math.min(1, dt * 6);
+    $('furyfx').style.opacity = furyK * (0.75 + Math.sin(t * 9) * 0.25); $('hastefx').style.opacity = hasteK * 0.8; $('reflfx').style.opacity = p.reflect > 0 ? 0.9 : 0;
+    if (hitMark > 0) { hitMark = Math.max(0, hitMark - dt); } const hm = hitMark > 0; if (clsCache.hm !== hm) { clsCache.hm = hm; xh.classList.toggle('hit', hm); }
     $('ride').style.opacity = rideK; $('ocfx').style.opacity = ocK; $('veilfx').style.opacity = veilK; $('timefx').style.opacity = timeK; $('shieldfx').style.opacity = p.shield > 0 ? 0.9 : 0; $('downfx').style.opacity = dead ? 1 : 0;
     xh.className = riding ? 'ride' : s.aim.kind ? 'lock' : '';
     const bf = (p.fury > 0 ? 'FURIA ' : '') + (p.reflect > 0 ? 'SPECCHIO ' : '') + (p.phoenix > 0 ? 'FENICE ' : '') + (p.haste > 0 ? 'CORSA ' : '') + (p.veil > 0 ? 'VELO ' : '') + (p.orbit > 0 ? 'ORBITE ' : '') + (p.hot > 0 ? 'CURA ' : '') + (p.invuln > 0.3 ? 'INTOCCABILE' : ''); setTxt('buffs', bf);
@@ -5910,7 +6078,7 @@ G.start = function () {
   function loadCity(theme, seed) {
     G.disposeWorld(); pend.clear();
     s = C.create({ seed, theme, recipe: st.recipe, fame: st.fame });
-    G.buildWorld(s.city); G.buildFx(s); renderPass.scene = G.scene;
+    G.buildWorld(s.city); G.buildFx(s); G.buildAnim(s); renderPass.scene = G.scene;
     drawBase(); setupButtons(); for (const k in txtCache) delete txtCache[k]; for (const k in clsCache) delete clsCache[k];
     yaw = Math.PI / 2; pitch = 0.04; acc = 0; shake = 0; hitStop = 0;
   }
@@ -5923,7 +6091,15 @@ G.start = function () {
   function setRecipe(r) { st.recipe = r; G.save(); if (s) { C.setRecipe(s, r); setupButtons(); for (const k in txtCache) delete txtCache[k]; for (const k in clsCache) delete clsCache[k]; } renderHome(); }
   function openForge(back) { G.forge.open(st.recipe, B.levelFor(st.fame), (r) => { setRecipe(r); back(); }, back); }
   $('play').addEventListener('click', begin);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { if (running && !paused) openMenu(); if (ac && ac.state === 'running') ac.suspend(); } else if (ac && ac.state === 'suspended') ac.resume(); });
+  window.addEventListener('blur', () => { keys.clear(); fireBtn = fireMouse = false; });
+  const sensEl = $('sens'), sensLab = () => { $('sensV').textContent = Math.round((st.sens || 1) * 100) + '%'; };
+  sensEl.value = Math.round((st.sens || 1) * 100); sensLab(); sensEl.addEventListener('input', () => { st.sens = sensEl.value / 100; sensLab(); G.save(); });
   $('menuBtn').addEventListener('click', openMenu);
+  const showTips = () => { paused = true; keys.clear(); fireBtn = fireMouse = false; $('menu').classList.add('hidden'); $('tips').classList.remove('hidden'); };
+  $('tipsOk').addEventListener('click', () => { $('tips').classList.add('hidden'); st.tips = 1; G.save(); paused = false; last = performance.now(); });
+  $('menuTips').addEventListener('click', showTips);
+  $('play').addEventListener('click', () => { if (!st.tips && !(window.__dite && window.__dite.lockQ)) setTimeout(showTips, 50); });
   $('resume').addEventListener('click', () => { $('menu').classList.add('hidden'); paused = false; last = performance.now(); });
   $('openForge').addEventListener('click', () => { $('home').classList.add('hidden'); openForge(() => $('home').classList.remove('hidden')); });
   $('menuForge').addEventListener('click', () => { $('menu').classList.add('hidden'); openForge(() => $('menu').classList.remove('hidden')); });
