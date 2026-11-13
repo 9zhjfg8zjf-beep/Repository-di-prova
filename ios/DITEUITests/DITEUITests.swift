@@ -85,36 +85,32 @@ final class DITEUITests: XCTestCase {
     func testBackgroundRequiresExplicitResume() {
         tap("Entra nel gioco")
         waitForButton("Pausa")
-        var states = ["before Home: \(app.state.rawValue)"]
-        defer {
-            let evidence = XCTAttachment(string: states.joined(separator: "\n"))
-            evidence.name = "Observed application lifecycle states"
-            evidence.lifetime = .keepAlways
-            add(evidence)
+        var states = ["before system action: \(app.state.rawValue)"]
+        attachWindowGeometry("before-background")
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            // Home can leave a window visible and active at the edge in Windowed Apps.
+            // Use the real system Minimize control while the game window is reachable.
+            guard minimizePadWindow() else { return }
+            states.append("after system Minimize: \(app.state.rawValue)")
+        } else {
+            XCUIDevice.shared.press(.home)
+            states.append("after Home: \(app.state.rawValue)")
         }
-        XCUIDevice.shared.press(.home)
         let background = NSPredicate { _, _ in
             self.app.state == .runningBackground || self.app.state == .runningBackgroundSuspended
         }
-        let firstHome = XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: background, object: app)], timeout: 2)
-        states.append("after first Home: \(app.state.rawValue)")
-        if firstHome != .completed {
-            // Windowed iPadOS can expose Home while keeping app windows at the edges.
-            // Minimize from the system's bottom edge, not the displaced game window.
-            // https://support.apple.com/guide/ipad/ipad08c9970c/ipados
-            let system = XCUIApplication(bundleIdentifier: "com.apple.springboard")
-            let start = system.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.999))
-            let end = system.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.55))
-            start.press(forDuration: 0, thenDragTo: end, withVelocity: .fast, thenHoldForDuration: 0)
-            states.append("after system minimize gesture: \(app.state.rawValue)")
-        }
-        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: background, object: app)], timeout: 10), .completed,
+        let backgroundResult = XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: background, object: app)], timeout: 10)
+        states.append("after background wait: \(app.state.rawValue)")
+        attachText(states.joined(separator: "\n"), named: "Observed application lifecycle states before activation")
+        attachScreenshot("system-after-background-action")
+        XCTAssertEqual(backgroundResult, .completed,
                        "The app must actually enter the background before activation")
-        states.append("verified background: \(app.state.rawValue)")
-        attachScreenshot("system-with-game-in-background")
         app.activate()
-        XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10))
+        let foreground = app.wait(for: .runningForeground, timeout: 10)
         states.append("after activation: \(app.state.rawValue)")
+        attachText(states.joined(separator: "\n"), named: "Observed application lifecycle states after activation")
+        attachWindowGeometry("after-activation")
+        XCTAssertTrue(foreground)
         waitForButton("Riprendi partita")
         attachScreenshot("paused-after-background")
         tap("Riprendi partita")
@@ -211,15 +207,60 @@ final class DITEUITests: XCTestCase {
     @discardableResult private func waitForInterfaceOrientation(_ expected: String) -> String {
         let probe = app.descendants(matching: .any).matching(identifier: "dite.ui-test.interface-orientation").firstMatch
         let actual = NSPredicate(format: "exists == true AND value == %@", expected)
-        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: actual, object: probe)], timeout: 20), .completed,
-                       "The actual UIWindowScene must reach \(expected)")
+        let result = XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: actual, object: probe)], timeout: 20)
+        let value = probe.exists ? probe.value as? String ?? "unavailable" : "missing probe"
+        // Capture before asserting: continueAfterFailure=false can skip all following code.
+        attachText("expected=\(expected)\neffective=\(value)", named: "Actual window orientation")
+        attachWindowGeometry("orientation-" + expected)
+        XCTAssertEqual(result, .completed, "The actual UIWindowScene must reach \(expected)")
         XCTAssertGreaterThan(app.frame.width, app.frame.height, "The rendered app must remain landscape")
-        let value = probe.value as? String ?? "unavailable"
-        let evidence = XCTAttachment(string: "UIWindowScene.interfaceOrientation: " + value)
-        evidence.name = "Actual window orientation"
+        return value
+    }
+
+    private func minimizePadWindow() -> Bool {
+        let system = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        let minimize = system.buttons.matching(NSPredicate(format: "label == %@", "Minimize"))
+        if minimize.count != 1 || !minimize.element(boundBy: 0).isHittable {
+            guard let controls = waitForSystemButton("Window Controls", in: system) else { return false }
+            controls.tap()
+        }
+        guard let control = waitForSystemButton("Minimize", in: system) else { return false }
+        attachScreenshot("system-minimize-control")
+        control.tap()
+        return true
+    }
+
+    private func waitForSystemButton(_ label: String, in system: XCUIApplication) -> XCUIElement? {
+        let matches = system.buttons.matching(NSPredicate(format: "label == %@", label))
+        let reachable = NSPredicate { _, _ in
+            matches.count == 1 && matches.element(boundBy: 0).isHittable
+        }
+        let result = XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: reachable, object: system)], timeout: 10)
+        guard result == .completed else {
+            // System control labels are platform-owned; preserve their real tree on failure.
+            attachText(system.debugDescription, named: "System accessibility tree for " + label)
+            attachWindowGeometry("missing-system-control")
+            attachScreenshot("missing-system-control")
+            XCTFail("Expected one reachable system control: \(label); found \(matches.count)")
+            return nil
+        }
+        return matches.element(boundBy: 0)
+    }
+
+    private func attachWindowGeometry(_ name: String) {
+        let probe = app.descendants(matching: .any).matching(identifier: "dite.ui-test.window-geometry").firstMatch
+        let detail = probe.exists ? probe.value as? String ?? "unavailable" : "missing geometry probe"
+        let webView = app.webViews.firstMatch
+        let webFrame = webView.exists ? NSStringFromCGRect(webView.frame) : "unavailable"
+        attachText("\(detail)\nXCUIApplication.state=\(app.state.rawValue)\napp.frame=\(app.frame)\nwebView.frame=\(webFrame)",
+                   named: "Window geometry " + name)
+    }
+
+    private func attachText(_ text: String, named name: String) {
+        let evidence = XCTAttachment(string: text)
+        evidence.name = name
         evidence.lifetime = .keepAlways
         add(evidence)
-        return value
     }
 
     private func button(_ label: String) -> XCUIElement {

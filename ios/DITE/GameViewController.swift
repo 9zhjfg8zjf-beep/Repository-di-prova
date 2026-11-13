@@ -63,6 +63,21 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
                 probe.widthAnchor.constraint(equalToConstant: 1),
                 probe.heightAnchor.constraint(equalToConstant: 1)
             ])
+            let geometry = UITestGeometryProbe()
+            geometry.backgroundColor = .clear
+            geometry.isOpaque = false
+            geometry.isUserInteractionEnabled = false
+            geometry.isAccessibilityElement = true
+            geometry.accessibilityIdentifier = "dite.ui-test.window-geometry"
+            geometry.accessibilityLabel = "Window geometry diagnostics"
+            geometry.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(geometry)
+            NSLayoutConstraint.activate([
+                geometry.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                geometry.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 4),
+                geometry.widthAnchor.constraint(equalToConstant: 1),
+                geometry.heightAnchor.constraint(equalToConstant: 1)
+            ])
             let diagnostics = UIView()
             diagnostics.backgroundColor = .clear
             diagnostics.isOpaque = false
@@ -523,16 +538,46 @@ private final class UITestOrientationProbe: UIView {
     // that can keep the same bounds. Never report the requested device orientation.
     override var accessibilityValue: String? {
         get {
-            guard let orientation = window?.windowScene?.interfaceOrientation else { return "unknown" }
-            switch orientation {
-            case .landscapeLeft: return "landscapeLeft"
-            case .landscapeRight: return "landscapeRight"
-            case .portrait: return "portrait"
-            case .portraitUpsideDown: return "portraitUpsideDown"
-            default: return "unknown"
-            }
+            guard let scene = window?.windowScene else { return "unknown" }
+            return uiTestOrientationName(scene.effectiveGeometry.interfaceOrientation)
         }
         set { }
+    }
+}
+
+private final class UITestGeometryProbe: UIView {
+    override var accessibilityValue: String? {
+        get {
+            guard let window, let scene = window.windowScene else { return "window unavailable" }
+            let geometry = scene.effectiveGeometry
+            var values = [
+                "legacy=" + uiTestOrientationName(scene.interfaceOrientation),
+                "effective=" + uiTestOrientationName(geometry.interfaceOrientation),
+                "window.frame=" + NSStringFromCGRect(window.frame),
+                "window.bounds=" + NSStringFromCGRect(window.bounds),
+                "safeArea=" + NSStringFromUIEdgeInsets(window.safeAreaInsets),
+                "scene.activationState=\(scene.activationState.rawValue)",
+                "application.state=\(UIApplication.shared.applicationState.rawValue)"
+            ]
+            if #available(iOS 26.0, *) {
+                values.append("locked=\(geometry.isInterfaceOrientationLocked)")
+                values.append("geometry.bounds=" + NSStringFromCGRect(geometry.coordinateSpace.bounds))
+            } else {
+                values.append("locked=unavailable before iOS26")
+            }
+            return values.joined(separator: "\n")
+        }
+        set { }
+    }
+}
+
+private func uiTestOrientationName(_ orientation: UIInterfaceOrientation) -> String {
+    switch orientation {
+    case .landscapeLeft: return "landscapeLeft"
+    case .landscapeRight: return "landscapeRight"
+    case .portrait: return "portrait"
+    case .portraitUpsideDown: return "portraitUpsideDown"
+    default: return "unknown"
     }
 }
 #endif
