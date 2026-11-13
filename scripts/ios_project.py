@@ -62,7 +62,7 @@ def project():
         phases = [add("sources:" + name, "PBXSourcesBuildPhase", buildActionMask=2147483647, files=sources, runOnlyForDeploymentPostprocessing=0),
                   add("frameworks:" + name, "PBXFrameworksBuildPhase", buildActionMask=2147483647, files=[], runOnlyForDeploymentPostprocessing=0),
                   add("resources:" + name, "PBXResourcesBuildPhase", buildActionMask=2147483647, files=resources, runOnlyForDeploymentPostprocessing=0)]
-        settings = {"PRODUCT_NAME": "$(TARGET_NAME)", "SUPPORTED_PLATFORMS": "iphoneos iphonesimulator", "TARGETED_DEVICE_FAMILY": "1",
+        settings = {"PRODUCT_NAME": "$(TARGET_NAME)", "SUPPORTED_PLATFORMS": "iphoneos iphonesimulator", "TARGETED_DEVICE_FAMILY": "1,2",
                     "SWIFT_EMIT_LOC_STRINGS": "NO", "GENERATE_INFOPLIST_FILE": "YES", "CODE_SIGN_STYLE": "Automatic"}
         if name == "DITE":
             settings.update({"INFOPLIST_FILE": "DITE/Info.plist", "GENERATE_INFOPLIST_FILE": "NO",

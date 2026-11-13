@@ -32,7 +32,9 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
     private var uiTestEvents: [String] = []
     #endif
 
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .landscape }
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        traitCollection.userInterfaceIdiom == .pad ? .all : .landscape
+    }
     override var preferredInterfaceOrientationForPresentation: UIInterfaceOrientation { .landscapeRight }
     override var prefersStatusBarHidden: Bool { true }
 

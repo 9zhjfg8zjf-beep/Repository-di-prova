@@ -5,6 +5,7 @@ import importlib.util
 import io
 import json
 import plistlib
+import re
 import shutil
 import tempfile
 import unittest
@@ -91,6 +92,14 @@ class NativeMetadataTests(unittest.TestCase):
             info = plistlib.load(file)
         self.assertEqual(set(info["UISupportedInterfaceOrientations"]),
                          {"UIInterfaceOrientationLandscapeLeft", "UIInterfaceOrientationLandscapeRight"})
+        self.assertEqual(set(info.get("UISupportedInterfaceOrientations~ipad", [])),
+                         {"UIInterfaceOrientationPortrait", "UIInterfaceOrientationPortraitUpsideDown",
+                          "UIInterfaceOrientationLandscapeLeft", "UIInterfaceOrientationLandscapeRight"})
+        self.assertNotIn("UIRequiresFullScreen", info)
+        project = (ROOT / "ios/DITE.xcodeproj/project.pbxproj").read_text()
+        families = re.findall(r"\bTARGETED_DEVICE_FAMILY = ([^;]+);", project)
+        self.assertEqual(len(families), 6, "App and both test targets need Debug and Release device families")
+        self.assertEqual(set(families), {'"1,2"'}, "Ship and test native iPhone and iPad layouts")
         self.assertFalse(any(key.endswith("UsageDescription") for key in info))
         self.assertNotIn("UIBackgroundModes", info)
         self.assertNotIn("NSAppTransportSecurity", info)
