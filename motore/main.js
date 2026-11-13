@@ -1,7 +1,12 @@
 // MOTORE - lato schermo: resa, comandi, interfaccia, suoni, ciclo principale.
 G.start = function () {
   const C = Core, B = Bricks, EL = B.ELEM, $ = (id) => document.getElementById(id);
-  const fail = (msg) => { $('homeMsg').textContent = msg; $('play').disabled = true; if ($('appError')) { $('errorTitle').textContent = 'La grafica non si avvia'; $('errorDetail').textContent = msg; $('appError').classList.remove('hidden'); if ($('errorRetry')) $('errorRetry').onclick = () => window.location.reload(); } };
+  if (!G.storage) G.initStorage();
+  const fail = (msg) => {
+    $('homeMsg').textContent = msg; $('play').disabled = true;
+    if ($('appError')) { $('errorTitle').textContent = 'La grafica non si avvia'; $('errorDetail').textContent = msg; $('appError').classList.remove('hidden'); if ($('errorRetry')) $('errorRetry').onclick = () => window.location.reload(); }
+    try { if (G.native) G.native.send({ v: 1, type: 'state', screen: 'error', playing: false }); } catch (error) { /* il messaggio web resta visibile */ }
+  };
   const canvas = $('c');
   let renderer;
   try { renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' }); }
@@ -13,7 +18,6 @@ G.start = function () {
   const bel = (el) => (el && el.indexOf('+') > 0 ? el.slice(0, el.indexOf('+')) : el);
   const ec = (el) => { el = bel(el); return EL[el] ? EL[el].c : 0xff6a20; }, ec2 = (el) => { el = bel(el); return EL[el] ? EL[el].c2 : 0xffd0a0; }, css = (el) => { el = bel(el); return EL[el] ? EL[el].css : '#fff'; };
 
-  G.initStorage();
   const st = G.store, app = G.AppState.create();
   if (G.storage.isNew && G.Onboarding) { st.recipe = G.Onboarding.introRecipe(); st.onboarding = { version: 1, step: 0, skipped: false }; }
   if (!B.valid(st.recipe)) st.recipe = JSON.parse(JSON.stringify(B.PRESETS[0]));
@@ -31,7 +35,7 @@ G.start = function () {
   const composer = new THREE.EffectComposer(renderer), renderPass = new THREE.RenderPass(new THREE.Scene(), cam);
   composer.addPass(renderPass);
   const handPass = new THREE.RenderPass(G.handScene, G.handCam); handPass.clear = false; handPass.clearDepth = true; composer.addPass(handPass);
-  const bloom = new THREE.UnrealBloomPass(new THREE.Vector2(256, 256), 0.95, 0.6, 0.6); composer.addPass(bloom);
+  const bloom = new THREE.UnrealBloomPass(new THREE.Vector2(256, 256), 0.32, 0.6, 0.88); composer.addPass(bloom);
   const fin = new THREE.ShaderPass({
     uniforms: { tDiffuse: { value: null }, chroma: { value: 0.006 }, tint: { value: new THREE.Vector3(1, 1, 1) }, tintAmt: { value: 0 }, vig: { value: 1 }, desat: { value: 0 } },
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }',
@@ -422,7 +426,7 @@ G.start = function () {
     h.visible += ((riding || dead || !running || p.leap || p.possession || p.phase ? 0 : 1) - h.visible) * Math.min(1, dt * 12); h.glow = ocK;
     G.updateHands(dt, t, p.moving && !riding && !st.reducedMotion, W / Hh);
 
-    bloom.strength = 0.95 + rideK * 0.8 + ocK * 0.3;
+    bloom.strength = st.reducedFlash ? 0.18 : Math.min(0.52, 0.32 + rideK * 0.12 + ocK * 0.08);
     fin.uniforms.chroma.value = st.reducedMotion ? 0 : 0.0022 + rideK * 0.018 + ocK * 0.005 + shake * 0.008 + kick * 0.01;
     const ult = s.kit[4], uc = ec(ult.el);
     if (rideK > 0.02) fin.uniforms.tint.value.set(0.55, 0.9, 1.15); else fin.uniforms.tint.value.set(0.35 + ((uc >> 16) & 255) / 320, 0.35 + ((uc >> 8) & 255) / 320, 0.35 + (uc & 255) / 320);
