@@ -55,10 +55,12 @@ const empty = input => {
       assert.equal(await page.evaluate(() => !!window.__dite.lockQ), false, 'Il primo ingresso deve usare la guida vera');
       await page.locator('#play').tap(); await page.waitForFunction(() => window.__dite.screen().playing);
       const cdp = await fresh.newCDPSession(page);
-      for (const leftHanded of [false, true]) {
-        if (leftHanded) {
+      await cdp.send('DOM.enable'); await cdp.send('CSS.enable');
+      for (const font of ['system', 'dejavu']) for (const leftHanded of [false, true]) {
+        await page.evaluate(font => { if (font === 'system') document.documentElement.style.removeProperty('--ui'); else document.documentElement.style.setProperty('--ui', '"DejaVu Sans",sans-serif'); return document.fonts.ready; }, font);
+        if (await page.evaluate(leftHanded => window.__dite.store.leftHanded !== leftHanded, leftHanded)) {
           await page.locator('#menuBtn').tap(); await page.locator('#menuSettings').tap();
-          await page.locator('[data-settings-tab="controls"]').tap(); await page.locator('[data-pref="leftHanded"]').check();
+          await page.locator('[data-settings-tab="controls"]').tap(); await page.locator('[data-pref="leftHanded"]').setChecked(leftHanded);
           await page.locator('#settings [data-nav="back"]').tap(); await page.locator('#resume').tap();
         }
         await page.waitForFunction(() => !document.getElementById('guideCoach').classList.contains('hidden') && document.getElementById('guideStep').textContent.includes('Cammina'));
@@ -69,14 +71,22 @@ const empty = input => {
           const D = window.__dite, coach = document.getElementById('guideCoach').getBoundingClientRect(), joy = document.getElementById('joy').getBoundingClientRect();
           const visible = node => { const style = getComputedStyle(node), r = node.getBoundingClientRect(); return style.display !== 'none' && style.visibility !== 'hidden' && r.width > 0 && r.height > 0; };
           const collisions = []; for (const id of ['quest', 'joy', 'b0', 'b1', 'b2', 'b3', 'b4', 'useBtn']) { const node = document.getElementById(id), r = node.getBoundingClientRect(); if (visible(node) && Math.min(coach.right, r.right) > Math.max(coach.left, r.left) && Math.min(coach.bottom, r.bottom) > Math.max(coach.top, r.top)) collisions.push(id); }
-          const clippedLabels = Array.from(document.querySelectorAll('#btns .nm')).filter(node => node.scrollWidth > node.clientWidth + 1).map(node => node.textContent);
-          return { collisions, clippedLabels, coach: coach.toJSON(), joy: joy.toJSON(), pointer: D.inputSnapshot().joy.id, leftHanded: D.store.leftHanded, quest: !!D.state().quest, questHidden: !visible(document.getElementById('quest')), questNone: document.getElementById('quest').classList.contains('none') };
+          const labels = Array.from(document.querySelectorAll('#btns .nm')).map(node => { const style = getComputedStyle(node); return { name: node.textContent, clientWidth: node.clientWidth, scrollWidth: node.scrollWidth, font: style.font, fontSize: Number.parseFloat(style.fontSize), padding: style.padding, width: node.getBoundingClientRect().width }; });
+          const clippedLabels = labels.filter(node => node.scrollWidth > node.clientWidth + 1).map(node => node.name);
+          return { collisions, clippedLabels, labels, coach: coach.toJSON(), joy: joy.toJSON(), pointer: D.inputSnapshot().joy.id, leftHanded: D.store.leftHanded, quest: !!D.state().quest, questHidden: !visible(document.getElementById('quest')), questNone: document.getElementById('quest').classList.contains('none') };
         });
+        const documentNode = await cdp.send('DOM.getDocument'), labelNode = await cdp.send('DOM.querySelector', { nodeId: documentNode.root.nodeId, selector: '#b4 .nm' });
+        const actualFonts = (await cdp.send('CSS.getPlatformFontsForNode', { nodeId: labelNode.nodeId })).fonts;
+        const diagnostic = JSON.stringify({ font, leftHanded, actualFonts, labels: layout.labels });
+        // Conserva la foto anche quando un font del runner rivela un nome tagliato.
+        await page.screenshot({ path: __dirname + '/shots/mobile-coach-' + (leftHanded ? 'mancino' : 'destro') + (font === 'dejavu' ? '-dejavu' : '') + '.png' });
+        if (font === 'dejavu') assert.ok(actualFonts.length > 0 && actualFonts.every(value => value.familyName === 'DejaVu Sans') && actualFonts.some(value => value.glyphCount > 0), 'La regressione richiede DejaVu Sans reale, non un fallback: ' + diagnostic);
         assert.equal(layout.leftHanded, leftHanded); assert.notEqual(layout.pointer, null); assert.ok(layout.joy.width > 0 && layout.joy.height > 0);
         assert.equal(layout.quest, false); assert.equal(layout.questNone, true); assert.equal(layout.questHidden, true, 'Il suggerimento missione lascia spazio alla guida iniziale');
-        assert.deepEqual(layout.collisions, [], 'La guida deve restare distinta dal joystick e da tutti i comandi'); assert.deepEqual(layout.clippedLabels, [], 'I nomi dei cinque poteri iniziali devono essere interi');
+        assert.deepEqual(layout.collisions, [], 'La guida deve restare distinta dal joystick e da tutti i comandi: ' + diagnostic); assert.deepEqual(layout.clippedLabels, [], 'I nomi dei cinque poteri iniziali devono essere interi: ' + diagnostic);
+        assert.ok(layout.labels.every(value => value.fontSize >= 11), 'I nomi non devono restringersi per entrare: ' + diagnostic);
         assert.ok(layout.coach.left >= 44 && layout.coach.right <= 623 && layout.coach.top >= 0 && layout.coach.bottom <= 354, 'Guida dentro la safe area a667');
-        await page.screenshot({ path: __dirname + '/shots/mobile-coach-' + (leftHanded ? 'mancino' : 'destro') + '.png' });
+        console.log('coach font:', diagnostic);
         await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
       }
       await page.locator('#guideSkip').tap();
@@ -84,7 +94,7 @@ const empty = input => {
       assert.equal(await page.locator('#quest.none').isVisible(), true); assert.match(await page.locator('#qLine').textContent(), /Cerca chi ha un !/);
       assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('dite2')).onboarding.skipped), true);
       await page.screenshot({ path: __dirname + '/shots/mobile-coach-saltato.png' });
-      assert.deepEqual(errors, []); await fresh.close(); console.log('coach: profilo nuovo, due lati via impostazioni, safe area/joystick/poteri distinti e Salta ripristina il suggerimento');
+      assert.deepEqual(errors, []); await fresh.close(); console.log('coach: profilo nuovo, font di sistema e DejaVu reale, due lati via impostazioni, nomi interi, safe area/joystick/poteri distinti e Salta ripristina il suggerimento');
       if (selected.length === 1 && selected[0] === 'coach') { console.log('nessun errore'); return; }
     }
     const context = await browser.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true, deviceScaleFactor: 1 });
