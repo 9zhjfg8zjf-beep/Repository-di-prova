@@ -19,8 +19,9 @@ const wants = (name) => selected.includes('all') || selected.includes(name);
       if (D.renderOnce) { D.renderOnce(); return; }
       return new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     });
-    const fixture = () => page.evaluate(() => {
-      const D = window.__dite, s = D.state(), G = D.G, g = s.givers[0], p = s.player, arena = s.city.arenas[0];
+    const fixture = (theme, seed = 14) => page.evaluate(({ theme, seed }) => {
+      const D = window.__dite, old = window.__renderProof; if (theme) D.loadCity(theme, seed);
+      const s = D.state(), G = D.G, g = s.givers[0], p = s.player, arena = s.city.arenas[0];
       G.renderPrefs = { quality: 'quality', reducedMotion: false, reducedFlash: false };
       // Tutto si svolge in pausa: nessun nuovo cast o AI cambia il campione.
       for (const id of ['home', 'menu', 'tips']) document.getElementById(id).classList.add('hidden');
@@ -37,19 +38,16 @@ const wants = (name) => selected.includes('all') || selected.includes(name);
       window.__renderProof = { draws: {}, maps: {}, textures: {}, disposed: {} };
       const proof = window.__renderProof, sp = G.giverViews[0].sp;
       sp.onBeforeRender = () => { const id = sp.material.map.uuid; proof.maps[id] = (proof.maps[id] || 0) + 1; };
-      return { x: g.x, z: g.z };
-    });
+      // Consuma il dirty della lobby prima che un RAF scelga una camera diversa.
+      if (D.renderOnce) D.renderOnce();
+      return { x: g.x, z: g.z, disposal: old ? old.disposed : null };
+    }, { theme, seed });
     if (wants('memory')) {
       const samples = [], themes = ['dite', 'dite', 'dite', 'cocito', 'malebolge', 'dite', 'cocito', 'malebolge', 'dite'];
       for (let cycle = 0; cycle < themes.length; cycle++) {
         const theme = themes[cycle];
-        const disposal = await page.evaluate((theme) => {
-          const old = window.__renderProof;
-          window.__dite.loadCity(theme, 14);
-          return old ? old.disposed : null;
-        }, theme);
+        const { disposal } = await fixture(theme);
         if (cycle > 0) { assert.equal(Object.keys(disposal).length, 3, 'Tre texture dei committenti devono essere liberate'); for (const n of Object.values(disposal)) assert.equal(n, 1, 'Ogni texture va liberata una sola volta'); }
-        await fixture();
         await page.evaluate(() => {
           const D = window.__dite, G = D.G, s = D.state(), g = s.givers[0], proof = window.__renderProof;
           const before = new Set(G.scene.children);
@@ -178,7 +176,7 @@ const wants = (name) => selected.includes('all') || selected.includes(name);
     if (wants('environment')) {
       const samples = [];
       for (const theme of ['dite', 'cocito', 'malebolge']) {
-        await page.evaluate((theme) => window.__dite.loadCity(theme, 3), theme); await fixture();
+        await fixture(theme, 3);
         await page.evaluate(() => {
           const D = window.__dite, s = D.state(), G = D.G, p = s.player, c = s.city.canals[0], v = 6 * c.k * D.Core.CELL - D.Core.HALF + 4;
           p.x = c.horiz ? 2 : v - 9; p.z = c.horiz ? v - 9 : 2;
@@ -194,7 +192,7 @@ const wants = (name) => selected.includes('all') || selected.includes(name);
       console.log('canali senza poteri', JSON.stringify(samples));
     }
     if (wants('readability')) {
-      await page.evaluate(() => window.__dite.loadCity('dite', 14)); await fixture();
+      await fixture('dite');
       const setup = await page.evaluate(() => {
         const D = window.__dite, G = D.G, s = D.state(), p = s.player, arena = s.city.arenas[0];
         p.x = arena.x + 10; p.z = arena.z + 7; p.yaw = Math.PI / 2; p.pitch = -0.12; p.res = 100;
@@ -238,7 +236,7 @@ const wants = (name) => selected.includes('all') || selected.includes(name);
       assert.ok(await page.evaluate(() => window.__teleDraws) > 0, 'Il preavviso del boss deve essere disegnato');
     }
     if (wants('comfort')) {
-      await page.evaluate(() => window.__dite.loadCity('dite', 14)); await fixture();
+      await fixture('dite');
       const result = await page.evaluate(() => {
         const G = window.__dite.G, s = window.__dite.state(), g = s.givers[0];
         G.renderPrefs = { quality: 'performance', reducedMotion: true, reducedFlash: true };
