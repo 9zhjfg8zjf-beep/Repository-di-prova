@@ -2,7 +2,7 @@
 'use strict';
 const assert = require('node:assert/strict'), fs = require('node:fs');
 const { chromium } = require('./pw.js'), B = require('./bricks.js'), Storage = require('./storage.js');
-const selected = (process.argv[2] || 'all').split(','), available = ['all', 'bootstrap', 'navigation', 'input', 'storage', 'loading', 'journal', 'bonuses'];
+const selected = (process.argv[2] || 'all').split(','), available = ['all', 'bootstrap', 'coach', 'navigation', 'input', 'storage', 'loading', 'journal', 'bonuses'];
 for (const name of selected) assert.ok(available.includes(name), 'scenario mobile sconosciuto: ' + name);
 const wants = name => selected.includes('all') || selected.includes(name);
 const profile = Storage.normalize({ recipe: { nome: 'Prova mobile', slots: ['dardo', 'scatto', 'nova', 'nova', 'ira'].map(id => ({ id, el: 'luce', t: 1 })) }, fame: 80, seed: 14, tips: true, onboarding: { version: 1, step: 5, skipped: false }, muted: true }, B);
@@ -44,6 +44,48 @@ const empty = input => {
       assert.deepEqual(pageErrors, [], 'Il fallimento WebGL deve essere gestito senza eccezioni JavaScript'); await broken.close();
       console.log('bootstrap: WebGL assente notifica ready/error nativi, nessun loop, retry ricarica e avvia davvero');
       if (selected.length === 1 && selected[0] === 'bootstrap') { console.log('nessun errore'); return; }
+    }
+    if (wants('coach')) {
+      const fresh = await browser.newContext({ viewport: { width: 667, height: 375 }, hasTouch: true, isMobile: true, deviceScaleFactor: 1 });
+      const page = await fresh.newPage(), errors = [];
+      page.on('pageerror', error => errors.push(error.message)); page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+      await page.goto(process.env.DITE_MOBILE_URL || 'file://' + __dirname + '/dist/index.html');
+      await page.waitForFunction(() => window.__dite && window.__dite.screen().screen === 'lobby');
+      await page.evaluate(() => { const style = document.documentElement.style; style.setProperty('--sl', '44px'); style.setProperty('--sr', '44px'); style.setProperty('--sb', '21px'); });
+      assert.equal(await page.evaluate(() => !!window.__dite.lockQ), false, 'Il primo ingresso deve usare la guida vera');
+      await page.locator('#play').tap(); await page.waitForFunction(() => window.__dite.screen().playing);
+      const cdp = await fresh.newCDPSession(page);
+      for (const leftHanded of [false, true]) {
+        if (leftHanded) {
+          await page.locator('#menuBtn').tap(); await page.locator('#menuSettings').tap();
+          await page.locator('[data-settings-tab="controls"]').tap(); await page.locator('[data-pref="leftHanded"]').check();
+          await page.locator('#settings [data-nav="back"]').tap(); await page.locator('#resume').tap();
+        }
+        await page.waitForFunction(() => !document.getElementById('guideCoach').classList.contains('hidden') && document.getElementById('guideStep').textContent.includes('Cammina'));
+        assert.ok((await page.locator('#guideText').textContent()).includes(leftHanded ? 'destra' : 'sinistra'));
+        const x = leftHanded ? 557 : 110;
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y: 314, id: 31 }] });
+        const layout = await page.evaluate(() => {
+          const D = window.__dite, coach = document.getElementById('guideCoach').getBoundingClientRect(), joy = document.getElementById('joy').getBoundingClientRect();
+          const visible = node => { const style = getComputedStyle(node), r = node.getBoundingClientRect(); return style.display !== 'none' && style.visibility !== 'hidden' && r.width > 0 && r.height > 0; };
+          const collisions = []; for (const id of ['quest', 'joy', 'b0', 'b1', 'b2', 'b3', 'b4', 'useBtn']) { const node = document.getElementById(id), r = node.getBoundingClientRect(); if (visible(node) && Math.min(coach.right, r.right) > Math.max(coach.left, r.left) && Math.min(coach.bottom, r.bottom) > Math.max(coach.top, r.top)) collisions.push(id); }
+          const clippedLabels = Array.from(document.querySelectorAll('#btns .nm')).filter(node => node.scrollWidth > node.clientWidth + 1).map(node => node.textContent);
+          return { collisions, clippedLabels, coach: coach.toJSON(), joy: joy.toJSON(), pointer: D.inputSnapshot().joy.id, leftHanded: D.store.leftHanded, quest: !!D.state().quest, questHidden: !visible(document.getElementById('quest')), questNone: document.getElementById('quest').classList.contains('none') };
+        });
+        assert.equal(layout.leftHanded, leftHanded); assert.notEqual(layout.pointer, null); assert.ok(layout.joy.width > 0 && layout.joy.height > 0);
+        assert.equal(layout.quest, false); assert.equal(layout.questNone, true); assert.equal(layout.questHidden, true, 'Il suggerimento missione lascia spazio alla guida iniziale');
+        assert.deepEqual(layout.collisions, [], 'La guida deve restare distinta dal joystick e da tutti i comandi'); assert.deepEqual(layout.clippedLabels, [], 'I nomi dei cinque poteri iniziali devono essere interi');
+        assert.ok(layout.coach.left >= 44 && layout.coach.right <= 623 && layout.coach.top >= 0 && layout.coach.bottom <= 354, 'Guida dentro la safe area a667');
+        await page.screenshot({ path: __dirname + '/shots/mobile-coach-' + (leftHanded ? 'mancino' : 'destro') + '.png' });
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      }
+      await page.locator('#guideSkip').tap();
+      await page.waitForFunction(() => document.getElementById('guideCoach').classList.contains('hidden') && window.__dite.store.onboarding.skipped);
+      assert.equal(await page.locator('#quest.none').isVisible(), true); assert.match(await page.locator('#qLine').textContent(), /Cerca chi ha un !/);
+      assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('dite2')).onboarding.skipped), true);
+      await page.screenshot({ path: __dirname + '/shots/mobile-coach-saltato.png' });
+      assert.deepEqual(errors, []); await fresh.close(); console.log('coach: profilo nuovo, due lati via impostazioni, safe area/joystick/poteri distinti e Salta ripristina il suggerimento');
+      if (selected.length === 1 && selected[0] === 'coach') { console.log('nessun errore'); return; }
     }
     const context = await browser.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true, deviceScaleFactor: 1 });
     await context.addInitScript(value => localStorage.setItem('dite2', JSON.stringify(value)), profile);
