@@ -99,8 +99,8 @@ G.initForge = function () {
     else if ((n = near(t, 'data-allel'))) { const el = draft.slots[sel].el; for (const b of draft.slots) b.el = el; render(); }
     else if ((n = near(t, 'data-el'))) { draft.slots[sel].el = n.dataset.el; render(); }
     else if ((n = near(t, 'data-arch'))) { if (draft.slots.some((b, i) => i !== sel && b.id === n.dataset.arch)) return msg('Quel mattoncino e gia nell\'altro spazio'); draft.slots[sel].id = n.dataset.arch; render(); }
-    else if ((n = near(t, 'data-preset'))) { const p = B.PRESETS[+n.dataset.preset]; draft = copy(p); visibleCount = PAGE_SIZE; $('fName').value = draft.nome; B.upgrade(draft, budget, Math.random); msg(p.desc); render(); }
-    else if ((n = near(t, 'data-saved'))) { draft = copy(G.store.saved[+n.dataset.saved]); B.fit(draft, budget); visibleCount = PAGE_SIZE; $('fName').value = draft.nome; msg(''); render(); }
+    else if ((n = near(t, 'data-preset'))) { const p = B.PRESETS[+n.dataset.preset]; draft = copy(p); visibleCount = PAGE_SIZE; $('fName').value = draft.nome; $('fDesc').value = draft.desc || ''; B.upgrade(draft, budget, Math.random); msg(p.desc); render(); }
+    else if ((n = near(t, 'data-saved'))) { draft = copy(G.store.saved[+n.dataset.saved]); B.fit(draft, budget); visibleCount = PAGE_SIZE; $('fName').value = draft.nome; $('fDesc').value = draft.desc || ''; msg(''); render(); }
     else if ((n = near(t, 'data-del'))) { G.store.saved.splice(+n.dataset.del, 1); G.save(); render(); }
   });
   $('forge').addEventListener('change', (e) => { if (e.target.id === 'fFamily') { family = e.target.value; visibleCount = PAGE_SIZE; renderList(); } });

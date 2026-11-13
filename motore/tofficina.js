@@ -105,19 +105,30 @@ const expectedInventory = { total: Catalogue.LIST.length, fresh: Catalogue.catal
       await entry.scrollIntoViewIfNeeded(); await snap('corpo-' + family);
       bodyChecks++;
     }
-    const starters = await page.evaluate(() => window.__dite.Bricks.PRESETS.flatMap((r, index) => r.edition === '3.2' ? [{ index, nome: r.nome, ids: r.slots.map((s) => s.id) }] : []));
+    const starters = await page.evaluate(() => window.__dite.Bricks.PRESETS.flatMap((r, index) => r.edition === '3.2' ? [{ index, nome: r.nome, desc: r.desc || '', ids: r.slots.map((s) => s.id) }] : []));
     assert.ok(starters.length >= 4, 'le nuove famiglie hanno ricette pronte');
     for (const starter of starters) {
       await page.tap('[data-preset="' + starter.index + '"]');
       assert.equal(await page.locator('#fName').inputValue(), starter.nome);
+      assert.equal(await page.locator('#fDesc').inputValue(), starter.desc, 'selezionare una ricetta pronta aggiorna la descrizione visibile');
       assert.ok(!(await page.locator('#fBud').evaluate((n) => n.classList.contains('over'))));
       await page.tap('#fSave');
       const ready = (await store()).saved.find((r) => r.nome === starter.nome);
       assert.ok(ready, starter.nome + ': ricetta selezionabile e salvabile');
+      assert.equal(ready.desc, starter.desc);
       assert.deepEqual(ready.slots.map((s) => s.id), starter.ids, 'adattare i gradi al budget conserva i poteri');
       assert.ok(await page.evaluate((r) => { const D = window.__dite, B = D.Bricks; return B.valid(r) && B.cost(r) <= B.budgetFor(B.levelFor(D.store.fame)); }, ready));
       assert.deepEqual((await store()).recipe, saved, 'provare una ricetta pronta conserva il personaggio attivo');
     }
+    // Una ricetta salvata deve sostituire anche il testo usato dal compositore.
+    const recalled = starters[0], recalledIndex = (await store()).saved.findIndex((r) => r.nome === recalled.nome);
+    await page.tap('[data-saved="' + recalledIndex + '"]');
+    assert.equal(await page.locator('#fName').inputValue(), recalled.nome);
+    assert.equal(await page.locator('#fDesc').inputValue(), recalled.desc, 'caricare un salvataggio aggiorna la descrizione visibile');
+    await page.tap('#fCompose'); await page.tap('#fSave');
+    const composed = (await store()).saved.find((r) => r.nome === recalled.nome);
+    assert.equal(composed.desc, recalled.desc, 'il compositore usa la descrizione appena caricata, non quella della ricetta precedente');
+    assert.deepEqual((await store()).recipe, saved);
     await page.locator('#fPresets').scrollIntoViewIfNeeded(); await snap('ricette');
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
     assert.equal(overflow, false, 'nessun overflow orizzontale sullo schermo touch');
