@@ -1,6 +1,6 @@
 # DITE — direzione mobile e preparazione iOS
 
-Stato: **4.0 candidata, web verificato in CI e diagnosi UI iOS in corso**, non ancora pubblicata. Aggiornato il 13 novembre 2026.
+Stato: **4.0 candidata 15, 33/33 prove locali verdi e nuova CI nativa da eseguire**, non ancora pubblicata. Aggiornato il 13 novembre 2026.
 Base verificata: DITE 3.2, commit 5a50c8f70e2f214b0b6d3a704e24d39765262476.
 La versione pubblicata resta 3.2. Il lavoro è nel ramo `codex/dite-mobile`.
 
@@ -48,21 +48,19 @@ L'obiettivo qualitativo indicato dall'utente è ambizioso. Non dichiarare “liv
   La missione attiva resta visibile. Riavviare la guida conserva l'incarico reale e completa il percorso dopo
   le quattro azioni di movimento, mira, primario e abilità, senza seconda missione o premio aggiuntivo.
   QA verde su 112 snapshot: sei missioni, touch/tastiera, due lati, font, nome lungo, stati e boss.
-- Gate locale finale **33/33 verde**: 14 Node (`/tmp/dite-final11-node.log`) e 19 browser/build
-  (`/tmp/dite-final13-browser.log`), esito 0; sequenza browser continua senza modifiche o riavvii.
-  Verdi i mirati coach/bonus/contatore (`/tmp/dite-final13-mirato.log`), compresi scena densa e Fama lunga.
-  Arena/iOS sincronizzati; packaging 8/8 e controlli sync/progetto/asset/diff verdi. Il bundle finale
-  della candidata 13 è identificato dai checksum in `AGENTS.md`.
-- Seconda CI [43447046606](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43447046606)
-  su `ba105b4`: 14 Node, 19 browser/build e packaging 8 verdi; Release unsigned, 20 unitari e 2/6 UI per famiglia
-  riusciti. Filtro WebKit e font della prima CI corretti; avvio e gameplay animato osservati.
-  Passano officina/tastiera e retry WebGL. Fra i quattro UI falliti, corretto il selettore della preferenza
-  (leggeva StaticText, ora Switch e inversione 0/1); tre casi tap/pausa/background ancora in diagnosi.
-  Verificato l'orientamento reale landscapeRight, non ancora il secondo verso. La prossima CI raccoglierà
-  tracce passive solo DEBUG/--ui-testing anche sui test riusciti e verificherà lo stato OS nel test background.
-  I controlli Riprendi usano l'attesa exists+hittable di 20 s, senza doppi tap e conservando le verifiche geometriche.
-  Il bundle web e i suoi checksum restano invariati; la diagnostica e esclusa da Release. WPE WebKit Linux supera 11 tap reali senza errori JS,
-  evidenza complementare a iOS. I 9 PNG e 4 video per dispositivo sono materiale di diagnosi, non ancora Store.
+- Candidata 15: audio senza retry infinito, Pausa su pointerup touch/pen con deduplica e rispetto dei gesti
+  cancellati, attivazione con Spazio; flip di 180 gradi sospende solo il gioco attivo, non resize/tastiera.
+  Regressioni audio/menu/input riprodotte sui pacchetti precedenti e superate sulla candidata, con foto controllate.
+  **33/33 prove locali verdi**: 14 Node invariati e tutti i 19 browser/build, completati senza modifiche durante
+  la sequenza (`/tmp/dite-final15-browser.log`, esito 0). Packaging 8/8, sync, progetto e asset verdi.
+  Checksum del bundle sincronizzato in `AGENTS.md`.
+- Terza CI [43452554318](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43452554318),
+  su `4a7badac`: web 14+19 e packaging 8 verdi; 20 unitari per famiglia, UI 4/6 iPhone e 3/6 iPad.
+  Switch e background iPhone risolti; aperti pausa/orientamento senza click dopo pointer/touch trusted,
+  e background iPad non raggiunto con Home. Nessuna attribuzione a un difetto specifico di WebKit.
+  Nuovi test: riprendere prima del flip e, su iPad, Home più eventuale swipe reale dal bordo SpringBoard,
+  verificando stato OS background prima di activate. Traccia JS solo opt-in `--ui-testing-event-trace`;
+  log nativo e sonda orientamento restano DEBUG/`--ui-testing`. La nuova CI deve ancora eseguirli.
   La versione pubblicata resta 3.2.
 
 ## Riferimenti e applicazione originale

@@ -6,22 +6,22 @@ Non chiamare questa preparazione “App Store ready”: firma, distribuzione, pr
 
 ## Stato delle verifiche
 
-- Seconda CI [43447046606](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43447046606)
-  su `ba105b491046e588a526fd22265d9d6f18b1a97c`: **14 Node, 19 browser/build e packaging 8/8 verdi**.
-  Bundle web/native/Core invariati rispetto ai checksum di `AGENTS.md`; anche il gate locale 33/33 è verde.
-- **Release iPhone unsigned riuscita; 20/20 unitari e 2/6 UI verdi per famiglia**. Passano officina con tastiera
-  e retry WebGL. L'app si avvia e i video mostrano gameplay animato. Restano quattro fallimenti UI per famiglia.
-- La preferenza risulta già attiva e il salvataggio confermato: il test leggeva uno StaticText invece dello Switch.
-  Applicati selettore Switch e verifica dell'inversione 0/1; **correzione ancora da eseguire nella prossima CI**.
-  Gli altri tre fallimenti su tap/pausa/background restano in diagnosi.
-- La sonda reale `UIWindowScene.interfaceOrientation` ha verificato `landscapeRight`; il secondo verso non è
-  stato raggiunto. Aggiunta una traccia passiva nativa/web solo DEBUG con `--ui-testing`, allegata anche ai test riusciti;
-  il test background verifica ora lo stato OS prima e dopo activate. Quattro assert Riprendi attendono
-  exists+hittable per 20 s, mantenendo la geometria e senza doppi tap. Queste aggiunte non modificano Release
-  o il bundle web e devono raccogliere evidenza nel prossimo run.
-- Disponibili e controllati **9 PNG e 4 video per dispositivo**, con gli alberi di accessibilità.
-  Restano materiali diagnostici, non il set Store finché il collaudo UI è rosso. WPE WebKit Linux locale:
-  11 tap reali verdi e zero errori JS, prova complementare che non certifica iOS.
+- Terza CI [43452554318](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43452554318)
+  su `4a7badac`: **14 Node, 19 browser/build e packaging 8/8 verdi sul codice precedente**.
+  **20/20 unitari per famiglia, 4/6 UI iPhone e 3/6 UI iPad**. Preferenza Switch risolta; background iPhone verde.
+- Pausa e orientamento falliscono dopo pointer/touch trusted sul menu senza il successivo click.
+  La traccia non attribuisce la causa a un difetto specifico di WebKit. Su iPad Home lascia la finestra
+  visibile e non raggiunge lo stato OS background. Entrambi i versi di orientamento restano da completare.
+- Candidata 15: **33/33 prove locali verdi**, con 14 Node invariati e tutti i 19 browser/build completati
+  senza modifiche durante la sequenza (`/tmp/dite-final15-browser.log`, esito 0).
+  Regressioni audio, pausa touch/pen e rotazione riprodotte sui pacchetti precedenti e superate sulla candidata,
+  con foto controllate. Packaging 8/8, sync, progetto e asset verdi; checksum in `AGENTS.md`.
+- Il prossimo test background usa Home e, se necessario su iPad, uno swipe reale dal bordo SpringBoard;
+  richiede stato OS background prima di activate. Il test orientamento riprende la partita prima del flip.
+  **Nuovi test e correzioni native attendono esecuzione macOS**.
+- La traccia JS è opt-in `--ui-testing-event-trace`, assente dai test normali. Log nativo e sonda reale
+  `UIWindowScene.interfaceOrientation` restano DEBUG/`--ui-testing`; non pilotano il gioco.
+  Le immagini/video restano diagnostici, non il set Store. WPE Linux è complementare, non una verifica iOS.
 - La prima CI [43429444352](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43429444352)
   aveva rivelato il filtro WebKit con disgiunzione non supportata e Cataclisma troncato: entrambi corretti e verificati nel secondo run.
 - iPhone/iPad fisici, prestazioni, temperatura, autonomia, audio e interruzioni reali: **non verificati**.
@@ -158,8 +158,8 @@ il simulatore, chiude la tastiera tramite il comando dell'interfaccia e raggiung
 Una prova provoca un primo errore WebGL attraverso uno user script esclusivamente Debug, poi tocca il vero
 «Riprova» e raggiunge rifugio e partita. L'iniezione di guasto non è compilata nella build Release.
 Le schermate sono allegati XCTest reali; al fallimento viene conservato anche l'albero di accessibilità.
-Nel secondo run sono raggiunti officina/tastiera e recupero WebGL; gli altri percorsi restano da completare.
-Le tracce diagnostiche passive si allegano anche ai test riusciti solo in DEBUG/`--ui-testing`; non pilotano il gioco.
+Nel terzo run sono riusciti anche preferenza e background iPhone; pausa/orientamento e background iPad restano aperti.
+La traccia eventi JS richiede anche `--ui-testing-event-trace`; i normali UI test non la caricano.
 
 Prima della distribuzione occorrono prove su dispositivi accessibili: multi-touch simultaneo, notch e home indicator,
 tastiera e rotazione, sessioni prolungate, memoria, calore, autonomia, silenzioso, Bluetooth e interruzioni audio.

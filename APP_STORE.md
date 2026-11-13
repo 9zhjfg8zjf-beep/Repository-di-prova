@@ -2,11 +2,12 @@
 
 Preparato il 13 novembre 2026. Questo documento contiene testi pronti da trasferire nei campi indicati,
 valori ancora da completare e il percorso per ottenere le immagini della build effettiva.
-La **4.0 candidata supera 33/33 comandi web/logica e packaging anche in CI**. Il secondo run compila Release
-iPhone unsigned, supera 20 unitari per famiglia e avvia il gameplay, ma conclude solo 2/6 UI per famiglia.
-Il test Switch corretto e tre fallimenti tap/pausa/background richiedono una nuova CI diagnostica.
+La **candidata 15 supera le 33 prove locali**: 14 Node invariati e tutti i 19 browser/build; packaging 8/8 verde.
+La terza CI sul codice precedente supera web 14+19, 20 unitari per famiglia e UI 4/6 iPhone, 3/6 iPad.
+Switch e background iPhone sono risolti. Le correzioni web di audio, pausa touch e rotazione superano il collaudo locale;
+la loro verifica iOS e i nuovi test nativi di rotazione/background attendono una nuova esecuzione macOS.
 Non esiste una build distribuibile o un invio App Store; la versione pubblicata resta 3.2.
-Esiti del [run 43447046606, commit ba105b4](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43447046606)
+Esiti del [run 43452554318, head 4a7badac](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43452554318)
 e verifiche pendenti sono in [IOS.md](IOS.md).
 Prima del caricamento, associare questi testi alla build nativa realmente verificata, senza usare la sola
 versione web come prova del funzionamento iOS.
@@ -136,7 +137,7 @@ Rivedere le note se cambiano testi, funzionalità, monetizzazione o salvataggio 
 ## Immagini dalla build reale
 
 Il secondo run contiene **9 PNG e 4 video per dispositivo**, con gameplay animato e schermate reali.
-Restano evidenze diagnostiche: **il set Store non è approvato mentre quattro UI per famiglia falliscono**.
+Restano evidenze diagnostiche: **il set Store non è approvato finché il collaudo UI resta incompleto**.
 La selezione finale dovrà corrispondere alla build che completa il collaudo; una schermata Chromium non la sostituisce.
 Il workflow `.github/workflows/dite.yml` conserva `ios-iphone-evidence` e `ios-ipad-evidence`, con
 `SimulatorTests.xcresult`, log, `selected-simulator.json` e immagini; la conservazione attuale è di 14 giorni.
@@ -175,11 +176,11 @@ Il numero di build, il commit e il risultato della CI devono permettere di colle
 
 | Evidenza da collegare | Valore attuale |
 | --- | --- |
-| Esecuzione CI macOS e commit | [43447046606](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43447046606), `ba105b4`; UI ancora rosso |
-| Build Swift / XCTest | Release unsigned riuscita; 20/20 unitari e 2/6 UI verdi per famiglia, avvio e gameplay osservati |
-| Candidata 4.0, bundle 13 | 33/33 web/logica e packaging 8/8 verdi anche in CI; checksum invariati in `AGENTS.md` |
-| Prossima CI diagnostica | Verificare selettore Switch e inversione 0/1; raccogliere tracce per i tre fallimenti tap/pausa/background |
-| Rotazione nativa | landscapeRight reale verificato; secondo verso non raggiunto |
+| Esecuzione CI macOS e commit | [43452554318](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43452554318), `4a7badac`; UI ancora parziale |
+| XCTest | 20/20 unitari per famiglia; 4/6 UI iPhone e 3/6 UI iPad; Switch e background iPhone risolti |
+| Candidata 15 | 33/33 prove locali verdi (14 Node + 19 browser/build), packaging 8/8 verde; checksum completi in `AGENTS.md` |
+| Prossima CI nativa | Verificare nuove correzioni audio/pausa e i test di flip/background; traccia JS solo opt-in |
+| Rotazione e background iPad | Ripresa prima del flip; Home più eventuale swipe SpringBoard, stato OS background obbligatorio prima di activate |
 | Screenshot nativi selezionati | 9 PNG e 4 video per dispositivo controllati; set Store ancora da approvare dopo collaudo UI |
 | Prove su hardware fisico | Da eseguire con hardware accessibile al collaudo |
 | Archivio firmato / build App Store Connect | Da preparare con account e firma autorizzati |

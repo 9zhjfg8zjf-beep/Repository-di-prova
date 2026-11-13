@@ -8,10 +8,10 @@ Il catalogo comprende 1343 meccaniche originali. Il gioco è pensato per il tele
 La versione pubblicata è **3.2**. La **4.0 candidata** introduce un nuovo rifugio, comandi e interfaccia mobile,
 guida giocabile, registro locale e preparazione iOS offline. Gli effetti vicini alla visuale sono più contenuti;
 stati e bonus hanno riepiloghi compatti e dettagli in pausa. Comandi e guida si adattano alla modalità mancini.
-La **4.0 supera 33/33 comandi anche in CI**, oltre al packaging; il collaudo iOS è ancora in diagnosi.
+La **candidata 15 supera tutte le 33 prove locali**: 14 Node e 19 browser/build; packaging 8/8 verde.
 La guida può ricominciare con una missione già attiva, conservandola visibile e senza richiedere un nuovo incarico.
-L'avvio iOS è risolto: build unsigned e 20 unitari per famiglia verdi, con gameplay animato.
-Sono riusciti 2 dei 6 test UI per famiglia; i quattro rimanenti richiedono una nuova CI. Dispositivi fisici e distribuzione restano da verificare.
+La terza CI supera 20 unitari per famiglia, 4/6 UI iPhone e 3/6 UI iPad. Le nuove correzioni di audio,
+pausa touch e rotazione superano il collaudo locale e attendono una nuova CI nativa; dispositivi fisici e distribuzione restano da verificare.
 
 Per lavorare sul progetto, leggere prima [AGENTS.md](AGENTS.md): contiene architettura, stato e regole di pubblicazione.
 Il piano mobile è in [MOBILE_PRODUCTION.md](MOBILE_PRODUCTION.md); pipeline nativa e passaggi ancora necessari

@@ -119,7 +119,7 @@ Ordine dei file nel build: bricks, mec*, catalogo, city, core, onboarding, journ
 world, fx, anim, poteri-fx, ui, main. Tutto in `'use strict'`. Gli export CommonJS devono restare su una riga
 con guardia indipendente `if (typeof module !== 'undefined') ...`, rimossa dal build per il browser.
 
-## Stato: 4.0 candidata — web verificato in CI, diagnosi UI iOS in corso
+## Stato: 4.0 candidata 15 — 33/33 prove locali verdi, nuova CI nativa da eseguire
 
 Aggiornato il 13 novembre 2026. La versione pubblicata resta **3.2**; la 4.0 e nel ramo `codex/dite-mobile`.
 Titolo e interfaccia sorgente indicano 4.0, ma un artifact di sviluppo non e una release pubblicata.
@@ -129,6 +129,9 @@ Implementati rifugio e navigazione coerente, scelta kit/citta, HUD e officina la
 audio, qualita e comfort. Router unico con ritorno al pannello chiamante, pulizia input, pausa esplicita dopo
 background e rotazione, cambio citta con recupero dagli errori. Storage schema 3 condiviso web/iOS, migrazioni
 e indicazione onesta dell'esito di salvataggio. I vecchi profili conservano il kit e non avviano automaticamente la guida.
+Nella candidata 15: transizioni audio senza retry infinito; Pausa attivata su pointerup touch/pen con deduplica
+e rispetto dei gesti cancellati, attivabile anche con Spazio. La rotazione di 180 gradi sospende solo il gioco
+attivo; ridimensionamento e tastiera non lo sospendono.
 
 Primo ingresso con Dardo, Scatto, Scudo, Nova e Cataclisma con costo 8 sul budget iniziale di 12; guida breve, saltabile e riprendibile,
 che avanza su azioni del gioco. Aiuto riapribile e registro delle ultime 32 imprese reali, senza premi o progressi fittizi.
@@ -153,35 +156,33 @@ rete del gioco bloccata, bridge versionato per lifecycle/salvataggio/haptic e JS
 Generazione deterministica del progetto, sincronizzazione bundle/licenza/checksum e workflow macOS presenti.
 La distribuzione non e predisposta: identificatore tecnico unsigned, nessun Team/certificato/profilo configurato.
 
-**Gate locale finale 33/33 verde**: 14 Node (`/tmp/dite-final11-node.log`) e 19 browser/build
-(`/tmp/dite-final13-browser.log`), entrambi con esito 0. La sequenza browser e completa e continua,
-senza modifiche o riavvii. Verdi anche i mirati coach/bonus/contatore (`/tmp/dite-final13-mirato.log`),
-compresi scena densa reale e testo della Fama contenuto senza invadere Pausa.
+**Candidata 15: 33/33 prove locali verdi**, con i 14 Node invariati e verdi in locale e nella terza CI,
+piu tutti i 19 browser/build completati in sequenza continua, senza modifiche a sorgenti o prove
+(`/tmp/dite-final15-browser.log`, esito 0). Il Core conserva il checksum sotto.
+Regressioni audio, menu e input riprodotte sui pacchetti precedenti e superate sulla candidata,
+con foto controllate. Packaging 8/8, sincronizzazione bundle, progetto e asset verdi.
 Copertura mirata: storage 19 casi, router 11 e 2000 transizioni, onboarding 18, registro 11.
 QA layout: 112 snapshot verdi su sei missioni, touch/tastiera, due lati, font, nome lungo, stati e boss;
-zero misure nei frame stabili. Arena e bundle iOS sono sincronizzati; packaging 8/8, sync, progetto,
-asset e diff check verdi. I checksum sotto identificano il bundle finale verificato, candidata 13.
+zero misure nei frame stabili. Arena e bundle iOS sono sincronizzati; i checksum sotto identificano la candidata 15.
 
-La seconda CI [43447046606](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43447046606)
-su `ba105b491046e588a526fd22265d9d6f18b1a97c` conferma **14 Node, 19 browser/build e packaging 8/8 verdi**.
+La terza CI [43452554318](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43452554318)
+su `4a7badac` conferma **14 Node, 19 browser/build e packaging 8/8 verdi sul codice precedente**.
 Sono risolti il filtro WebKit e il nome troncato emersi nella prima CI
 [43429444352](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43429444352).
 
-| File della candidata 13 | SHA256 |
+| File della candidata 15 | SHA256 |
 | --- | --- |
-| `motore/dist/index.html` e bundle iOS | `b5c4e0c54516ee3b15a169996f9a34958fa55dd3c5fba737082330b7ee94bed8` |
-| `motore/site/index.html` e `arena/index.html` | `abcb4a4a2345e278b7d6e11f1d2d7993ceccb70894737518d2f11410b76e429e` |
+| `motore/dist/index.html` e bundle iOS | `522eaeb6ca39e1486ad39acbfe295a783f3b8da44c7e8bbf97067de0c925ead6` |
+| `motore/site/index.html` e `arena/index.html` | `8b8940f96708a2a4697ffb695293bfe25184815232e9a78be88be61663649516` |
 | `motore/core.js` | `503a2903f3f302782e35183e859679d530443c9c56f6adeafa990a5e4a766190` |
 
-Nella seconda CI: Release iPhone unsigned riuscita, **20/20 unitari e 2/6 UI verdi per famiglia**.
-Passano officina/tastiera e retry WebGL; il gioco si avvia ed e animato. Restano quattro fallimenti UI:
-corretto il test preferenza che leggeva uno StaticText invece dello Switch, tre casi tap/pausa/background
-ancora in diagnosi. L'orientamento reale `landscapeRight` e verificato; il secondo verso non e stato raggiunto.
-La prossima CI deve verificare il selettore Switch con inversione 0/1 e raccogliere la traccia passiva nativa/web,
-solo DEBUG/`--ui-testing`, anche sui test riusciti. Il test background controlla lo stato OS prima/dopo activate;
-quattro controlli Riprendi attendono exists+hittable per 20 s, mantenendo geometria e singolo tap.
-La diagnostica e esclusa da Release; il bundle web resta invariato. WPE WebKit Linux: 11 tap reali verdi,
-zero errori JS, prova complementare che non sostituisce iOS. Dettagli in `IOS.md`; pubblicata ancora 3.2.
+Terza CI nativa: **20/20 unitari per famiglia, 4/6 UI iPhone e 3/6 UI iPad**. Preferenza Switch risolta e
+background iPhone verde; pausa/orientamento non ricevono il click dopo pointer/touch trusted sul menu,
+senza attribuzione a un difetto specifico di WebKit. Su iPad Home lascia la finestra visibile, senza stato OS background.
+La prossima CI verifica le correzioni della candidata 15: ripresa prima del flip di 180 gradi e, per iPad,
+Home seguito se necessario da swipe reale sul bordo SpringBoard; background OS obbligatorio prima di activate.
+La traccia JS e solo opt-in `--ui-testing-event-trace`, assente dai test normali; log nativo e sonda di orientamento
+restano DEBUG/`--ui-testing`. WPE Linux resta una prova complementare, non iOS. Pubblicata ancora 3.2.
 
 ## Stato storico: versione 3.2
 
@@ -214,16 +215,14 @@ Calibrazione del danno eseguita sui 336 nuovi programmi; fattori dei 1007 preced
 
 Prima di considerare la 4.0 distribuibile:
 
-1. **Chiudere la diagnosi UI iOS**: eseguire la prossima CI con il test Switch corretto e le tracce passive;
-   risolvere i tre casi tap/pausa/background e raggiungere entrambi gli orientamenti reali.
-2. **Pubblicazione verificata**: dopo il collaudo completare push/deploy e verificare la versione servita.
-   Web 33/33 e packaging sono verdi anche in CI; la pagina pubblica resta 3.2.
-3. **Prestazioni e comportamento fisico**: misurare frame time, memoria, calore, batteria, multi-touch,
+1. **Push, nuova CI e pubblicazione verificata**: verificare pausa, entrambi gli orientamenti e background iPad
+   con le correzioni nuove; poi completare deploy e verificare la versione servita. Pubblicata ancora 3.2.
+2. **Prestazioni e comportamento fisico**: misurare frame time, memoria, calore, batteria, multi-touch,
    silenzioso/Bluetooth e interruzioni su dispositivi accessibili. Chromium software non certifica fluidita o audio iPhone;
    non chiedere all'utente di sostituirsi al collaudo.
-4. **Firma e distribuzione**: identificatore definitivo, Apple Developer/Team, certificati e provisioning,
+3. **Firma e distribuzione**: identificatore definitivo, Apple Developer/Team, certificati e provisioning,
    build distribuibile, TestFlight e revisione App Store. Una build unsigned non completa questi passaggi.
-5. **Privacy e supporto**: pubblicare policy con titolare reale e copia consultabile nell'app, supporto funzionante,
+4. **Privacy e supporto**: pubblicare policy con titolare reale e copia consultabile nell'app, supporto funzionante,
    dichiarazioni App Store, eta, export e altri metadati effettivi. Manifest privacy, policy e dichiarazioni sono distinti;
    nessun contatto o dato personale inventato. I dettagli aperti sono in `IOS.md`.
 
