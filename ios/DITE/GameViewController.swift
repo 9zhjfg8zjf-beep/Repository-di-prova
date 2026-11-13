@@ -41,6 +41,26 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
         configureStore()
         configureWebView()
         configureOverlay()
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
+            // A separate, unpainted accessibility element preserves the WebKit subtree.
+            let probe = UITestOrientationProbe()
+            probe.backgroundColor = .clear
+            probe.isOpaque = false
+            probe.isUserInteractionEnabled = false
+            probe.isAccessibilityElement = true
+            probe.accessibilityIdentifier = "dite.ui-test.interface-orientation"
+            probe.accessibilityLabel = "Window interface orientation"
+            probe.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(probe)
+            NSLayoutConstraint.activate([
+                probe.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                probe.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+                probe.widthAnchor.constraint(equalToConstant: 1),
+                probe.heightAnchor.constraint(equalToConstant: 1)
+            ])
+        }
+        #endif
         configureAudio()
         prepareOfflineRules()
     }
@@ -408,6 +428,26 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
         if let interruptionObserver { NotificationCenter.default.removeObserver(interruptionObserver) }
     }
 }
+
+#if DEBUG
+private final class UITestOrientationProbe: UIView {
+    // Read the scene on every accessibility query, including 180-degree rotations
+    // that can keep the same bounds. Never report the requested device orientation.
+    override var accessibilityValue: String? {
+        get {
+            guard let orientation = window?.windowScene?.interfaceOrientation else { return "unknown" }
+            switch orientation {
+            case .landscapeLeft: return "landscapeLeft"
+            case .landscapeRight: return "landscapeRight"
+            case .portrait: return "portrait"
+            case .portraitUpsideDown: return "portraitUpsideDown"
+            default: return "unknown"
+            }
+        }
+        set { }
+    }
+}
+#endif
 
 private final class WeakScriptHandler: NSObject, WKScriptMessageHandler {
     weak var delegate: WKScriptMessageHandler?

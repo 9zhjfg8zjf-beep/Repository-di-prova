@@ -41,21 +41,34 @@ final class DITEUITests: XCTestCase {
     }
 
     func testBothLandscapeOrientationsKeepControlsReachable() {
-        for orientation in [UIDeviceOrientation.landscapeLeft, .landscapeRight] {
-            XCUIDevice.shared.orientation = orientation
-            waitForButton("Entra nel gioco")
+        // Apple defines opposite landscape names for device and interface orientation.
+        // https://developer.apple.com/documentation/UIKit/UIInterfaceOrientation
+        let cases: [(device: UIDeviceOrientation, interface: String)] = [
+            (.landscapeLeft, "landscapeRight"), (.landscapeRight, "landscapeLeft")
+        ]
+        var observed = Set<String>()
+        for (index, orientation) in cases.enumerated() {
+            XCUIDevice.shared.orientation = orientation.device
+            if index > 0 {
+                // First prove a live rotation reaches the other UI orientation.
+                waitForInterfaceOrientation(orientation.interface)
+                XCTAssertTrue(button("Riprendi partita").isHittable)
+                attachScreenshot("rotated-pause-ui-" + orientation.interface)
+                // The new device orientation is already set before this cold launch.
+                app.terminate()
+                app.launchArguments = ["--ui-testing"]
+                app.launch()
+            }
+            waitForButton("Entra nel gioco", timeout: 90)
+            observed.insert(waitForInterfaceOrientation(orientation.interface))
             tap("Entra nel gioco")
             tap("Pausa")
             let pause = button("Riprendi partita")
             XCTAssertTrue(pause.isHittable)
             XCTAssertTrue(app.frame.intersects(pause.frame))
-            attachScreenshot(orientation == .landscapeLeft ? "landscape-left" : "landscape-right")
-            // A cold launch returns to the actual lobby and tests startup in the next orientation.
-            app.terminate()
-            app.launchArguments = ["--ui-testing"]
-            app.launch()
-            waitForButton("Entra nel gioco", timeout: 90)
+            attachScreenshot("cold-launch-pause-ui-" + orientation.interface)
         }
+        XCTAssertEqual(observed, Set(["landscapeLeft", "landscapeRight"]))
     }
 
     func testBackgroundRequiresExplicitResume() {
@@ -150,6 +163,20 @@ final class DITEUITests: XCTestCase {
     private func waitForNoKeyboard() {
         let absent = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: app.keyboards.firstMatch)
         XCTAssertEqual(XCTWaiter.wait(for: [absent], timeout: 10), .completed)
+    }
+
+    @discardableResult private func waitForInterfaceOrientation(_ expected: String) -> String {
+        let probe = app.descendants(matching: .any).matching(identifier: "dite.ui-test.interface-orientation").firstMatch
+        let actual = NSPredicate(format: "exists == true AND value == %@", expected)
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: actual, object: probe)], timeout: 20), .completed,
+                       "The actual UIWindowScene must reach \(expected)")
+        XCTAssertGreaterThan(app.frame.width, app.frame.height, "The rendered app must remain landscape")
+        let value = probe.value as? String ?? "unavailable"
+        let evidence = XCTAttachment(string: "UIWindowScene.interfaceOrientation: " + value)
+        evidence.name = "Actual window orientation"
+        evidence.lifetime = .keepAlways
+        add(evidence)
+        return value
     }
 
     private func button(_ label: String) -> XCUIElement {
