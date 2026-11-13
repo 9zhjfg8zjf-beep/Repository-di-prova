@@ -134,8 +134,14 @@ Rendering fermo nei menu, profili grafici e comfort, correzione del rilascio ris
 Sisma mantiene preavvisi e scoppi vicino al terreno, senza generare fulmini dal cielo all'impatto.
 I corpi dei proiettili del giocatore sfumano vicino alla camera; i colpi nemici conservano il proprio corpo visibile.
 I fasci hanno larghezza apparente limitata e nucleo colorato, con attenuazione dei bagliori e rispetto di Lampi ridotti.
-Il riepilogo HUD dei bonus mostra un solo effetto prioritario e `+N` per gli altri; in pausa il pannello
-Potenziamenti elenca i nomi completi e i tempi residui reali. I timer restano fermi insieme alla simulazione.
+L'HUD degli stati del potere occupa al massimo tre righe: oltre tre stati mostra i primi due e il conteggio
+degli altri, mantenendo prioritari corpo alternativo e stasi. In pausa, Stati del potere riporta nomi, tempi,
+risorse e istruzioni di rilascio. Il riepilogo separato dei bonus mostra un solo effetto prioritario e `+N`;
+copre invulnerabilita, riflessione, Fenice, occultamento, cura nel tempo, furia, velocita e orbite.
+Potenziamenti in pausa usa lo stesso elenco dei bonus rilevati, con nomi completi e secondi residui reali.
+I timer restano fermi insieme alla simulazione. Comandi mancini sposta movimento a destra, poteri a sinistra,
+rispecchia i gruppi HUD e adatta le istruzioni della guida. Il coach segue il lato scelto e nasconde il solo
+promemoria di ricerca missione quando nessuna missione e attiva.
 
 Preparato contenitore iOS 17+, versione applicazione 4.0/build 1: WKWebView con HTML locale completo,
 rete del gioco bloccata, bridge versionato per lifecycle/salvataggio/haptic e JSON atomico con copie di recupero.

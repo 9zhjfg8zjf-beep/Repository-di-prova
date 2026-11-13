@@ -38,8 +38,12 @@ L'obiettivo qualitativo indicato dall'utente è ambizioso. Non dichiarare “liv
   I fasci hanno larghezza apparente limitata e nucleo colorato, evitando che la sovrapposizione sommi solo bianco;
   l'attenuazione rispetta anche l'opzione Lampi ridotti.
 - Bonus: un solo potenziamento prioritario nel riepilogo HUD, seguito da `+N` quando ce ne sono altri.
+  Copre otto bonus: invulnerabilità, riflessione, Fenice, occultamento, cura nel tempo, furia, velocità e orbite.
   Il pannello Potenziamenti in pausa mostra nomi completi e secondi residui dagli stessi timer della simulazione,
   che in pausa non avanzano. Il riepilogo non cambia effetti o durata dei poteri.
+- Stati del potere: riepilogo limitato a tre righe, con corpo alternativo e stasi prioritari; oltre tre stati,
+  due righe e conteggio degli altri. Il dettaglio espandibile in pausa conserva tempi, risorse e istruzioni.
+  La modalità mancini rispecchia controlli e gruppi HUD; guida e coach seguono il lato di movimento scelto.
 - La prima nuova interfaccia è stata fotografata e corretta a 667×375 con inset 44/44/21.
   La suite Node finale è verde: 14 comandi sul Core con SHA256 iniziante per `503a2903f3f3`.
   I 19 comandi browser/build finali e la revisione conclusiva delle foto sono ancora in corso;
@@ -83,7 +87,8 @@ I riferimenti sono al commit base, non a numeri di riga futuri.
 
 Gli inset safe-area sono già presenti. Non ricostruirli come se mancassero: verificare ingombri reali,
 tastiera, rotazione, notch e home indicator. Conservare le protezioni anti-bagliore introdotte nella 3.2.
-Il testo dell'aiuto dice metà sinistra, mentre il movimento usa il 42% dello schermo: allineare istruzione e comportamento.
+Nella 3.2 l'aiuto indicava metà sinistra, mentre il movimento usava il 42% dello schermo. Nella candidata
+la guida indica la zona di movimento effettiva, invertendo destra e sinistra con Comandi per mancini.
 
 ## Esperienza proposta
 
@@ -95,7 +100,7 @@ Accessi secondari a Poteri, Città, Guida e Impostazioni. Nessun catalogo di 134
 Nessun negozio, valuta o funzione sociale fittizia.
 
 La guida iniziale deve insegnare attraverso azioni brevi e verificabili nel gioco; la spiegazione estesa
-rimane riapribile. Le istruzioni mostrate devono corrispondere a touch, tastiera o controller realmente usati.
+rimane riapribile. Le istruzioni mostrate corrispondono ai comandi touch o tastiera realmente usati.
 
 ### Poteri e officina
 
@@ -109,6 +114,8 @@ Budget e causa di un rifiuto rimangono vicino all'azione finale.
 ### HUD, pausa e impostazioni
 
 Movimento a sinistra, camera nella zona destra libera, primario dominante e quattro poteri vicini al pollice.
+Comandi per mancini inverte i lati e adatta guida e coach. Quando il coach è visibile, il solo promemoria
+per cercare una missione viene nascosto; un obiettivo già accettato resta nell'HUD.
 Mantenere icona, ricarica e verbo di rilascio degli stati reversibili. Nessun dato essenziale affidato soltanto al colore.
 Pausa con Riprendi prioritario; sottopannelli tornano al chiamante senza riattivare la simulazione.
 Per i bonus temporanei, il nome prioritario e il conteggio aggiuntivo lasciano spazio al gioco;
