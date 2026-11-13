@@ -392,6 +392,40 @@ const sevenPowerStates = () => {
         await page.locator('#resume').tap(); await screen('playing'); await page.waitForTimeout(120); empty(await page.evaluate(() => window.__dite.inputSnapshot()));
         console.log('input ' + reason + ': movimento/tiro, reset e ripresa esplicita verdi');
       }
+      // Il CDP cambia l'orientamento reale del browser, senza cambiare il viewport o il router.
+      const orient = (type, angle, width = 844, height = 390) => cdp.send('Emulation.setDeviceMetricsOverride', { width, height, screenWidth: 844, screenHeight: 390, deviceScaleFactor: 1, mobile: true, screenOrientation: { type, angle } });
+      await orient('landscapePrimary', 90);
+      await page.waitForFunction(() => window.screen.orientation.type === 'landscape-primary' && window.screen.orientation.angle === 90);
+      await page.evaluate(() => { window.__mobileOrientations = []; window.addEventListener('orientationchange', event => window.__mobileOrientations.push({ trusted: event.isTrusted, type: window.screen.orientation.type, angle: window.screen.orientation.angle, width: innerWidth, height: innerHeight })); });
+      const rotationPoints = await hold();
+      const rotationBefore = await page.evaluate(() => ({ width: innerWidth, height: innerHeight, type: window.screen.orientation.type, angle: window.screen.orientation.angle }));
+      await orient('landscapeSecondary', 270);
+      await page.waitForFunction(() => window.screen.orientation.type === 'landscape-secondary' && window.screen.orientation.angle === 270 && window.__mobileOrientations.some(event => event.trusted && event.angle === 270));
+      const rotationAfter = await page.evaluate(() => ({ width: innerWidth, height: innerHeight, type: window.screen.orientation.type, angle: window.screen.orientation.angle, screen: window.__dite.screen(), input: window.__dite.inputSnapshot(), events: window.__mobileOrientations }));
+      // page.screenshot ripristina l'orientamento di Playwright: CDP conserva il flip in prova.
+      const rotationPhoto = await cdp.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
+      fs.writeFileSync(__dirname + '/shots/mobile-rotazione-180.png', Buffer.from(rotationPhoto.data, 'base64'));
+      assert.deepEqual(await page.evaluate(() => ({ width: innerWidth, height: innerHeight, type: window.screen.orientation.type, angle: window.screen.orientation.angle })), { width: rotationAfter.width, height: rotationAfter.height, type: rotationAfter.type, angle: rotationAfter.angle }, 'La foto deve conservare il vero orientamento in prova');
+      assert.deepEqual([rotationAfter.width, rotationAfter.height], [rotationBefore.width, rotationBefore.height], 'Il flip deve lasciare identiche le dimensioni del viewport');
+      assert.equal((rotationAfter.angle - rotationBefore.angle + 360) % 360, 180); assert.equal(rotationAfter.screen.screen, 'pause', 'Una vera rotazione landscape di 180 gradi deve sospendere: ' + JSON.stringify(rotationAfter));
+      empty(rotationAfter.input);
+      const rotationState = await page.evaluate(() => { const D = window.__dite, s = D.state(); return { x: s.player.x, z: s.player.z, casts: s.stats.casts.slice(), yaw: D.cam().yaw }; });
+      await touch('touchMove', [{ ...rotationPoints.left, x: 245, y: 175 }, { ...rotationPoints.fire, x: rotationPoints.fire.x + 24 }]); await touch('touchEnd', []);
+      await frozen('rotazione landscape 180');
+      assert.deepEqual(await page.evaluate(() => { const D = window.__dite, s = D.state(); return { x: s.player.x, z: s.player.z, casts: s.stats.casts.slice(), yaw: D.cam().yaw }; }), rotationState);
+      assert.equal(await page.evaluate(() => window.__dite.screen().playing), false); empty(await page.evaluate(() => window.__dite.inputSnapshot()));
+      await page.locator('#resume').tap(); await screen('playing');
+      const runningAfterRotation = await page.evaluate(() => window.__dite.state().t); await page.waitForFunction(t => window.__dite.state().t > t, runningAfterRotation);
+      // Un semplice resize landscape (come il viewport ridotto dalla tastiera) non e una rotazione.
+      const orientationEvents = await page.evaluate(() => window.__mobileOrientations.length);
+      await orient('landscapeSecondary', 270, 844, 350); await settle();
+      const resized = await page.evaluate(() => ({ screen: window.__dite.screen(), type: window.screen.orientation.type, angle: window.screen.orientation.angle, height: innerHeight, events: window.__mobileOrientations.length, t: window.__dite.state().t }));
+      assert.equal(resized.height, 350); assert.equal(resized.type, 'landscape-secondary'); assert.equal(resized.angle, 270); assert.equal(resized.events, orientationEvents);
+      assert.equal(resized.screen.playing, true, 'Il resize senza rotazione non deve aprire Pausa'); await page.waitForFunction(t => window.__dite.state().t > t, resized.t);
+      await orient('landscapeSecondary', 270); await settle(); assert.equal(await page.evaluate(() => window.__dite.screen().playing), true);
+      await orient('landscapePrimary', 90); await screen('pause'); await page.locator('#resume').tap(); await screen('playing');
+      console.log('input rotazione180: orientationchange trusted a dimensioni uguali, reset, gioco fermo, ripresa manuale e resize landscape senza pausa verdi');
+
       // Il rilascio della capture è reale, dopo un pointerdown generato dal CDP.
       await start();
       await page.evaluate(() => { window.__mobileCaptures = []; for (const type of ['gotpointercapture', 'lostpointercapture']) document.getElementById('b0').addEventListener(type, e => window.__mobileCaptures.push({ type, trusted: e.isTrusted, id: e.pointerId })); });
@@ -406,16 +440,23 @@ const sevenPowerStates = () => {
       assert.ok(await page.evaluate(() => window.__mobileCaptures.some(e => e.type === 'lostpointercapture' && e.trusted)));
       const casts = await page.evaluate(() => window.__dite.state().stats.casts[0]); await page.waitForTimeout(140); assert.equal(await page.evaluate(() => window.__dite.state().stats.casts[0]), casts);
       console.log('input capture: got/lost trusted e nessun tiro residuo verdi');
+      await page.evaluate(() => { window.__mobilePrimaryPointers = []; for (const type of ['pointerdown', 'pointerup']) document.addEventListener(type, event => window.__mobilePrimaryPointers.push({ type, id: event.pointerId, target: event.target.id, tag: event.target.tagName, button: event.target.closest?.('button')?.id, trusted: event.isTrusted }), true); });
       await touch('touchStart', [fire]);
-      const owner = await page.evaluate(() => window.__dite.inputSnapshot().primary.id);
-      await touch('touchStart', [fire, { ...fire, x: fire.x - 12, id: 4 }]);
+      const owner = await page.evaluate(() => window.__dite.inputSnapshot().primary.id), secondFinger = { ...fire, x: fire.x - 12, id: 4 };
+      await touch('touchStart', [fire, secondFinger]);
+      const secondDown = await page.evaluate(() => window.__mobilePrimaryPointers.at(-1));
+      assert.equal(secondDown.type, 'pointerdown'); assert.equal(secondDown.button, 'b0', JSON.stringify(secondDown)); assert.equal(secondDown.trusted, true); assert.notEqual(secondDown.id, owner);
       assert.equal(await page.evaluate(() => window.__dite.inputSnapshot().primary.id), owner, 'Il secondo dito non deve rubare il primario');
-      // La lista di contatti attivi rimuove soltanto il secondo dito.
-      await touch('touchMove', [{ ...fire, x: fire.x + 3 }]);
-      assert.equal(await page.evaluate(() => window.__dite.inputSnapshot().fireBtn), true);
-      assert.equal(await page.evaluate(() => window.__dite.inputSnapshot().primary.id), owner);
+      // Chromium rilascia i punti elencati in touchEnd: lo conferma il pointerup trusted osservato.
+      await touch('touchEnd', [secondFinger]);
+      const released = await page.evaluate(() => ({ events: window.__mobilePrimaryPointers, input: window.__dite.inputSnapshot(), casts: window.__dite.state().stats.casts[0] }));
+      assert.ok(released.events.some(event => event.type === 'pointerup' && event.trusted && event.button === 'b0' && event.id === secondDown.id), 'Il secondo dito deve essere davvero rilasciato');
+      assert.ok(!released.events.some(event => event.type === 'pointerup' && event.id === owner), 'Il dito proprietario deve restare premuto');
+      assert.equal(released.input.fireBtn, true); assert.equal(released.input.primary.id, owner);
+      await page.waitForFunction(casts => window.__dite.state().stats.casts[0] > casts, released.casts);
       await touch('touchEnd', []);
       assert.equal(await page.evaluate(() => window.__dite.inputSnapshot().fireBtn), false);
+      assert.ok(await page.evaluate(owner => window.__mobilePrimaryPointers.some(event => event.type === 'pointerup' && event.trusted && event.id === owner), owner));
       const turns = {};
       for (const surface of ['canvas', 'primary']) for (const sens of [.5, 2]) {
         await page.evaluate(sens => { const D = window.__dite; D.setPreference('sens', sens); D.setLook(0, 0); }, sens);

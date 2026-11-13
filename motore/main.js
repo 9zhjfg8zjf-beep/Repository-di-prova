@@ -622,7 +622,8 @@ G.start = function () {
     if ($('rotateGuard')) $('rotateGuard').classList.toggle('hidden', !portrait);
     if (!force) resetInput(); invalidate();
   }
-  window.addEventListener('resize', () => resize()); window.addEventListener('orientationchange', () => resize());
+  window.addEventListener('resize', () => resize());
+  window.addEventListener('orientationchange', () => { if (active()) app.suspend('orientation'); resize(); });
   if (window.visualViewport) window.visualViewport.addEventListener('resize', () => resize());
 
   // ---------- Citta', schermate e sessione ----------

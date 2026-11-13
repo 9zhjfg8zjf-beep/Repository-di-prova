@@ -73,6 +73,11 @@ final class DITEUITests: XCTestCase {
             let pause = waitForButton("Riprendi partita")
             XCTAssertTrue(app.frame.intersects(pause.frame))
             attachScreenshot("cold-launch-pause-ui-" + orientation.interface)
+            if index == 0 {
+                // Rotate a live game, so an already-open pause cannot satisfy the assertion.
+                tap("Riprendi partita")
+                waitForButton("Pausa")
+            }
         }
         XCTAssertEqual(observed, Set(["landscapeLeft", "landscapeRight"]))
     }
