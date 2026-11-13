@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <!--APPMETA-->
 <title>DITE</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 <style>
   :root { --cy: #3fe9ff; --mg: #ff3fd0; --am: #ffb23a; --rd: #ff4028; --gd: #ffd24a; --ink: #0a0608; --ui: 'Rajdhani', 'Segoe UI', system-ui, sans-serif; --ti: 'Cinzel', Georgia, serif; --el: #3fc8ff;
     --st: env(safe-area-inset-top, 0px); --sr: env(safe-area-inset-right, 0px); --sb: env(safe-area-inset-bottom, 0px); --sl: env(safe-area-inset-left, 0px); }
@@ -132,6 +130,18 @@
   .chip { font: 700 11px var(--ui); letter-spacing: 1px; color: #fff; background: rgba(255,255,255,.07); border: 1px solid var(--c, rgba(255,255,255,.3)); padding: 5px 8px; cursor: pointer; text-transform: uppercase; }
   .chip.mon { background: var(--gd); color: #120608; border-color: var(--gd); }
   #fFind { width: 100%; font: 500 16px var(--ui); color: #fff; background: rgba(0,0,0,.5); border: 1px solid rgba(255,210,74,.6); padding: 7px 8px; border-radius: 0; margin-bottom: 5px; user-select: text; -webkit-user-select: text; }
+  .forge-filters { display: flex; flex-wrap: wrap; gap: 7px; align-items: end; margin: 7px 0; }
+  .forge-filter-tabs { display: flex; gap: 4px; }
+  .forge-filter-tabs .chip { min-height: 40px; }
+  .forge-family { display: flex; flex: 1; min-width: 150px; flex-direction: column; gap: 3px; color: #c7b9bc; font: 700 10px var(--ui); letter-spacing: 1px; text-transform: uppercase; }
+  .forge-family select { min-height: 40px; width: 100%; font: 600 14px var(--ui); color: #f9f1de; border: 1px solid #6a543b; border-radius: 0; background: #191017; padding: 7px; }
+  .forge-empty { padding: 16px 8px; color: #c7b9bc; font-size: 13px; }
+  .forge-results { color: #c7b9bc; font-size: 11px; margin: 7px 0; }
+  .arch .arch-tags { color: #82c9c4; font-size: 10px; margin-top: 4px; line-height: 1.4; }
+  .arch .arch-new { display: inline-block; color: #14100b; background: #f3cb73; padding: 2px 4px; margin-left: 5px; font: 800 8px var(--ui); letter-spacing: .5px; vertical-align: middle; }
+  .forge-more { width: 100%; min-height: 44px; margin: 5px 0 12px; }
+  #powerHud { margin-top: 6px; border-left: 2px solid #80ddd2; color: #e4f7ee; font: 700 10px var(--ui); letter-spacing: .7px; line-height: 1.6; }
+  #powerHud .power-energy { color: #ffd778; }
   .slot { display: grid; grid-template-columns: 40px 1fr auto; gap: 8px; align-items: center; padding: 5px 7px; margin-top: 5px; background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.14); border-left: 3px solid var(--c); cursor: pointer; }
   .slot.sel { border-color: var(--am); background: rgba(255,178,58,.12); }
   .slot .ic { width: 38px; height: 38px; border: 2px solid var(--c); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; } .slot .ic svg { width: 56%; height: 56%; }
@@ -140,7 +150,7 @@
   .pips { display: flex; gap: 5px; } .pip { width: 44px; height: 30px; font: 700 12px var(--ui); color: #fff; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.3); cursor: pointer; } .pip.on { background: var(--am); color: #120608; border-color: var(--am); }
   .els { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; margin: 6px 0; } .eld { height: 30px; border: 2px solid transparent; background: var(--c); cursor: pointer; opacity: .55; } .eld.on { opacity: 1; border-color: #fff; box-shadow: 0 0 10px var(--c); }
   #fElTxt { font-size: 12px; color: #e6dcd6; margin-bottom: 6px; min-height: 15px; } #fElTxt b { color: var(--c); letter-spacing: 1px; }
-  .arch { display: grid; grid-template-columns: 32px 1fr auto; gap: 8px; align-items: center; padding: 5px 7px; margin-bottom: 4px; background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.12); cursor: pointer; }
+  .arch { width: 100%; text-align: left; font: inherit; color: #fff; display: grid; grid-template-columns: 32px 1fr auto; gap: 8px; align-items: center; padding: 5px 7px; margin-bottom: 4px; background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.12); cursor: pointer; }
   .arch.on { border-color: var(--am); background: rgba(255,178,58,.14); } .arch.used { opacity: .35; }
   .arch .ic { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; color: #fff; } .arch .ic svg { width: 76%; height: 76%; }
   .arch b { font-size: 13.5px; letter-spacing: .8px; } .arch span { display: block; font-size: 11.5px; line-height: 1.2; color: #b9aeb2; } .arch .co { font: 900 13px var(--ti); color: var(--am); white-space: nowrap; }
@@ -169,6 +179,7 @@
   <div id="left">
     <div class="panel"><div class="lab"><span>VITA</span><span id="buffs"></span></div><div class="bar"><div id="hpFill"></div><div id="shFill"></div><div id="hpTxt">100</div></div>
       <div id="res"><div class="lab" style="margin:5px 0 3px"><span id="resTxt">RISONANZA</span></div><div class="bar" style="height:7px"><div id="resFill"></div></div></div></div>
+    <div class="panel hidden" id="powerHud" role="status"></div>
     <div class="panel none" id="quest"><div class="lab"><span id="qTitle">MISSIONE</span><span id="qTime"></span></div><div id="qLine">Cerca chi ha un ! sopra la testa</div></div>
   </div>
   <div id="mid">
@@ -192,7 +203,7 @@
 <div id="home" class="overlay">
   <div class="card">
     <h1>DITE</h1>
-    <div class="sub">MOTORE DI MATTONCINI · VERSIONE 3.1</div>
+    <div class="sub">MOTORE DI MATTONCINI · VERSIONE 3.2</div>
     <div id="rot">GIRA IL TELEFONO IN ORIZZONTALE</div>
     <div class="cols">
       <div>
