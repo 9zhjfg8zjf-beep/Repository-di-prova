@@ -317,19 +317,16 @@ G.buildFx = function (s) {
   for (let i = 0; i < 56; i++) { const sp = glowSprite(0xffffff); sp.visible = false; scene.add(sp); flashes.push({ sp, life: 0, max: 1, s0: 1, s1: 1 }); }
   let fi = 0;
   G.flash = function (x, y, z, color, s0, s1, life) { const f = flashes[fi]; fi = (fi + 1) % flashes.length; f.sp.position.set(x, y, z); f.sp.material.color.setHex(color); f.life = f.max = life; f.s0 = s0; f.s1 = s1; f.sp.visible = true; f.sp.scale.setScalar(s0); f.sp.material.opacity = 0; return f; };
-  const PN = 640, pm = new THREE.InstancedMesh(GEO.box, new THREE.MeshBasicMaterial({ color: 0xffffff }), PN), parts = [];
-  pm.frustumCulled = false; scene.add(pm);
-  for (let i = 0; i < PN; i++) { parts.push({ life: 0, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, s: 0.1, max: 1, g: 1 }); D.position.set(0, -99, 0); D.scale.set(0, 0, 0); D.updateMatrix(); pm.setMatrixAt(i, D.matrix); pm.setColorAt(i, TC.setHex(0xffffff)); }
+  const PN = 640, pm = new THREE.InstancedMesh(GEO.box, new THREE.MeshBasicMaterial({ color: 0xffffff }), PN), parts = [], drawColors = new Uint32Array(PN);
+  pm.name = 'dite-particles'; pm.visible = false; pm.frustumCulled = false; pm.instanceMatrix.setUsage(THREE.DynamicDrawUsage); scene.add(pm);
+  for (let i = 0; i < PN; i++) { parts.push({ life: 0, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, s: 0.1, max: 1, g: 1, color: 0xffffff }); pm.setColorAt(i, TC.setHex(0xffffff)); drawColors[i] = 0xffffff; }
+  pm.count = 0; pm.instanceColor.setUsage(THREE.DynamicDrawUsage);
   let pi = 0;
   G.burst = function (x, y, z, n, color, speed, up, life, size, grav) {
-    TC.setHex(color);
-    for (let k = 0; k < n; k++) { const p = parts[pi], a = Math.random() * Math.PI * 2, e = Math.random() * 2 - 1, sp = speed * (0.35 + Math.random() * 0.65), c = Math.sqrt(1 - e * e); p.x = x; p.y = y; p.z = z; p.vx = Math.cos(a) * c * sp; p.vz = Math.sin(a) * c * sp; p.vy = e * sp * 0.6 + up; p.life = p.max = life * (0.5 + Math.random() * 0.7); p.s = size * (0.5 + Math.random() * 0.8); p.g = grav === undefined ? 1 : grav; pm.setColorAt(pi, TC); pi = (pi + 1) % PN; }
-    pm.instanceColor.needsUpdate = true;
+    for (let k = 0; k < n; k++) { const p = parts[pi], a = Math.random() * Math.PI * 2, e = Math.random() * 2 - 1, sp = speed * (0.35 + Math.random() * 0.65), c = Math.sqrt(1 - e * e); p.x = x; p.y = y; p.z = z; p.vx = Math.cos(a) * c * sp; p.vz = Math.sin(a) * c * sp; p.vy = e * sp * 0.6 + up; p.life = p.max = life * (0.5 + Math.random() * 0.7); p.s = size * (0.5 + Math.random() * 0.8); p.g = grav === undefined ? 1 : grav; p.color = color; pi = (pi + 1) % PN; }
   };
   G.spray = function (x, y, z, dx, dy, dz, n, color, speed, spread, life, size, grav) { // particelle lanciate in una direzione
-    TC.setHex(color);
-    for (let k = 0; k < n; k++) { const p = parts[pi], sp = speed * (0.6 + Math.random() * 0.5); p.x = x; p.y = y; p.z = z; p.vx = (dx + (Math.random() - 0.5) * spread) * sp; p.vy = (dy + (Math.random() - 0.5) * spread) * sp; p.vz = (dz + (Math.random() - 0.5) * spread) * sp; p.life = p.max = life * (0.6 + Math.random() * 0.6); p.s = size * (0.5 + Math.random() * 0.8); p.g = grav === undefined ? 0 : grav; pm.setColorAt(pi, TC); pi = (pi + 1) % PN; }
-    pm.instanceColor.needsUpdate = true;
+    for (let k = 0; k < n; k++) { const p = parts[pi], sp = speed * (0.6 + Math.random() * 0.5); p.x = x; p.y = y; p.z = z; p.vx = (dx + (Math.random() - 0.5) * spread) * sp; p.vy = (dy + (Math.random() - 0.5) * spread) * sp; p.vz = (dz + (Math.random() - 0.5) * spread) * sp; p.life = p.max = life * (0.6 + Math.random() * 0.6); p.s = size * (0.5 + Math.random() * 0.8); p.g = grav === undefined ? 0 : grav; p.color = color; pi = (pi + 1) % PN; }
   };
   const SEG = 11, bolts = [];
   function boltMesh(color) { const g = new THREE.BufferGeometry(), pos = new Float32Array((SEG + 1) * 2 * 3), idx = []; for (let i = 0; i < SEG; i++) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setIndex(idx); const m = new THREE.Mesh(g, add(color)); m.frustumCulled = false; m.visible = false; return m; }
@@ -344,40 +341,42 @@ G.buildFx = function (s) {
   G.ring = function (x, y, z, r0, r1, life, color) { const r = rings[ri]; ri = (ri + 1) % rings.length; r.life = r.max = life; r.r0 = r0; r.r1 = r1; r.m.position.set(x, y, z); r.m.material.color.setHex(color); r.m.visible = true; };
 
   // ---------- Proiettili, zone, trappole, colpi in arrivo ----------
-  const pools = { shot: new Map(), zone: new Map(), trap: new Map(), lob: new Map() };
+  const pools = { shot: new Map(), zone: new Map(), trap: new Map(), lob: new Map() }, seenThings = new Set();
   const drop = (map, id) => { const v = map.get(id); scene.remove(v.o); for (const m of v.mats) m.dispose(); map.delete(id); };
   G.syncThings = function (s, dt, t) {
-    let seen = new Set();
+    const seen = seenThings; seen.clear();
     for (const sh of s.shots) {
       seen.add(sh.id); let v = pools.shot.get(sh.id);
       if (v && v.team !== sh.team) { drop(pools.shot, sh.id); v = null; }
       if (!v) { v = G.shotView(sh); v.team = sh.team; scene.add(v.o); pools.shot.set(sh.id, v); }
       v.upd(sh, dt);
     }
-    for (const id of [...pools.shot.keys()]) if (!seen.has(id)) drop(pools.shot, id);
-    seen = new Set();
+    for (const id of pools.shot.keys()) if (!seen.has(id)) drop(pools.shot, id);
+    seen.clear();
     for (const z of s.zones) {
       seen.add(z.id); let v = pools.zone.get(z.id); const c = elc(z.el);
-      if (!v) { const o = new THREE.Group(), m1 = add(c, 0.28), m2 = add(c, 0.9); o.position.set(z.x, 0.06, z.z); const d = new THREE.Mesh(discGeo, m1); d.scale.setScalar(z.r); const r = new THREE.Mesh(rimGeo, m2); r.scale.setScalar(z.r); o.add(d, r); const mats = [m1, m2]; if (z.kind === 'slow' || z.ward) { const m3 = add(c, 0.16); const dm = new THREE.Mesh(GEO.dome, m3); dm.scale.setScalar(z.r); o.add(dm); mats.push(m3); } scene.add(o); v = { o, mats, c, ft: 0 }; pools.zone.set(z.id, v); }
+      if (!v) { const o = new THREE.Group(), m1 = add(c, 0.28), m2 = add(c, 0.9); o.name = 'dite-zone-' + z.id; o.userData.diteZone = z.id; const d = new THREE.Mesh(discGeo, m1), r = new THREE.Mesh(rimGeo, m2); o.add(d, r); const mats = [m1, m2]; if (z.kind === 'slow' || z.ward) { const m3 = add(c, 0.16); o.add(new THREE.Mesh(GEO.dome, m3)); mats.push(m3); } scene.add(o); v = { o, mats, c, ft: 0 }; pools.zone.set(z.id, v); }
+      // Core puo' spostare, inseguire e far crescere la zona dopo la creazione.
+      v.o.position.set(z.x, 0.06, z.z); v.o.scale.setScalar(z.r);
       const left = z.dur - z.t; v.mats[0].opacity = (z.team === 'e' ? 0.38 : 0.26) * Math.min(1, left) + Math.sin(t * 5 + z.id) * 0.04; v.mats[1].opacity = 0.9 * Math.min(1, left);
       v.ft -= dt; if (v.ft <= 0) { v.ft = 0.12; const a = Math.random() * 6.283, d = Math.sqrt(Math.random()) * z.r; G.burst(z.x + Math.sin(a) * d, 0.2, z.z + Math.cos(a) * d, 1, c, 0.5, z.kind === 'slow' ? 0.4 : 2.2, 0.7, 0.13, z.kind === 'slow' ? -0.02 : -0.2); }
     }
-    for (const id of [...pools.zone.keys()]) if (!seen.has(id)) drop(pools.zone, id);
-    seen = new Set();
+    for (const id of pools.zone.keys()) if (!seen.has(id)) drop(pools.zone, id);
+    seen.clear();
     for (const tr of s.traps) {
       seen.add(tr.id); let v = pools.trap.get(tr.id); const c = elc(tr.el);
       if (!v) { const o = new THREE.Group(), m1 = bas(c), m2 = std(0x26232b, 0.7, 0.4), m3 = add(c, 0.5); o.position.set(tr.x, 0, tr.z); mk(o, GEO.cyl, m2, 0, 0.1, 0, 0.5, 0.2, 0.5); mk(o, GEO.oct, m1, 0, 0.45, 0, 0.16, 0.24, 0.16); const r = new THREE.Mesh(rimGeo, m3); r.scale.setScalar(tr.r * 0.55); r.position.y = 0.05; o.add(r); scene.add(o); v = { o, mats: [m1, m2, m3] }; pools.trap.set(tr.id, v); }
       v.o.children[1].position.y = 0.45 + Math.sin(t * 4 + tr.id) * 0.06; v.o.children[1].rotation.y = t * 2; v.mats[2].opacity = tr.arm > 0 ? 0.15 : 0.35 + Math.sin(t * 6) * 0.15;
     }
-    for (const id of [...pools.trap.keys()]) if (!seen.has(id)) drop(pools.trap, id);
-    seen = new Set();
+    for (const id of pools.trap.keys()) if (!seen.has(id)) drop(pools.trap, id);
+    seen.clear();
     for (const L of s.lobs) {
       seen.add(L.id); let v = pools.lob.get(L.id); const c = elc(L.el), k = Math.min(1, L.t / L.T);
       if (!v) { const o = new THREE.Group(), m1 = add(c, 0.2), m2 = add(c, 0.9); o.position.set(L.x, 0.06, L.z); const d = new THREE.Mesh(discGeo, m1), r = new THREE.Mesh(rimGeo, m2); r.scale.setScalar(L.r); o.add(d, r); const sp = glowSprite(c); sp.scale.setScalar(1.6); o.add(sp); scene.add(o); v = { o, mats: [m1, m2, sp.material] }; pools.lob.set(L.id, v); }
       v.o.children[0].scale.setScalar(Math.max(0.01, L.r * k));
       const sp = v.o.children[2]; if (L.arc) { const d = Math.hypot(L.x - L.x0, L.z - L.z0); sp.position.set((L.x0 - L.x) * (1 - k), 1.4 * (1 - k) + (2 + d * 0.25) * 4 * k * (1 - k), (L.z0 - L.z) * (1 - k)); } else sp.position.set(0, 30 * (1 - k) * (1 - k) + 0.5, 0);
     }
-    for (const id of [...pools.lob.keys()]) if (!seen.has(id)) drop(pools.lob, id);
+    for (const id of pools.lob.keys()) if (!seen.has(id)) drop(pools.lob, id);
   };
 
   // ---------- Segnale della missione: colonna di luce sull'obiettivo ----------
@@ -408,12 +407,25 @@ G.buildFx = function (s) {
       else if (coverage > 0.35) glare += f.sp.material.opacity * Math.min(1, coverage * coverage);
     }
     if (glare > 0.65) for (const f of flashes) if (f.life > 0) f.sp.material.opacity *= 0.65 / glare;
-    for (let i = 0; i < PN; i++) { const p = parts[i]; if (p.life <= 0) continue; p.life -= dt; p.vy -= 18 * p.g * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt; if (p.y < p.s / 2) { p.y = p.s / 2; p.vy *= -0.4; p.vx *= 0.6; p.vz *= 0.6; } const sc = p.life > 0 ? p.s * Math.min(1, p.life / (p.max * 0.5)) : 0; D.position.set(p.x, p.life > 0 ? p.y : -99, p.z); D.scale.set(sc, sc, sc); D.rotation.set(p.x, p.y, p.z); D.updateMatrix(); pm.setMatrixAt(i, D.matrix); }
-    pm.instanceMatrix.needsUpdate = true;
+    let drawn = 0, colorsChanged = false;
+    for (const p of parts) {
+      if (p.life <= 0) continue; p.life -= dt; if (p.life <= 0) continue;
+      p.vy -= 18 * p.g * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt;
+      if (p.y < p.s / 2) { p.y = p.s / 2; p.vy *= -0.4; p.vx *= 0.6; p.vz *= 0.6; }
+      const sc = p.s * Math.min(1, p.life / (p.max * 0.5));
+      D.position.set(p.x, p.y, p.z); D.scale.set(sc, sc, sc); D.rotation.set(p.x, p.y, p.z); D.updateMatrix(); pm.setMatrixAt(drawn, D.matrix);
+      if (drawColors[drawn] !== p.color) { pm.setColorAt(drawn, TC.setHex(p.color)); drawColors[drawn] = p.color; colorsChanged = true; }
+      drawn++;
+    }
+    pm.count = drawn; pm.visible = drawn > 0;
+    // Un pool vuoto non invia 640 matrici ferme e non produce draw call.
+    if (drawn) { pm.instanceMatrix.updateRange.count = drawn * 16; pm.instanceMatrix.needsUpdate = true; }
+    if (colorsChanged) { pm.instanceColor.updateRange.count = drawn * 3; pm.instanceColor.needsUpdate = true; }
     for (const b of bolts) { if (b.life <= 0) continue; b.life -= dt; b.jit -= dt; if (b.life <= 0) { b.core.visible = b.halo.visible = false; continue; } if (b.jit <= 0) { b.jit = 0.035; rejag(b); } const k = b.life / b.max; ribbon(b.core, b.pts, b.w * 0.3, cam); ribbon(b.halo, b.pts, b.w, cam); b.core.material.opacity = Math.min(1, k * 2); b.halo.material.opacity = 0.55 * k; }
     for (const r of rings) { if (r.life <= 0) continue; r.life -= dt; const k = 1 - Math.max(0, r.life) / r.max, rad = r.r0 + (r.r1 - r.r0) * (1 - (1 - k) * (1 - k)); r.m.scale.setScalar(rad); r.m.material.opacity = (1 - k) * 0.95; if (r.life <= 0) r.m.visible = false; }
     for (let i = hitFx.length - 1; i >= 0; i--) { const h = hitFx[i]; h.life -= dt; h.m.opacity = Math.max(0, h.life / 0.32) * 0.5; if (h.life <= 0) { scene.remove(h.grp); h.m.dispose(); if (h.own) h.own.dispose(); hitFx.splice(i, 1); } }
   };
+  G.fxInfo = () => ({ activeParticles: parts.reduce((n, p) => n + (p.life > 0 ? 1 : 0), 0), drawnParticles: pm.count, particleVisible: pm.visible, particleMatrixVersion: pm.instanceMatrix.version, particleColorVersion: pm.instanceColor.version, zones: pools.zone.size, telegraphs: teleViews.size, impacts: hitFx.length });
 
   // ---------- Schermi: una sola immagine animata condivisa ----------
   const sg = G.screenCanvas.getContext('2d'); let scT = 0; G.hypT = 0;
