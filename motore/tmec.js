@@ -5,7 +5,9 @@ const inp = () => ({ mx: 0, my: 0, yaw: Math.PI / 2, pitch: -0.1, fire: false, b
 function world(recipe) { const s = Core.create({ seed: 4, recipe, fame: 320 }); for (const e of s.mobs) e.dead = true; s.npcs.length = 0; const p = s.player; p.invuln = 999; return s; }
 const foe = (s, dx, dz, kind) => { const p = s.player, e = Core.mkMob(s, kind || 'sgherro', p.x + dx, p.z + dz, 'e'); e.spawn = 0; e.atk = 99; e.hp = e.maxHp = 500; return e; };
 const run = (s, i, n, f) => { for (let k = 0; k < n; k++) { Core.step(s, 1 / 60, i); if (f) f(k); s.events.length = 0; } };
-const ok = (name, cond, extra) => console.log((cond ? '  ok  ' : '  NO  ') + name + (extra ? '  ' + extra : ''));
+let failures = B.errors.length;
+if (B.errors.length) console.error('ERRORI DI CARICAMENTO:\n  ' + B.errors.join('\n  '));
+const ok = (name, cond, extra) => { if (!cond) failures++; console.log((cond ? '  ok  ' : '  NO  ') + name + (extra ? '  ' + extra : '')); };
 { // tentacolo: afferra, tiene, scaglia, fa male all'impatto anche ai vicini
   const s = world(mk(['dardo', 'scatto', 'tentacolo', 'nova', 'ira'])), i = inp(), a = foe(s, -8, 0), b2 = foe(s, -16, 0.5);
   run(s, i, 5); i.b[2] = true; run(s, i, 1); i.b[2] = false; run(s, i, 30);
@@ -21,8 +23,15 @@ const ok = (name, cond, extra) => console.log((cond ? '  ok  ' : '  NO  ') + nam
 { const s = world(mk(['boomerang', 'riavvolgi', 'specchio', 'levita', 'fenice'])), i = inp(), a = foe(s, -7, 0), p = s.player;
   i.fire = true; let hits = 0; run(s, i, 90, () => { for (const e of s.events) if (e.type === 'hit') hits++; }); i.fire = false;
   ok('boomerang colpisce andata e ritorno', hits >= 3, 'colpi ' + hits);
-  const x0 = p.x; i.mx = 0; i.my = -1; run(s, i, 120); i.my = 0; const x1 = p.x; i.b[1] = true; run(s, i, 1); i.b[1] = false; run(s, i, 2);
-  ok('riavvolgi riporta indietro', Math.abs(p.x - x1) > 3, 'da ' + x1.toFixed(1) + ' a ' + p.x.toFixed(1));
+  i.mx = 0; i.my = -1; run(s, i, 120); i.my = 0;
+  // Il muro del seme 4 limita il cammino a 2.4 metri: conta il ritorno al campione,
+  // non una distanza minima arbitraria che il giocatore non puo percorrere.
+  const x1 = p.x, z1 = p.z, expected = { ...p.hist[0] }; let rewindCast = false, rewindBlink = false;
+  p.hp = 40; i.b[1] = true;
+  run(s, i, 1, () => { rewindCast = s.events.some((e) => e.type === 'cast' && e.kind === 'rewind'); rewindBlink = s.events.some((e) => e.type === 'blink' && Math.hypot(e.x1 - expected.x, e.z1 - expected.z) < 1e-6); });
+  i.b[1] = false; run(s, i, 2);
+  ok('riavvolgi riporta al campione storico', Math.hypot(x1 - expected.x, z1 - expected.z) > 1e-3 && Math.hypot(p.x - expected.x, p.z - expected.z) < 1e-6 && p.hp === expected.hp, 'da ' + x1.toFixed(1) + ' a ' + p.x.toFixed(1));
+  ok('riavvolgi si attiva e consuma la ricarica', rewindCast && rewindBlink && p.cd[1] > 0);
   const hp0 = a.hp; i.b[3] = true; run(s, i, 1); i.b[3] = false; run(s, i, 10); const lifted = a.lift > 0; run(s, i, 200);
   ok('levitazione solleva e fa cadere', lifted && a.hp < hp0);
   p.res = 100; p.invuln = 0; i.b[4] = true; run(s, i, 1); i.b[4] = false; p.hp = 1; a.atk = 0; a.stun = 0; a.x = p.x - 1.2; a.z = p.z; run(s, i, 120);
@@ -38,3 +47,4 @@ const ok = (name, cond, extra) => console.log((cond ? '  ok  ' : '  NO  ') + nam
   const dmgOf = (mod) => { const s = world(mk(['dardo', 'scatto', 'nova', 'zona', 'ira'], [mod])), i = inp(), a = foe(s, -8, 0), b2 = foe(s, -9.5, 1.2); i.fire = true; run(s, i, 240); return [Math.round(500 - a.hp), Math.round(500 - b2.hp), Math.round(s.player.res), s.zones.length]; };
   const base = dmgOf('');
   for (const m of ['esplosivo', 'rimbalzo', 'critico', 'possente', 'rapido', 'risonante', 'persistente', 'falciante']) { const r = dmgOf(m); console.log('      innesto', m.padEnd(12), 'bersaglio', r[0], 'vicino', r[1], 'risonanza', r[2], 'chiazze', r[3], '  (senza: ' + base.join(' ') + ')'); } }
+if (failures) process.exitCode = 1;

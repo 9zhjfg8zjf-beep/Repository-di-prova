@@ -28,3 +28,4 @@ for (const a of B.LIST) {
   }
 }
 console.log('meccaniche in tutto:', B.LIST.length, JSON.stringify(perSlot), '| scritte nel linguaggio:', n, '| non riuscite:', bad, '| errori di caricamento:', B.errors.length, slow.length ? '| lente: ' + slow.join(', ') : '');
+if (bad || B.errors.length) process.exitCode = 1;
