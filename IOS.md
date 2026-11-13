@@ -6,15 +6,22 @@ Non chiamare questa preparazione “App Store ready”: firma, distribuzione, pr
 
 ## Stato delle verifiche
 
-- Eseguiti su Linux: 8 test di packaging/metadati (`python3 scripts/ios_test.py`), generazione deterministica
-  del progetto, controllo bundle/checksum/licenza e formato dell'icona 1024×1024 RGB opaca.
-- Compilazione Swift, XCTest e schermate del simulatore: **da eseguire sulla CI macOS**.
-  L'esistenza di progetto, test e workflow non è una prova di compilazione o funzionamento.
+- Prima CI reale: [run 43429444352](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43429444352)
+  sul commit `678d219`. Verdi i 14 comandi Node, le 8 prove di packaging e i controlli bundle/progetto/asset.
+- iPhone: **build Release per dispositivo senza firma riuscita**. Per entrambe le famiglie di simulatori
+  la compilazione Swift e i **19 test unitari** sono riusciti; i **6 UI test per famiglia sono falliti in setUp**.
+  Il gioco non ha raggiunto il rifugio: il filtro WebKit `^(https?|wss?)://` è stato rifiutato con
+  `Disjunctions are not supported yet.`. Log e PNG confermano il blocco prima dell'avvio del contenuto.
+- Gli screenshot nativi del primo run documentano l'errore, non il gioco funzionante e non sono materiali Store.
+  Preparata la correzione con due regole condivise e una ventesima prova unitaria che compila il payload reale
+  in WebKit; **correzione e nuova prova attendono la prossima CI**, senza esito verificato.
+- Il job browser della stessa CI ha superato 17 gruppi, poi `tmobile_browser` ha rilevato il nome Cataclisma
+  troncato nello scenario coach con il font del runner. Analisi e nuovo gate in corso: il run complessivo non è verde.
 - iPhone/iPad fisici, prestazioni, temperatura, autonomia, audio e interruzioni reali: **non verificati**.
 - Nessun certificato, profilo, Team ID, account App Store Connect o invio predisposto automaticamente.
 
-Registrare qui il link e il commit della CI riuscita quando disponibili, senza sostituire questo elenco
-con una dichiarazione generica di conformità. I risultati su simulatore non certificano hardware reale.
+Registrare separatamente il prossimo esito di avvio/UI, senza sostituire i risultati parziali con una dichiarazione
+generica di conformità. Build e test unitari riusciti non certificano l'avvio; il simulatore non certifica hardware reale.
 
 ## File e build
 
@@ -64,7 +71,7 @@ Per eseguire localmente su un Mac configurato: `bash scripts/ci_ios.sh iphone` e
 - Swift/UIKit, singola scena, nessuna dipendenza nativa esterna e nessun backend.
 - WKWebView carica esclusivamente `Game/index.html` dal bundle; la lettura è limitata alla cartella `Game`.
 - Il motore e Three sono inclusi nel file. Non servono CDN, server locale, service worker o aggiornamenti remoti.
-- Una content rule WebKit blocca richieste HTTP/HTTPS/WS/WSS. Il caricamento inizia solo dopo averla compilata.
+- Le regole WebKit bloccano richieste HTTP/HTTPS/WS/WSS. Il caricamento inizia solo dopo la loro compilazione.
   La policy di navigazione consente il solo documento locale e i suoi frammenti, non iframe o URL arbitrari.
 - Eventuali link esterni richiedono azione dell'utente, HTTPS e corrispondenza esatta con `DITEExternalURLs`
   in Info.plist; vengono aperti dal sistema. L'elenco attuale è vuoto, senza indirizzi o identità inventati.
@@ -135,13 +142,14 @@ Gli UI test usano `DITE-UI-Tests` separato, soltanto in Debug. Non cancellano i 
 
 I test unitari coprono protocollo, payload errati/grandi, URL, round-trip, scrittura fallita, concorrenza,
 migrazione e conservazione dei dati danneggiati/futuri. Non sostituiscono i test semantici del motore.
-Gli UI test avviano il bundle vero e usano tap e controlli accessibili, senza eseguire JS per pilotare il gioco:
+Gli UI test sono predisposti per avviare il bundle vero e usare tap e controlli accessibili, senza JS per pilotare il gioco:
 ingresso, pausa, impostazioni/ritorno, rotazioni, background e persistenza di una preferenza dopo rilancio.
 Una prova apre l'officina senza tastiera automatica, modifica Nome e Cerca con la tastiera reale, ruota
 il simulatore, chiude la tastiera tramite il comando dell'interfaccia e raggiunge il ritorno al rifugio.
 Una prova provoca un primo errore WebGL attraverso uno user script esclusivamente Debug, poi tocca il vero
 «Riprova» e raggiunge rifugio e partita. L'iniezione di guasto non è compilata nella build Release.
 Le schermate sono allegati XCTest reali; al fallimento viene conservato anche l'albero di accessibilità.
+Nel primo run questi percorsi non sono stati raggiunti: il blocco in setUp precede le azioni di gioco.
 
 Prima della distribuzione occorrono prove su dispositivi accessibili: multi-touch simultaneo, notch e home indicator,
 tastiera e rotazione, sessioni prolungate, memoria, calore, autonomia, silenzioso, Bluetooth e interruzioni audio.

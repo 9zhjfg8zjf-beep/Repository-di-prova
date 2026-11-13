@@ -2,8 +2,11 @@
 
 Preparato il 13 novembre 2026. Questo documento contiene testi pronti da trasferire nei campi indicati,
 valori ancora da completare e il percorso per ottenere le immagini della build effettiva.
-La preparazione nativa è **unsigned e non ancora compilata/verificata su macOS**: non esiste qui una build
-distribuibile né un invio App Store. Esiti tecnici e loro aggiornamenti appartengono a [IOS.md](IOS.md).
+La prima CI macOS ha compilato la build Release iPhone **unsigned** e superato 19 test unitari per famiglia
+di simulatori, ma tutti i 6 UI test per famiglia si sono fermati in setUp: il filtro WebKit ha impedito l'avvio
+del gioco. Non esiste una build distribuibile o un invio App Store. La correzione preparata attende verifica.
+Esiti e diagnosi del [run 43429444352, commit 678d219](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43429444352)
+sono riportati in [IOS.md](IOS.md).
 Prima del caricamento, associare questi testi alla build nativa realmente verificata, senza usare la sola
 versione web come prova del funzionamento iOS.
 
@@ -131,11 +134,13 @@ Rivedere le note se cambiano testi, funzionalità, monetizzazione o salvataggio 
 
 ## Immagini dalla build reale
 
-Il piano parte dagli allegati XCTest della stessa versione nativa da inviare. **Non sono ancora disponibili**:
-un file di test o una schermata Chromium non è uno screenshot dell'app iOS eseguita.
+Il piano parte dagli allegati XCTest della stessa versione nativa da inviare. **Non sono ancora disponibili
+immagini utilizzabili per lo Store**: i PNG reali del primo run mostrano l'errore di avvio del filtro WebKit.
+Sono evidenze diagnostiche, non immagini di gameplay. Un file di test o una schermata Chromium non li sostituisce.
 Il workflow `.github/workflows/dite.yml` conserva `ios-iphone-evidence` e `ios-ipad-evidence`, con
 `SimulatorTests.xcresult`, log, `selected-simulator.json` e immagini; la conservazione attuale è di 14 giorni.
-Dopo l'esecuzione, esportare gli allegati da `.xcresult` e conservarli insieme a commit, build e dispositivo.
+La CI esporta gli allegati in `.build/xctest-attachments/`. Dopo il prossimo avvio/UI riuscito, selezionare
+le immagini del gioco effettivo e conservarle insieme a commit, build e dispositivo.
 
 | Ordine proposto | Cosa mostra | Allegato XCTest già previsto | Uso |
 | --- | --- | --- | --- |
@@ -169,12 +174,13 @@ Il numero di build, il commit e il risultato della CI devono permettere di colle
 
 | Evidenza da collegare | Valore attuale |
 | --- | --- |
-| Esecuzione CI macOS e commit | Da registrare dopo esecuzione riuscita |
-| Build Swift / XCTest | Non ancora verificati |
-| Screenshot nativi selezionati | Da esportare dopo esecuzione |
+| Esecuzione CI macOS e commit | [43429444352](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43429444352), `678d219`; run complessivo fallito |
+| Build Swift / XCTest | Release iPhone unsigned riuscita; simulatori compilati, 19 unitari verdi e 6 UI falliti in setUp per famiglia |
+| Correzione avvio WebKit | Preparata con due regole e test sul payload reale; verifica della correzione ancora da eseguire |
+| Screenshot nativi selezionati | PNG di errore disponibili; immagini del gioco per lo Store ancora da acquisire |
 | Prove su hardware fisico | Da eseguire con hardware accessibile al collaudo |
 | Archivio firmato / build App Store Connect | Da preparare con account e firma autorizzati |
 | Supporto e policy pubblici | Da configurare con identità reale |
 
 La compilazione, la firma, l'invio e l'approvazione sono risultati separati. Questo documento prepara
-i contenuti del caricamento; non attesta che uno di questi passaggi sia già avvenuto.
+i contenuti del caricamento; la compilazione riuscita non equivale a gioco avviabile o pronto per la distribuzione.
