@@ -14,13 +14,18 @@ G.buildPowerFx = function (s) {
   const ground = (parent, c, r) => { const m = mesh(geo.floor, c, 0.75, parent); m.rotation.x = -Math.PI / 2; m.position.y = 0.12; m.scale.setScalar(r); return m; };
   const wire = (parent, c) => { const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3)); const o = new THREE.Line(geometry, new THREE.LineBasicMaterial({ color: c, transparent: true, opacity: 0.8 })); o.frustumCulled = false; parent.add(o); return o; };
   const segment = (line, a, b, ya = 1.1, yb = 1.1) => { const pos = line.geometry.attributes.position; pos.setXYZ(0, a.x, ya, a.z); pos.setXYZ(1, b.x, yb, b.z); pos.needsUpdate = true; };
-  const entity = (id) => s.boss && s.boss.id === id ? s.boss : s.mobs.find((e) => e.id === id && !e.dead);
+  const entities = new Map(), linked = [], statuses = [['silence', 'silenceT', 0x9ad9ff], ['disarm', 'disarmT', 0xffc46b], ['debt', 'debt', 0xd7a0ff], ['infection', 'infection', 0xb8f463], ['rewind', 'rewind', 0x7ce5de], ['pact', 'pact', 0xff84b6]];
+  const entity = (id) => entities.get(id), statusOn = (e, field) => typeof e[field] === 'number' ? e[field] > 0 : !!e[field];
   const remove = (v) => { scene.remove(v.o); v.o.traverse((o) => { if (o.geometry && !o.geometry.keep) o.geometry.dispose(); if (o.material) o.material.dispose(); }); };
   const get = (key, build) => { let v = views.get(key); if (!v) { v = { o: new THREE.Group() }; build(v); scene.add(v.o); views.set(key, v); } v.seen = true; return v; };
   let kitRef = null, canRaise = false;
   const cameraRight = new THREE.Vector3();
 
   G.syncPowerFx = function (t) {
+    if (G.renderPrefs && G.renderPrefs.reducedMotion) t = 0;
+    entities.clear(); let clones = 0;
+    for (const e of s.mobs) if (!e.dead) { entities.set(e.id, e); if (e.cloned) clones++; }
+    if (s.boss) entities.set(s.boss.id, s.boss);
     for (const v of views.values()) v.seen = false;
     const ps = s.powers;
     if (!ps) return;
@@ -41,7 +46,7 @@ G.buildPowerFx = function (s) {
       v.o.position.set(b.x, 0, b.z); v.o.rotation.y = Math.atan2(-b.dz, b.dx); const hp = Math.max(0, b.hp / b.maxHp); v.health.scale.set(Math.max(0.01, b.l * hp), 0.06, 0.1); v.fill.material.opacity = 0.08 + hp * 0.08;
     }
     for (const l of ps.links) {
-      const es = l.ids.map(entity).filter((e) => e && !e.dead);
+      const es = linked; es.length = 0; for (const id of l.ids) { const e = entity(id); if (e && !e.dead) es.push(e); }
       if (es.length < 2) continue;
       const v = get('link' + l.id, (v) => { v.lines = Array.from({ length: 5 }, () => wire(v.o, color(l.el))); });
       v.lines.forEach((line, i) => { line.visible = i + 1 < es.length; if (line.visible) segment(line, es[0], es[i + 1], 1.5, 1.5); });
@@ -54,11 +59,10 @@ G.buildPowerFx = function (s) {
     // I corpi disponibili per la necromanzia sono segni bassi, non nuovi modelli.
     if (kitRef !== s.kit) { kitRef = s.kit; canRaise = s.kit.some((k) => k.prog && JSON.stringify(k.prog).includes('"revive"')); }
     if (canRaise) for (const c of ps.corpses) { const v = get('corpse' + c.id, (v) => { ground(v.o, 0xa3b8c8, 0.55); const m = mesh(geo.box, 0xa3b8c8, 0.45, v.o); m.scale.set(0.09, 0.05, 0.65); m.position.y = 0.1; }); v.o.position.set(c.x, 0, c.z); }
-    for (const e of s.mobs.concat(s.boss ? [s.boss] : [])) {
+    for (const e of entities.values()) {
       if (e.dead || e.captive || e.possessed || Math.hypot(e.x - p.cam.x, e.z - p.cam.z) > 48) continue;
-      const active = [['silence', e.silenceT > 0, 0x9ad9ff], ['disarm', e.disarmT > 0, 0xffc46b], ['debt', !!e.debt, 0xd7a0ff], ['infection', !!e.infection, 0xb8f463], ['rewind', !!e.rewind, 0x7ce5de], ['pact', !!e.pact, 0xff84b6]];
-      let idx = 0; const activeCount = active.filter((a) => a[1]).length;
-      for (const [kind, on, c] of active) if (on) {
+      let idx = 0, activeCount = 0; for (const [, field] of statuses) if (statusOn(e, field)) activeCount++;
+      for (const [kind, field, c] of statuses) if (statusOn(e, field)) {
         const v = get(kind + e.id, (v) => { const m = mesh(geo.ring, c, 0.9, v.o); m.scale.setScalar(0.2); if (kind === 'silence' || kind === 'disarm') { const bar = mesh(geo.box, c, 1, v.o); bar.scale.set(0.5, 0.05, 0.05); bar.rotation.z = kind === 'disarm' ? Math.PI / 4 : 0; } else { const dot = mesh(geo.box, c, 1, v.o); dot.scale.setScalar(0.1); dot.rotation.z = Math.PI / 4; } });
         const offset = (idx++ - (activeCount - 1) / 2) * 0.55;
         v.o.position.set(e.x + cameraRight.x * offset, e.boss ? 4.3 : e.kind === 'bruto' ? 3.9 : 2.9, e.z + cameraRight.z * offset); v.o.quaternion.copy(G.camera.quaternion);
@@ -103,8 +107,7 @@ G.buildPowerFx = function (s) {
     if (p.possession) lines.push('POSSESSIONE · ' + Math.ceil(p.possession.t) + 's\nIL TUO CORPO È VULNERABILE');
     if (p.captive) lines.push('STASI · ' + Math.ceil(p.captive.t) + 's · RIPREMI PER LIBERARE');
     if (p.scan) lines.push('RILEVAMENTO · ' + G.scanFxCount + ' PRESENZE · ' + Math.ceil(p.scan.t) + 's');
-    const clones = s.mobs.filter((e) => e.cloned && !e.dead);
-    if (clones.length) lines.push('COPIE ATTIVE · ' + clones.length);
+    if (clones) lines.push('COPIE ATTIVE · ' + clones);
     const text = lines.join('\n');
     if (hud.textContent !== text) hud.textContent = text;
     hud.style.whiteSpace = 'pre-line'; hud.classList.toggle('hidden', !lines.length);

@@ -71,7 +71,7 @@ G.buildWorld = function (city) {
     }
     if (o.strips) for (let i = 0; i < o.cols; i += 2) { const x = (i * S) / o.cols + 2; ge.fillStyle = o.strips; ge.fillRect(x, 0, 3, S); g.fillStyle = o.strips; g.fillRect(x, 0, 3, S); }
     for (let i = 0; i < 26; i++) { const x = rnd() * S, y = rnd() * S, h = 30 + rnd() * 120; const gr = g.createLinearGradient(0, y, 0, y + h); gr.addColorStop(0, 'rgba(0,0,0,.35)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(x, y, 3 + rnd() * 8, h); }
-    return new THREE.MeshStandardMaterial({ map: toTex(c), emissiveMap: toTex(e), emissive: 0xffffff, emissiveIntensity: o.glow || 1, roughness: o.rough || 0.82, metalness: o.metal || 0.15 });
+    return new THREE.MeshStandardMaterial({ map: toTex(c), emissiveMap: toTex(e), emissive: 0xffffff, emissiveIntensity: (o.glow || 1) * 0.65, roughness: o.rough || 0.82, metalness: o.metal || 0.15 });
   }
   const TW = P.neon.cy, twd = shade(TW, 0.22);
   const FAC = [
@@ -98,7 +98,7 @@ G.buildWorld = function (city) {
     }
     g.fillStyle = '#060507'; g.fillRect(0, 0, W, 12);
     for (const ctx of [g, ge]) { ctx.fillStyle = v % 2 ? NEON.cy : NEON.mg; ctx.globalAlpha = 0.8; ctx.fillRect(0, 12, W, 2); ctx.globalAlpha = 1; }
-    return new THREE.MeshStandardMaterial({ map: toTex(c), emissiveMap: toTex(e), emissive: 0xffffff, emissiveIntensity: 1.15, roughness: 0.6, metalness: 0.3 });
+    return new THREE.MeshStandardMaterial({ map: toTex(c), emissiveMap: toTex(e), emissive: 0xffffff, emissiveIntensity: 0.65, roughness: 0.6, metalness: 0.3 });
   }
   const SHOP = [0, 1, 2, 3].map(shopfront);
 
@@ -130,7 +130,7 @@ G.buildWorld = function (city) {
       g.strokeStyle = '#0a0807'; g.lineWidth = 3; for (let i = 0; i <= 16; i++) { g.beginPath(); g.moveTo(i * 16, 0); g.lineTo(i * 16, S); g.moveTo(0, i * 16); g.lineTo(S, i * 16); g.stroke(); }
       for (const ctx of [g, ge]) { ctx.fillStyle = P.bank[2]; ctx.globalAlpha = 0.5; for (let i = 0; i < 16; i++) for (let j = 0; j < 16; j++) if ((i + j) % 2) ctx.fillRect(i * 16 + 5, j * 16 + 5, 6, 6); ctx.globalAlpha = 1; }
     }
-    return new THREE.MeshStandardMaterial({ map: toTex(c), emissiveMap: toTex(e), emissive: 0xffffff, emissiveIntensity: 0.9, roughness: kind === 'ash' ? 0.95 : 0.58, metalness: kind === 'bridge' ? 0.5 : 0.12 });
+    return new THREE.MeshStandardMaterial({ map: toTex(c), emissiveMap: toTex(e), emissive: 0xffffff, emissiveIntensity: 0.38, roughness: kind === 'ash' ? 0.95 : 0.58, metalness: kind === 'bridge' ? 0.5 : 0.12 });
   }
   const GM = { sv: groundTex('street'), sh: null, cross: groundTex('cross'), plaza: groundTex('plaza'), ash: groundTex('ash'), bridge: groundTex('bridge') };
   GM.sh = GM.sv;
@@ -193,6 +193,8 @@ G.buildWorld = function (city) {
       vec3 c = mix(hot*1.25, c2, crust);
       c += c0*pow(1.-crust,3.)*.5;
       if(ice>.5){ float cr = smoothstep(.02,.0,abs(fbm(vP*.35)-.5)); c = mix(c2*1.5, c1*.5, smoothstep(.3,.7,v)) + c1*cr*.7 + c0*.08*sin(time+vP.x*.3); }
+      // Mantiene il rapporto dei canali: le vene restano colorate anche nel bloom.
+      float peak = max(c.r,max(c.g,c.b)); c *= .85/(1.+peak*.35);
       gl_FragColor = vec4(c,1.); }`;
   for (const cn of city.canals) {
     const a0 = 6 * cn.k * CELL - HALF, a1 = a0 + 8, ext = liqSolid ? 70 : 0;
@@ -368,7 +370,7 @@ G.buildWorld = function (city) {
 
   // ---------- Aloni di luce sul suolo ----------
   const glowTex = (G.glowTex = (() => { const c = canvas(64, 64), g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(255,255,255,.85)'); gr.addColorStop(0.5, 'rgba(255,255,255,.25)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return toTex(c, false); })());
-  const gm = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.42 }), glows.length + 4);
+  const gm = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0.22 }), glows.length + 4);
   const D = new THREE.Object3D(), col = new THREE.Color(); let gi = 0;
   for (const g of glows) { D.position.set(g.x, 0.04, g.z); D.scale.set(g.sx, 1, g.sz); D.updateMatrix(); gm.setMatrixAt(gi, D.matrix); gm.setColorAt(gi, col.setHex(g.c)); gi++; }
   gm.count = gi; gm.instanceMatrix.needsUpdate = true; if (gm.instanceColor) gm.instanceColor.needsUpdate = true; gm.frustumCulled = false; scene.add(gm);

@@ -1,6 +1,7 @@
 // MOTORE - animazioni dei poteri: ogni elemento ha il suo modo di colpire, ogni forma il suo gesto, ogni proiettile il suo corpo.
 G.buildAnim = function (s) {
   const scene = G.scene, EL = Bricks.ELEM, R = Math.random;
+  const motion = () => !(G.renderPrefs && G.renderPrefs.reducedMotion), flashGain = { value: 1 };
   const bel = (el) => (el && el.indexOf('+') > 0 ? el.slice(0, el.indexOf('+')) : el);
   const col = (el) => { el = bel(el); return EL[el] ? EL[el].c : 0xff6a20; }, col2 = (el) => { el = bel(el); return EL[el] ? EL[el].c2 : 0xffd0a0; };
   const add = (c, o) => new THREE.MeshBasicMaterial({ color: c, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: o === undefined ? 1 : o, side: THREE.DoubleSide });
@@ -21,14 +22,15 @@ G.buildAnim = function (s) {
     // Sfumatura per frammento: conserva i bordi lontani anche nelle esplosioni
     // centrate sul giocatore. Le callback possono cambiare opacity senza annullarla.
     m.onBeforeCompile = (shader) => {
+      shader.uniforms.diteFlashGain = flashGain;
       shader.vertexShader = 'varying float diteDepth;\n' + shader.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\nditeDepth = -mvPosition.z;');
-      shader.fragmentShader = 'varying float diteDepth;\n' + shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.a *= 0.8 * smoothstep(0.4, 2.2, diteDepth);');
+      shader.fragmentShader = 'varying float diteDepth; uniform float diteFlashGain;\n' + shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.a *= 0.8 * diteFlashGain * smoothstep(0.4, 2.2, diteDepth);');
     };
-    m.customProgramCacheKey = () => 'dite-fx-near-fade-v2';
+    m.customProgramCacheKey = () => 'dite-fx-near-fade-v3';
     return [new THREE.Mesh(geo, m), m];
   };
   const out = (k) => 1 - (1 - k) * (1 - k);
-  G.animUpdate = function (dt) { for (let i = fxs.length - 1; i >= 0; i--) { const e = fxs[i]; e.life -= dt; if (e.life <= 0) { kill(e); fxs.splice(i, 1); } else e.f(1 - e.life / e.max, e.o, e.mats); } };
+  G.animUpdate = function (dt) { flashGain.value = G.renderPrefs && G.renderPrefs.reducedFlash ? 0.55 : 1; for (let i = fxs.length - 1; i >= 0; i--) { const e = fxs[i]; e.life -= dt; if (e.life <= 0) { kill(e); fxs.splice(i, 1); } else e.f(1 - e.life / e.max, e.o, e.mats); } };
   const near = (x, z) => Math.abs(x - s.player.x) < 70 && Math.abs(z - s.player.z) < 70;
 
   // ---------- Ogni elemento colpisce a modo suo ----------
@@ -89,10 +91,10 @@ G.buildAnim = function (s) {
     else { put(A.ico, enemy ? c : c2, 0.95, 0, 0, 0, 0.26, 0.26, 0.26); spin = put(A.tor, c, 0.7, 0, 0, 0, 0.42, 0.42, 0.42); spin.rotation.x = 1.2; glow(enemy ? 1.4 : 0.9, 0.4); if (sh.hom) kind = 'hom'; }
     o.rotation.y = Math.atan2(sh.vx, sh.vz); let tt = R() * 6, pt = 0;
     return { o, mats, c, upd(sh2, dt) {
-      tt += dt; const height = sh2.alt && Number.isFinite(sh2.y) ? sh2.y : y; o.position.set(sh2.x, height + (kind === 'hom' ? Math.sin(tt * 14) * 0.18 : 0), sh2.z); o.rotation.y = Math.atan2(sh2.vx, sh2.vz);
+      tt += dt; const height = sh2.alt && Number.isFinite(sh2.y) ? sh2.y : y; o.position.set(sh2.x, height + (kind === 'hom' && motion() ? Math.sin(tt * 14) * 0.18 : 0), sh2.z); o.rotation.y = Math.atan2(sh2.vx, sh2.vz);
       o.rotation.x = sh2.alt ? -Math.atan2(sh2.vy || 0, Math.hypot(sh2.vx, sh2.vz)) : 0;
-      if (spin) spin.rotation.y += dt * 12; if (kind === 'wave') o.rotation.z = Math.sin(tt * 9) * 0.12;
-      pt -= dt; if (pt <= 0 && near(sh2.x, sh2.z)) { pt = kind === 'aura' ? 0.1 : kind === 'wave' ? 0.12 : 0.06; const e = enemy ? '' : bel(sh2.el);
+      if (spin && motion()) spin.rotation.y += dt * 12; if (kind === 'wave') o.rotation.z = motion() ? Math.sin(tt * 9) * 0.12 : 0;
+      pt -= dt; if (dt > 0 && pt <= 0 && near(sh2.x, sh2.z)) { pt = kind === 'aura' ? 0.1 : kind === 'wave' ? 0.12 : 0.06; const e = enemy ? '' : bel(sh2.el);
         if (kind === 'aura') { const a = R() * 6.283; G.burst(sh2.x + Math.sin(a) * sh2.aura * 0.8, 0.3 + R() * 1.6, sh2.z + Math.cos(a) * sh2.aura * 0.8, 1, c, 0.6, e === 'fuoco' ? 1.5 : 0.2, 0.5, 0.11, e === 'fuoco' ? -0.2 : 0.1); }
         else G.burst(sh2.x, height, sh2.z, 1, R() < 0.5 ? c : c2, 0.5, e === 'fuoco' ? 0.9 : e === 'gelo' || e === 'sangue' ? -0.5 : 0.2, kind === 'rocket' ? 0.45 : 0.25, kind === 'rocket' ? 0.1 : 0.05, e === 'fuoco' || e === 'veleno' ? -0.15 : e === 'sangue' ? 1 : 0.15); }
     } };
@@ -101,7 +103,8 @@ G.buildAnim = function (s) {
   // ---------- Zone: vortici e trombe d'aria hanno un corpo ----------
   const zv = new Map(); let zt = 0;
   G.animZones = function (st, dt, t) {
-    const seen = new Set(); zt -= dt; const puff = zt <= 0; if (puff) zt = 0.3; let budget = 5;
+    if (!motion()) t = 0;
+    const seen = new Set(); zt -= dt; const puff = dt > 0 && zt <= 0; if (puff) zt = 0.3; let budget = 5;
     for (const z of st.zones) {
       if (z.team !== 'p' || !near(z.x, z.z)) continue; const o = z.px ? z.px.o : null, twist = z.pull || (o && (o.mv || o.seek));
       if (twist) {
@@ -117,8 +120,8 @@ G.buildAnim = function (s) {
   };
   // ---------- Evocazioni: una colonna di luce quando arrivano ----------
   const known = new Set(); let first = true;
-  G.animMobs = function (st) {
-    for (const e of st.mobs) { if (known.has(e.id)) { if (e.thrown && R() < 0.6) G.burst(e.x, 1.6, e.z, 1, col(e.thrown.el), 1, 0.5, 0.4, 0.14, 0.2); continue; } known.add(e.id); if (first || e.team !== 'a' || e.charm > 0 || !near(e.x, e.z)) continue;
+  G.animMobs = function (st, dt = 1 / 60) {
+    for (const e of st.mobs) { if (known.has(e.id)) { if (dt > 0 && e.thrown && R() < Math.min(1, dt * 36)) G.burst(e.x, 1.6, e.z, 1, col(e.thrown.el), 1, 0.5, 0.4, 0.14, 0.2); continue; } known.add(e.id); if (dt <= 0 || first || e.team !== 'a' || e.charm > 0 || !near(e.x, e.z)) continue;
       const c = col(e.el || 'luce'), [m, mt] = mesh(A.wall, c, 0.6); m.position.set(e.x, 0, e.z); spawn(m, [mt], 0.5, (k, o, ms) => { const g = Math.max(0.05, (e.r + 0.5) * (1 - k * 0.6)); o.scale.set(g, 9 * (1 - k * 0.5), g); ms[0].opacity = 0.6 * (1 - k); }); G.ring(e.x, 0.1, e.z, 0.2, e.r + 1.6, 0.4, c); G.burst(e.x, 0.3, e.z, 8, c, 2, 5, 0.6, 0.09, -0.1); }
     first = false; if (known.size > 600) known.clear();
   };
@@ -132,8 +135,11 @@ G.buildAnim = function (s) {
   G.gesture = function (what, el) { const h = G.hands, S = G.slashArc; if (what === 'slash') { h.slash = 0.2; S.dir = R() < 0.5 ? 1 : -1; S.hsMat.color.setHex(col(el)); S.hsMat2.color.setHex(col2(el)); S.tilt = (R() - 0.5) * 0.9; } else if (what === 'slam') h.slam = 0.34; else h.toss = 0.26; };
   G.animHands = function (dt) {
     const h = G.hands, S = G.slashArc, HR = G.handR, HL = G.handL; if (!HR) return;
-    if (h.slash > 0) { h.slash = Math.max(0, h.slash - dt); const k = 1 - h.slash / 0.2; HR.position.x += (0.5 - k) * 0.3 * S.dir; HR.position.y += Math.sin(k * Math.PI) * 0.05; HR.rotation.z += (k - 0.5) * 1.5 * S.dir; S.piv.rotation.z = S.tilt + (0.5 - k) * 2.1 * S.dir; S.hsMat.opacity = 0.85 * Math.sin(k * Math.PI); S.hsMat2.opacity = 0.6 * Math.sin(k * Math.PI); } else { S.hsMat.opacity = 0; S.hsMat2.opacity = 0; }
-    if (h.slam > 0) { h.slam = Math.max(0, h.slam - dt); const k = 1 - h.slam / 0.34, up = k < 0.35 ? k / 0.35 : Math.max(0, 1 - (k - 0.35) / 0.2) - Math.min(1, Math.max(0, (k - 0.55) / 0.2)) * 0.6 * (1 - Math.max(0, (k - 0.75) / 0.25)); for (const H of [HR, HL]) { H.position.y += up * 0.13; H.rotation.x += up * 0.7; } }
-    if (h.toss > 0) { h.toss = Math.max(0, h.toss - dt); const k = 1 - h.toss / 0.26, a = Math.sin(k * Math.PI); HR.position.y += a * 0.09; HR.position.z -= a * 0.14; HR.rotation.x += (0.5 - k) * 1.3; }
+    const gain = motion() ? 0.65 : 0.2, light = G.renderPrefs && G.renderPrefs.reducedFlash ? 0.35 : 0.65;
+    // Il gesto resta visibile, ma la mano e la scia non attraversano la mira.
+    S.piv.position.set(0.17, -0.17, -0.62); S.piv.scale.setScalar(0.3);
+    if (h.slash > 0) { h.slash = Math.max(0, h.slash - dt); const k = 1 - h.slash / 0.2; HR.position.x += (0.5 - k) * 0.3 * S.dir * gain; HR.position.y += Math.sin(k * Math.PI) * 0.05 * gain; HR.rotation.z += (k - 0.5) * 1.5 * S.dir * gain; S.piv.rotation.z = S.tilt + (0.5 - k) * 2.1 * S.dir * gain; S.hsMat.opacity = 0.85 * Math.sin(k * Math.PI) * light; S.hsMat2.opacity = 0.6 * Math.sin(k * Math.PI) * light; } else { S.hsMat.opacity = 0; S.hsMat2.opacity = 0; }
+    if (h.slam > 0) { h.slam = Math.max(0, h.slam - dt); const k = 1 - h.slam / 0.34, up = k < 0.35 ? k / 0.35 : Math.max(0, 1 - (k - 0.35) / 0.2) - Math.min(1, Math.max(0, (k - 0.55) / 0.2)) * 0.6 * (1 - Math.max(0, (k - 0.75) / 0.25)); for (const H of [HR, HL]) { H.position.y += up * 0.13 * gain; H.rotation.x += up * 0.7 * gain; } }
+    if (h.toss > 0) { h.toss = Math.max(0, h.toss - dt); const k = 1 - h.toss / 0.26, a = Math.sin(k * Math.PI); HR.position.y += a * 0.09 * gain; HR.position.z -= a * 0.14 * gain; HR.rotation.x += (0.5 - k) * 1.3 * gain; }
   };
 };
