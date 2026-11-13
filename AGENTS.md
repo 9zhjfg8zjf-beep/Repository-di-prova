@@ -119,7 +119,7 @@ Ordine dei file nel build: bricks, mec*, catalogo, city, core, onboarding, journ
 world, fx, anim, poteri-fx, ui, main. Tutto in `'use strict'`. Gli export CommonJS devono restare su una riga
 con guardia indipendente `if (typeof module !== 'undefined') ...`, rimossa dal build per il browser.
 
-## Stato: 4.0 candidata 17 — 33/33 prove locali verdi, nuova CI nativa da eseguire
+## Stato: 4.0 candidata 17 — 33/33 prove locali verdi, correzione Swift in attesa della sesta CI
 
 Aggiornato il 13 novembre 2026. La versione pubblicata resta **3.2**; la 4.0 e nel ramo `codex/dite-mobile`.
 Titolo e interfaccia sorgente indicano 4.0, ma un artifact di sviluppo non e una release pubblicata.
@@ -170,6 +170,16 @@ Copertura mirata: storage 19 casi, router 11 e 2000 transizioni, onboarding 18, 
 QA layout precedente: 112 snapshot verdi su sei missioni, touch/tastiera, due lati, font, nome lungo, stati
 e boss; zero misure nei frame stabili. Arena e bundle iOS sono sincronizzati ai checksum della candidata 17.
 
+La quinta CI [43480792340](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43480792340),
+su `5f55c7fcd90b3b9f2af9da48ed0ec2aef39c8c85`, conferma **14 Node, packaging 8/8 e controlli bundle verdi**.
+La Release iOS universale compila; entrambe le build Debug falliscono prima di XCTest per quattro
+chiamate a funzioni geometriche rinominate in Swift.
+**Nessun test unitario o UI e stato eseguito e nessuna foto e stata prodotta**. Corretti cinque usi con
+`NSCoder.string(for:)`: quattro nella sonda e uno negli UI test, non ancora raggiunto dalla compilazione.
+La correzione e in questo ramo; la sesta CI ripetera l'intera suite. Nessuna asserzione o codice web
+cambia. Il gate locale 33/33 e packaging 8/8 della stessa candidata web 17 resta valido.
+Evidenze: `ios-run43480792340/verified-evidence.json` nel workspace.
+
 La quarta CI [43467319898](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43467319898),
 sul commit remoto `a67ee7071addbd39bf3672e565748f060baef677` (candidata 15), conferma **14 Node,
 19 browser/build e packaging 8/8 verdi**. Nativo: **20/20 unitari per famiglia, 6/6 UI iPhone e 4/6 UI iPad**.
@@ -188,7 +198,7 @@ La candidata 17 prepara il target universale `1,2`: telefono nei due landscape, 
 gli orientamenti e guardia del canvas verticale. La sonda DEBUG usa `effectiveGeometry` e, quando disponibili,
 i flag iOS 26. Il test iPad prova i controlli reali `Window Controls` → `Minimize`, senza sostituire il requisito
 di background OS o quello dei due landscape effettivi. Le etichette di sistema e le modifiche native devono
-ancora essere verificate in CI; se i controlli non sono disponibili, la prova fallisce con diagnostica.
+ancora essere verificate da XCTest nella sesta CI; se i controlli non sono disponibili, la prova fallisce con diagnostica.
 La traccia JS resta opt-in `--ui-testing-event-trace`; le sonde native sono solo DEBUG/`--ui-testing`.
 Gli originali della quarta CI sono mappati in `ios-run43467319898/evidence-map.json` e
 `verified-evidence.json` nel workspace. Il set finale `docs/qa/4.0` (PNG originali, manifest e TXT)

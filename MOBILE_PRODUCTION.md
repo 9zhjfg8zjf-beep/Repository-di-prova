@@ -1,6 +1,6 @@
 # DITE — direzione mobile e preparazione iOS
 
-Stato: **4.0 candidata 17, 33/33 prove locali verdi e nuova CI nativa da eseguire**, non ancora pubblicata. Aggiornato il 13 novembre 2026.
+Stato: **4.0 candidata 17, 33/33 prove locali verdi e correzione Swift in attesa della sesta CI**, non ancora pubblicata. Aggiornato il 13 novembre 2026.
 Base verificata: DITE 3.2, commit 5a50c8f70e2f214b0b6d3a704e24d39765262476.
 La versione pubblicata resta 3.2. Il lavoro è nel ramo `codex/dite-mobile`.
 
@@ -60,14 +60,22 @@ L'obiettivo qualitativo indicato dall'utente è ambizioso. Non dichiarare “liv
   e verticali: regressione riprodotta sulla 16 e superata sulla 17.
   Il precedente timeout screenshot `DSL 19-b` sulla 16 resta di causa non dimostrata; il risultato attuale
   viene dal gate completo della 17.
+- Quinta CI [43480792340](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43480792340),
+  su `5f55c7f`: Node 14, packaging 8/8 e bundle verdi.
+  Release iOS universale compilata; entrambe le build Debug falliscono prima di XCTest per quattro
+  conversioni geometriche rinominate in Swift. Nessun unitario/UI eseguito e nessuna foto prodotta.
+  Corretti cinque usi con `NSCoder.string(for:)` (quattro nella sonda, uno negli UI test non ancora raggiunto).
+  Fix in questo ramo; la sesta CI ripeterà l'intera suite. Asserzioni e web invariati: il gate locale
+  33/33 più packaging 8/8 della stessa candidata web 17 resta valido.
 - Quarta CI [43467319898](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43467319898),
   su `a67ee7071addbd39bf3672e565748f060baef677` (candidata 15): web 14+19 e packaging 8/8 verdi;
   20 unitari per famiglia, UI 6/6 iPhone e 4/6 iPad. Pausa verde su entrambi senza diagnostica JS;
   su iPhone verificati entrambi i landscape effettivi e background OS con ripresa manuale.
   Su iPad lo stato OS background non viene raggiunto e la scena resta landscapeRight mentre il sistema
   passa a landscapeLeft. Gli allegati mostrano ancora la finestra iPhone ingrandita in compatibilità.
-- Preparato target universale `1,2`, con telefono landscape e quattro orientamenti iPad, ancora da eseguire
-  in CI. Sonda DEBUG `effectiveGeometry` e flag disponibili da iOS 26; test iPad tramite i controlli reali
+- Target universale `1,2`, con telefono landscape e quattro orientamenti iPad: Release compilata nella
+  quinta CI, XCTest in attesa della sesta. Sonda DEBUG `effectiveGeometry` e flag disponibili da iOS 26;
+  test iPad tramite i controlli reali
   `Window Controls` → `Minimize`, con etichette ancora da verificare e fallimento diagnostico se assenti.
   Restano obbligatori background OS e due landscape effettivi. Traccia JS solo opt-in `--ui-testing-event-trace`.
 - Evidenze originali quarta CI mappate e verificate nel workspace; il set `docs/qa/4.0` con PNG originali,

@@ -6,6 +6,14 @@ Non chiamare questa preparazione “App Store ready”: firma, distribuzione, pr
 
 ## Stato delle verifiche
 
+- Quinta CI [43480792340](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43480792340)
+  su `5f55c7fcd90b3b9f2af9da48ed0ec2aef39c8c85`: **14 Node, packaging 8/8 e controlli bundle verdi**.
+  **Release universale compilata**; entrambe le build Debug falliscono prima di XCTest per quattro
+  conversioni `NSStringFromCGRect`/`NSStringFromUIEdgeInsets`
+  rinominate in Swift. **Nessun unitario o UI eseguito, nessuna foto prodotta**.
+  Corretti cinque usi con il fix-it `NSCoder.string(for:)`: quattro nella sonda e uno negli UI test,
+  non ancora raggiunto dalla compilazione. Fix in questo ramo, senza modifiche ad asserzioni o web;
+  la sesta CI ripeterà l'intera suite. Evidenze originali: `ios-run43480792340/verified-evidence.json` nel workspace.
 - Quarta CI [43467319898](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43467319898)
   su `a67ee7071addbd39bf3672e565748f060baef677` (candidata 15): **14 Node, 19 browser/build e packaging 8/8 verdi**.
   **20/20 unitari per famiglia, 6/6 UI iPhone e 4/6 UI iPad**. Pausa verde su entrambe le famiglie senza
@@ -21,7 +29,8 @@ Non chiamare questa preparazione “App Store ready”: firma, distribuzione, pr
   viene dal gate completo della 17.
 - Il target locale ora è universale `1,2`, con telefono landscape e quattro orientamenti iPad. La guardia web
   osserva il rapporto del canvas anche in una finestra stretta e richiede ripresa esplicita.
-  **Queste modifiche native, inclusa la tastiera sul target universale, attendono la CI macOS**.
+  **Il collaudo XCTest, inclusa la tastiera sul target universale, attende la sesta CI**: nella quinta
+  la Release compila, ma gli errori Debug hanno impedito ogni esecuzione dei test.
   La guardia usa le dimensioni del canvas; i resize di layout che restano landscape sono verificati nel browser.
 - Il nuovo test iPad usa i controlli reali `Window Controls` → `Minimize`: le etichette restano da verificare
   sul simulatore. Se mancano, il test conserva diagnostica e fallisce. Rimangono obbligatori lo stato OS
@@ -92,7 +101,8 @@ Per eseguire localmente su un Mac configurato: `bash scripts/ci_ios.sh iphone` e
   in Info.plist; vengono aperti dal sistema. L'elenco attuale è vuoto, senza indirizzi o identità inventati.
 - Il sito dati WebKit è non persistente. I progressi iOS passano dal salvataggio nativo, non da cookie/localStorage.
 - Target universale iPhone/iPad (`TARGETED_DEVICE_FAMILY = 1,2`): telefono nei due landscape, iPad nei
-  quattro orientamenti. Il nuovo target attende verifica nativa; la quarta CI usava ancora la compatibilità iPhone.
+  quattro orientamenti. La quinta CI compila la Release; XCTest attende la correzione Debug nella sesta CI.
+  La quarta CI usava ancora la compatibilità iPhone.
 - Il canvas occupa il contenitore; CSS gestisce safe area e margini. Non sommare nuovamente inset UIKit:
   `contentInsetAdjustmentBehavior = .never`. Non usa `UIRequiresFullScreen` per aggirare il ridimensionamento.
   La finestra verticale mostra una guardia e sospende il gioco; tornando in orizzontale serve Riprendi.
@@ -169,7 +179,8 @@ Una prova provoca un primo errore WebGL attraverso uno user script esclusivament
 «Riprova» e raggiunge rifugio e partita. L'iniezione di guasto non è compilata nella build Release.
 Le schermate sono allegati XCTest reali; al fallimento viene conservato anche l'albero di accessibilità.
 Nella quarta CI sono verdi tutti i sei test UI iPhone e quattro su iPad; su iPad restano aperti orientamento
-e background. La nuova configurazione universale e il percorso Minimize attendono esecuzione macOS.
+e background. La quinta CI compila la Release universale ma non avvia XCTest; configurazione universale
+e percorso Minimize attendono il collaudo della sesta CI dopo la correzione Swift.
 La traccia eventi JS richiede anche `--ui-testing-event-trace`; i normali UI test non la caricano.
 
 Prima della distribuzione occorrono prove su dispositivi accessibili: multi-touch simultaneo, notch e home indicator,
