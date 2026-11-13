@@ -14,6 +14,7 @@ const Core = (() => {
     torretta: { hp: 90, speed: 0, r: 0.7, dmg: 8, atkCd: 0.45, reach: 0, mass: 50, fixed: true },
     bomba: { hp: 30, speed: 7.5, r: 0.5, dmg: 30, atkCd: 9, reach: 1.3, mass: 0.6 }, arciere: { hp: 45, speed: 4, r: 0.55, dmg: 9, atkCd: 1.1, reach: 13, mass: 0.8, shooter: true },
     guaritore: { hp: 60, speed: 6, r: 0.55, dmg: 0, atkCd: 9, reach: 0, mass: 0.8, healer: true }, muro: { hp: 160, speed: 0, r: 1.1, dmg: 0, atkCd: 9, reach: 0, mass: 50, fixed: true },
+    clone: { hp: 40, speed: 7.6, r: 0.6, dmg: 0, atkCd: 1, reach: 0, mass: 1 },
     anima: { hp: 130, speed: 3.3, r: 0.6, dmg: 0, atkCd: 9, reach: 0, mass: 2 },
   };
   const PSPEED = 7.6, NPC_N = 64;
@@ -122,7 +123,7 @@ const Core = (() => {
       aim: { kind: '', id: -1, x: 0, z: 0, d: 0 }, gp: { x: 0, z: 0 }, hint: { node: -1, turret: -1, screen: -1, use: null }, act: [0, 0, 0, 0, 0], ready: [true, true, true, true, false],
       stats: { casts: [0, 0, 0, 0, 0], fizz: 0, dmg: 0, taken: 0, kills: 0, deaths: 0, quests: 0, qfail: 0, bossWins: 0, rides: 0, watch: 0 },
     };
-    s.player.absorb = null; s.player.bank = 0; s.player.mimic = null;
+    s.player.absorb = null; s.player.scan = null; s.player.bank = 0; s.player.mimic = null;
     s.player.form = s.player.phase = s.player.flight = s.player.possession = s.player.captive = null;
     for (const g of s.givers) makeOffer(s, g);
     for (let i = 0; i < NPC_N; i++) {
@@ -175,7 +176,7 @@ const Core = (() => {
     if (e.debt && !h.debt) e.debt.amount = Math.min(e.debt.cap, e.debt.amount + dealt * e.debt.mul);
     if (!h.link && e.team === 'e' && dealt > 0) for (const L of s.powers.links) {
       if (L.t <= 0 || !L.ids.includes(e.id)) continue;
-      for (const id of L.ids) { const other = powerEntity(s, id); if (!other || other === e || other.dead || other.team !== 'e') continue; applyHit(s, other, { dmg: dealt * L.share * (other.boss ? 0.25 : 1), src: 'link', sub: true, link: true, trig: true, tick: true }); }
+      for (const id of L.ids) { const other = powerEntity(s, id); if (!other || other === e || other.dead || other.team !== 'e') continue; applyHit(s, other, { dmg: dealt * L.share * (other.boss ? 0.25 : 1), src: h.src === 'clone' ? 'clone' : 'link', sub: true, link: true, trig: true, tick: true }); }
     }
     const k = h.tick ? 0.25 : 1;
     if (el && h.src !== 'dot') {
@@ -218,7 +219,7 @@ const Core = (() => {
     s.events.push({ type: 'kill', id: e.id, kind: e.kind, x: e.x, z: e.z, team: e.team, src: src || '' });
     if (e.kind === 'esca') explodeDecoy(s, e);
     if (e.pd) mobDie(s, e);
-    if (e.team === 'e' && s.player.trigs.length) fire(s, 'kill', e.x, e.z, null);
+    if (e.team === 'e' && src !== 'clone' && s.player.trigs.length) fire(s, 'kill', e.x, e.z, null);
     if (e.team === 'e' || e.charm > 0) { s.stats.kills++; gainRes(s, MOB[e.kind].heavy ? 10 : 4); if (e.owner && e.owner.alive > 0 && --e.owner.alive === 0) e.owner.t = 70; if (e.tag === 'q' && s.quest) s.quest.left = Math.max(0, (s.quest.left || 0) - 1); }
     if (e.kind === 'anima' && s.quest && s.quest.type === 'scorta') failQuest(s, 'L\'anima non ce l\'ha fatta');
   }
@@ -456,20 +457,20 @@ const Core = (() => {
     if (n) { gainRes(s, Math.min(8, n * 1.5)); s.stats.watch += n; s.events.push({ type: 'watch', n }); }
   }
   function scare(s, x, z, r, t) { for (const c of s.npcs) if (c.st !== 'follow' && Math.hypot(c.x - x, c.z - z) < r) { c.st = 'flee'; c.t = t; c.dx = c.x - x; c.dz = c.z - z; } }
-  function primary(s, dt, fire) {
+  function primaryBase(s, dt, fire) {
     const p = s.player, K = s.kit[0], oc = p.oc > 0, fx = fwdX(p.yaw), fz = fwdZ(p.yaw);
     p.beam.on = false; p.cone = false;
     if (!fire) return;
     const hit = (dmg, o) => Object.assign({ dmg, el: K.el, src: 'p', fx: p.x, fz: p.z }, o);
     if (K.kind === 'beam' || K.kind === 'cone') {
       p.tick -= dt; const doTick = p.tick <= 0; if (doTick) p.tick = 0.12;
-      if (K.kind === 'cone') { p.cone = true; if (doTick) { coneHit(s, K.range * (p.form ? p.form.size : 1), K.half, hit(K.dps * 0.12, { tick: true }), true); s.stats.casts[0]++; } return; }
+      if (K.kind === 'cone') { p.cone = true; if (doTick) { recordPrimary(s, { type: 'shape', T: { shape: 'cone', x: p.x, z: p.z, ang: yawAng(p), r: K.range * (p.form ? p.form.size : 1), half: K.half }, o: { op: 'cone', d: K.dps * 0.12, tk: true }, K }); coneHit(s, K.range * (p.form ? p.form.size : 1), K.half, hit(K.dps * 0.12, { tick: true }), true); s.stats.casts[0]++; } return; }
       let bt = K.range, tgt = null, tur = null;
       for (let k = 1; k <= K.range; k++) if (opaqueAt(s, p.x + fx * k, p.z + fz * k)) { bt = k - 0.5; break; }
       hostiles(s, (e) => { const dx = e.x - p.x, dz = e.z - p.z, al = dx * fx + dz * fz; if (al < 0.3 || al > bt) return; if (Math.abs(dx * fz - dz * fx) < e.r + 0.55) { bt = al; tgt = e; } });
       for (const t of s.turrets) { if (t.state !== 'hostile') continue; const dx = t.x - p.x, dz = t.z - p.z, al = dx * fx + dz * fz; if (al < 0.3 || al > bt) continue; if (Math.abs(dx * fz - dz * fx) < t.r + 0.4) { bt = al; tgt = null; tur = t; } }
       p.beam.on = true; p.beam.x = p.x + fx * bt; p.beam.z = p.z + fz * bt; p.beam.y = tgt ? (tgt.boss ? 2.2 : 1.2) : EYE + Math.tan(clamp(p.pitch, -1, 1)) * bt; p.beam.hit = !!(tgt || tur);
-      if (doTick) { if (tgt) applyHit(s, tgt, hit(K.dps * 0.12, { tick: true })); if (tur) tur.stun = 2.5; s.stats.casts[0]++; }
+      if (doTick) { recordPrimary(s, { type: 'beam', range: K.range, damage: K.dps * 0.12, el: K.el }); if (tgt) applyHit(s, tgt, hit(K.dps * 0.12, { tick: true })); if (tur) tur.stun = 2.5; s.stats.casts[0]++; }
       return;
     }
     if (p.cd[0] > 0) return;
@@ -481,12 +482,13 @@ const Core = (() => {
       for (let i = 0; i < K.n; i++) { const an = base + (K.spread || 0) * (i - (K.n - 1) / 2) + (K.jit ? (s.rand() - 0.5) * 2 * K.jit : 0); pushShot(s, { id: s.nextId++, team: 'p', x: p.x + Math.sin(an) * 0.8, z: p.z + Math.cos(an) * 0.8, vx: Math.sin(an) * K.speed, vz: Math.cos(an) * K.speed, life: K.life || 26 / K.speed + (K.homing ? 0.5 : 0), dmg: K.dmg, el: K.el, r: K.aura ? 0.9 : 0.45, hom: K.homing ? a.kind + a.id : '', w: 0, hitSet: K.pierce ? new Set() : null, boom: K.boom || 0, back: K.back || 0, bnc: K.bnc || 0, aura: K.aura || 0, at: 0 }); }
       s.events.push({ type: 'cast', slot: 0, kind: K.kind, el: K.el });
     } else if (K.kind === 'chain') {
-      const a = s.aim, pts = [];
+      const a = s.aim, pts = []; recordPrimary(s, { type: 'chain', target: a.id, o: { d: K.dmg, n: K.chain + 1, g: K.range, fall: 0.65, r: 7.5 }, K });
       if (!a.kind || a.d > K.range) { s.events.push({ type: 'miss', el: K.el }); return; }
       if (a.kind === 't') { const t = s.turrets[a.id]; t.stun = 2.5; pts.push({ x: t.x, z: t.z, y: 1.3 }); }
       else { let cur = aimed(s, K.range), d = K.dmg; const seen = new Set(); for (let k = 0; cur && k <= K.chain + (oc ? 2 : 0); k++) { seen.add(cur.id); pts.push({ x: cur.x, z: cur.z, y: cur.boss ? 2.4 : 1.1 }); applyHit(s, cur, hit(d, { knock: k ? 1 : 2.5 })); d *= 0.65; let nx = null, nd = 7.5; hostiles(s, (e) => { if (seen.has(e.id) || e.dead) return; const dd = Math.hypot(e.x - cur.x, e.z - cur.z) - e.r; if (dd < nd) { nd = dd; nx = e; } }); cur = nx; } }
       s.events.push({ type: 'chain', pts, el: K.el }); s.events.push({ type: 'cast', slot: 0, kind: K.kind, el: K.el });
     } else if (K.kind === 'melee') {
+      recordPrimary(s, { type: 'shape', T: { shape: 'cone', x: p.x, z: p.z, ang: yawAng(p), r: K.range * (p.form ? p.form.size : 1), half: K.half }, o: { op: 'cone', d: K.dmg, knock: 4, stun: K.stun || 0 }, K });
       const n = coneHit(s, K.range * (p.form ? p.form.size : 1), K.half, hit(K.dmg, { knock: 4, stun: K.stun || 0 }), false);
       s.events.push({ type: 'swing', el: K.el, n }); s.events.push({ type: 'cast', slot: 0, kind: K.kind, el: K.el });
     } else if (K.kind === 'mortar') {
@@ -646,28 +648,78 @@ const Core = (() => {
     if (o.max && list.length > o.max) list = list.sort((a, b) => Math.hypot(a.x - T.x, a.z - T.z) - Math.hypot(b.x - T.x, b.z - T.z)).slice(0, o.max);
     let tot = 0;
     for (const e of list) {
-      if (e.dead || e.captive) continue; let d = o.d || 0;
+      if (e.dead || e.captive || (ctx.clone && !los(s, T.x, T.z, e.x, e.z))) continue; let d = o.d || 0;
       if (o.hpc) d += e.hp * o.hpc * (e.boss ? 0.12 : 1);
       for (const k of VS) if (o['vs' + k] && has(e, k)) d *= o['vs' + k];
       if (o.ex && e.hp < e.maxHp * 0.3) d *= o.ex;
       if (o.far) d *= 1 + Math.min(1, Math.hypot(e.x - p.x, e.z - p.z) / 20) * (o.far - 1);
       if (o.close) d *= 1 + Math.max(0, 1 - Math.hypot(e.x - p.x, e.z - p.z) / 8) * (o.close - 1);
-      if (d > 0) tot += applyHit(s, e, { dmg: d, el: K.el, src: 'p', knock: o.knock, fx: T.x, fz: T.z, tick: !!o.tk, trig: ctx.depth > 0 }); else e.aggro = Math.max(e.aggro, 8);
+      if (d > 0) tot += applyHit(s, e, { dmg: d * (ctx.cloneMul || 1), el: K.el, src: ctx.clone ? 'clone' : 'p', sub: !!ctx.clone, knock: o.knock, fx: T.x, fz: T.z, tick: !!o.tk, trig: ctx.depth > 0 }); else e.aggro = Math.max(e.aggro, 8);
       applySt(s, e, o, T, K);
-      if (o.res) gainRes(s, o.res); if (o.heal) healPlayer(s, o.heal); if (o.sh) { p.shield = Math.min(120, p.shield + o.sh); p.shieldT = Math.max(p.shieldT, 4); } if (o.cdr) for (let c = 1; c < 4; c++) if (p.cd[c] > 0) p.cd[c] -= o.cdr;
-      if (o.swap && e === list[0] && !e.boss && !MOB[e.kind].heavy && !MOB[e.kind].fixed) { const x0 = p.x, z0 = p.z; p.x = e.x; p.z = e.z; e.x = x0; e.z = z0; collide(s, p, p.r); s.events.push({ type: 'blink', x0, z0, x1: p.x, z1: p.z, el: K.el, r: 2 }); }
-      if (o.each && ctx.depth < 3) run(s, o.each, sub(ctx, e.x, e.z, e, T.ang));
+      if (!ctx.clone) { if (o.res) gainRes(s, o.res); if (o.heal) healPlayer(s, o.heal); if (o.sh) { p.shield = Math.min(120, p.shield + o.sh); p.shieldT = Math.max(p.shieldT, 4); } if (o.cdr) for (let c = 1; c < 4; c++) if (p.cd[c] > 0) p.cd[c] -= o.cdr; }
+      if (!ctx.clone && o.swap && e === list[0] && !e.boss && !MOB[e.kind].heavy && !MOB[e.kind].fixed) { const x0 = p.x, z0 = p.z; p.x = e.x; p.z = e.z; e.x = x0; e.z = z0; collide(s, p, p.r); s.events.push({ type: 'blink', x0, z0, x1: p.x, z1: p.z, el: K.el, r: 2 }); }
+      if (!ctx.clone && o.each && ctx.depth < 3) run(s, o.each, sub(ctx, e.x, e.z, e, T.ang));
     }
     if (o.op !== 'tgt' && o.op !== 'near') for (const t of s.turrets) if (t.state === 'hostile' && inTele(T, t.x, t.z, t.r)) t.stun = 2.5;
-    if (o.ls) healPlayer(s, tot * o.ls);
+    if (!ctx.clone && o.ls) healPlayer(s, tot * o.ls);
     s.events.push({ type: 'shape', late: !!T.fr, tk: !!o.tk, shape: T.shape, x: T.x, z: T.z, ang: T.ang, r: tg || o.op === 'near' ? 1.3 : T.r, r0: T.r0, half: T.half, len: T.len, w: T.w, el: K.el, n: list.length });
-    if (list.length && o.then && ctx.depth < 3) run(s, o.then, sub(ctx, T.x, T.z, list[0], T.ang));
-    if (!list.length && o.miss && ctx.depth < 3) run(s, o.miss, sub(ctx, T.x, T.z, null, T.ang));
+    if (!ctx.clone && list.length && o.then && ctx.depth < 3) run(s, o.then, sub(ctx, T.x, T.z, list[0], T.ang));
+    if (!ctx.clone && !list.length && o.miss && ctx.depth < 3) run(s, o.miss, sub(ctx, T.x, T.z, null, T.ang));
     return true;
   }
   const hasSt = (o) => !!(o.stun || o.root || o.slow || o.burn || o.pois || o.weak || o.fear || o.mark || o.chill || o.lift || o.poly || o.charm || o.pull || o.push || o.yank || o.fling);
   // ---------- Interazioni dei poteri: risorse, legami e oggetti persistenti ----------
   const pn = (o, k, d, lo, hi) => clamp(typeof o[k] === 'number' && Number.isFinite(o[k]) ? o[k] : d, lo, hi);
+  const CLONE_OPS = new Set(['shot', 'circ', 'cone', 'line', 'ring', 'tgt', 'near', 'chain']);
+  function canClone(s) {
+    const K = s.kit[0]; if (!K) return false; if (['proj', 'beam', 'cone', 'melee', 'chain'].includes(K.kind)) return true; if (K.kind !== 'x') return false;
+    for (const o of K.prog) { if (o.op === 'wait') break; if (CLONE_OPS.has(o.op) && !o.in && (o.d > 0 || o.hpc > 0 || hasSt(o) || o.op === 'chain')) return true; } return false;
+  }
+  function recordPrimary(s, attack) { if (s.primaryCapture && s.primaryCapture.length < 24) s.primaryCapture.push(attack); }
+  function cloneOptions(o) { const out = {}; for (const key of ['op', 'd', 'g', 'r', 'n', 'fall', 'hpc', 'ex', 'far', 'close', 'max', 'tk', 'knock', 'stun', 'root', 'slow', 'slow2', 'burn', 'pois', 'weak', 'fear', 'mark', 'mark2', 'chill']) if (o[key] !== undefined) out[key] = o[key]; for (const k of VS) if (o['vs' + k]) out['vs' + k] = o['vs' + k]; return out; }
+  function primary(s, dt, pressed) {
+    const clones = pressed ? s.mobs.filter((e) => e.cloned && !e.dead && e.spawn <= 0 && e.stun <= 0 && !(e.disarmT > 0)) : [];
+    if (!clones.length || !canClone(s)) return primaryBase(s, dt, pressed);
+    const p = s.player, origin = { x: p.x, z: p.z, yaw: p.yaw }, attacks = []; s.primaryCapture = attacks;
+    try { primaryBase(s, dt, pressed); } finally { s.primaryCapture = null; }
+    for (const c of clones) for (const A of attacks) {
+      if (c.dead || (c.silenceT > 0 && ['shot', 'beam', 'chain'].includes(A.type))) continue;
+      cloneAttack(s, c, A, origin);
+    }
+  }
+  function cloneAttack(s, c, A, origin) {
+    const el = ((A.K && A.K.el) || A.el || (A.shot && A.shot.el) || '').split('+')[0], K = { el }, o = A.o && cloneOptions(A.o), ctx = { K, slot: 0, depth: 3, clone: true, cloneMul: c.cloneMul };
+    if (A.type === 'shot') {
+      if (s.shots.length >= 220) return;
+      const q = A.shot, sh = Object.assign({}, q, { id: s.nextId++, team: 'a', x: c.x + q.x - origin.x, z: c.z + q.z - origin.z, dmg: q.dmg * c.cloneMul, el, clone: true, tr: true, alt: false, y: undefined, vy: undefined, boom: 0, back: 0, aura: 0, from: c, hitSet: q.hitSet ? new Set() : null, px: null });
+      if (q.px && hasSt(q.px.o)) sh.px = { o: cloneOptions(q.px.o), K, depth: 3, slot: 0 };
+      pushShot(s, sh);
+    } else if (A.type === 'shape') {
+      const T = Object.assign({}, A.T, { el });
+      if (!A.o.at || A.o.at === 'self' || /^(fwd|back)/.test(A.o.at)) { T.x += c.x - origin.x; T.z += c.z - origin.z; }
+      let target = null; if (A.target) { target = powerEntity(s, A.target); if (!powerAlive(target) || !los(s, c.x, c.z, target.x, target.z) || dist(c, target) > (o.g || 26)) return; T.x = target.x; T.z = target.z; }
+      if (!los(s, c.x, c.z, T.x, T.z)) return;
+      hitNow(s, o, ctx, T, target);
+    } else if (A.type === 'chain') {
+      let target = powerEntity(s, A.target); if (!powerAlive(target) || dist(c, target) > (o.g || 24) || !los(s, c.x, c.z, target.x, target.z)) return;
+      const seen = new Set(), pts = []; let damage = (o.d || 10) * c.cloneMul;
+      for (let k = 0; target && k < Math.min(8, o.n || 3); k++) { seen.add(target.id); pts.push({ x: target.x, z: target.z, y: target.boss ? 2.4 : 1.2 }); applyHit(s, target, { dmg: damage, el, src: 'clone', sub: true, trig: true }); applySt(s, target, o, c, K); damage *= o.fall || 0.7;
+        let next = null, best = o.r || 7.5; const from = target; hostiles(s, (e) => { const d = dist(e, from) - e.r; if (!seen.has(e.id) && d < best && los(s, from.x, from.z, e.x, e.z)) { best = d; next = e; } }); target = next;
+      }
+      s.events.push({ type: 'chain', from: { x: c.x, z: c.z }, pts, el });
+    } else if (A.type === 'beam') {
+      const fx = fwdX(origin.yaw), fz = fwdZ(origin.yaw); let range = A.range, target = null;
+      for (let k = 1; k <= range; k++) if (opaqueAt(s, c.x + fx * k, c.z + fz * k)) { range = k - 0.5; break; }
+      hostiles(s, (e) => { const dx = e.x - c.x, dz = e.z - c.z, along = dx * fx + dz * fz; if (along > 0.3 && along < range && Math.abs(dx * fz - dz * fx) < e.r + 0.55) { range = along; target = e; } });
+      if (target) applyHit(s, target, { dmg: A.damage * c.cloneMul, el, src: 'clone', sub: true, trig: true, tick: true });
+      s.events.push({ type: 'cloneBeam', id: c.id, x: c.x, z: c.z, x1: c.x + fx * range, z1: c.z + fz * range, el });
+    }
+    s.events.push({ type: 'cloneFire', id: c.id, x: c.x, z: c.z, attack: A.type, el });
+  }
+  function refreshScan(s) {
+    const p = s.player, scan = p.scan; if (!scan) return;
+    const list = []; hostiles(s, (e) => { if (dist(p, e) <= scan.r) list.push(e); }); list.sort((a, b) => dist(p, a) - dist(p, b)); scan.ids = list.slice(0, 64).map((e) => e.id); scan.refresh = 0.25;
+  }
   const powerEntity = (s, id) => s.boss && s.boss.id === id ? s.boss : findMob(s, id);
   const powerAlive = (e) => e && !e.dead && !e.captive && e.team === 'e' && e.spawn <= 0;
   function powerTargets(s, o, ctx, accept) {
@@ -685,9 +737,9 @@ const Core = (() => {
   }
   function resetPowers(s) {
     endBody(s, 'form'); endBody(s, 'phase'); endBody(s, 'flight'); endBody(s, 'possession'); releaseCaptive(s, false);
-    restoreMimic(s); const p = s.player; p.absorb = null; p.bank = 0; p.portalUntil = 0;
+    restoreMimic(s); const p = s.player; p.absorb = null; p.scan = null; p.bank = 0; p.portalUntil = 0;
     for (const key of Object.keys(s.powers)) s.powers[key].length = 0;
-    for (const e of s.mobs.concat(s.boss ? [s.boss] : [])) { e.debt = e.infection = e.rewind = e.command = e.pact = null; e.disarmT = e.silenceT = e.portalUntil = 0; if (e.revived && !e.dead) { e.dead = true; s.events.push({ type: 'vanish', id: e.id, x: e.x, z: e.z }); } }
+    for (const e of s.mobs.concat(s.boss ? [s.boss] : [])) { e.debt = e.infection = e.rewind = e.command = e.pact = null; e.disarmT = e.silenceT = e.portalUntil = 0; if ((e.revived || e.cloned) && !e.dead) { e.dead = true; s.events.push({ type: 'vanish', id: e.id, x: e.x, z: e.z }); } }
   }
   function bodyBusy(p) { return p.form || p.phase || p.flight || p.possession || p.dash || p.leap || p.ride; }
   function safeBody(s, x, z, r) { const q = { x, z }; collide(s, q, r, true); return !solidAt(s, x, z) && Math.hypot(q.x - x, q.z - z) < 0.01; }
@@ -754,6 +806,7 @@ const Core = (() => {
     const p = s.player, ps = s.powers;
     if (p.dead > 0) return;
     bodyFrame(s, dt);
+    if (p.scan) { p.scan.t -= dt; p.scan.refresh -= dt; if (p.scan.t <= 0) { s.events.push({ type: 'scanEnd', x: p.x, z: p.z, el: p.scan.el }); p.scan = null; } else if (p.scan.refresh <= 0) refreshScan(s); }
     if (p.absorb) { p.absorb.t -= dt; if (p.absorb.t <= 0) p.absorb = null; }
     if (p.mimic) { p.mimic.t -= dt; if (p.mimic.t <= 0) restoreMimic(s); }
     for (const key of ['fields', 'links', 'portals', 'tethers', 'barriers', 'corpses']) { for (const v of ps[key]) v.t -= dt; ps[key] = ps[key].filter((v) => v.t > 0 && (v.hp === undefined || v.hp > 0)); }
@@ -798,7 +851,7 @@ const Core = (() => {
     const speed = Math.hypot(sh.vx, sh.vz), range = sh.team === 'p' ? Math.max(1, s.aim.d || 20) : Math.max(1, dist(p, sh));
     sh.vy = sh.team === 'p' ? (s.aim.kind ? ((s.aim.kind === 'b' ? 2.4 : 1.2) - sh.y) * speed / range : Math.tan(clamp(p.pitch, -1, 1)) * speed) : (p.flight.y - 0.5 - sh.y) * speed / range;
   }
-  function pushShot(s, sh) { shotHeight(s, sh); s.shots.push(sh); }
+  function pushShot(s, sh) { shotHeight(s, sh); s.shots.push(sh); if (sh.team === 'p' && !sh.tr && !sh.clone) recordPrimary(s, { type: 'shot', shot: sh }); }
   function powersShot(s, sh, dt) {
     if (sh.life <= 0) return true;
     if (sh.alt === undefined) shotHeight(s, sh);
@@ -819,6 +872,10 @@ const Core = (() => {
     return false;
   }
   const OPS = {
+    clone(s, o, ctx) { if (!canClone(s)) return 'Il primario non ha attacchi diretti replicabili'; const p = s.player, existing = s.mobs.filter((e) => e.cloned && !e.dead), occupied = new Set(existing.map((e) => e.cloneSlot)), n = Math.min(3 - existing.length, Math.floor(pn(o, 'n', 2, 1, 3))); if (n <= 0) return 'Hai gia tre copie';
+      for (let k = 0; k < n; k++) { const ix = [0, 1, 2].find((v) => !occupied.has(v)); occupied.add(ix); const offset = [-2.3, 2.3, 0][ix], back = ix === 2 ? 3.6 : 1.6, cy = Math.cos(p.yaw), sy = Math.sin(p.yaw), q = freeNear(s, p.x + cy * offset + sy * back, p.z - sy * offset + cy * back, p.x, p.z), e = mkMob(s, 'clone', q.x, q.z, 'a', { cloned: true, cloneSlot: ix, cloneX: offset, cloneZ: back, cloneMul: pn(o, 'mul', 0.45, 0.1, 0.8), life: pn(o, 't', 10, 0.5, 20), el: ctx.K.el }); e.hp = e.maxHp = pn(o, 'hp', 40, 10, 150); e.spawn = 0; powerEvent(s, 'clone', ctx, { id: e.id, x: e.x, z: e.z, t: e.life }); } return true;
+    },
+    scan(s, o, ctx) { const p = s.player; p.scan = { t: pn(o, 't', 6, 0.5, 20), r: pn(o, 'r', 24, 4, 50), ids: [], el: ctx.K.el, refresh: 0 }; refreshScan(s); powerEvent(s, 'scan', ctx, { r: p.scan.r, t: p.scan.t, n: p.scan.ids.length }); return true; },
     form(s, o, ctx) { const p = s.player; if (bodyBusy(p)) return 'Corpo gia impegnato'; const size = pn(o, 'size', 2, 0.4, 2.2), r = 0.6 * size; if (!safeBody(s, p.x, p.z, r)) return 'Spazio insufficiente per questa taglia'; p.form = { size, t: pn(o, 't', 8, 0.2, 20), safe: { x: p.x, z: p.z }, slot: ctx.slot, el: ctx.K.el }; p.r = r; p.cam.y = EYE * size; powerEvent(s, 'form', ctx, { size, t: p.form.t }); return true; },
     phase(s, o, ctx) { const p = s.player; if (bodyBusy(p)) return 'Corpo gia impegnato'; p.phase = { t: pn(o, 't', 4, 0.2, 10), speed: pn(o, 'speed', 1.2, 0.5, 2), safe: { x: p.x, z: p.z }, slot: ctx.slot, el: ctx.K.el }; p.beam.on = false; p.cone = false; powerEvent(s, 'phase', ctx, { t: p.phase.t }); return true; },
     flight(s, o, ctx) { const p = s.player; if (bodyBusy(p)) return 'Corpo gia impegnato'; p.flight = { t: pn(o, 't', 8, 0.2, 20), h: pn(o, 'h', 8, 2.5, 12), y: EYE + 1.5, speed: pn(o, 'speed', 1.2, 0.5, 2), slot: ctx.slot, el: ctx.K.el }; p.flight.y = Math.min(p.flight.y, p.flight.h); p.cam.y = p.flight.y; powerEvent(s, 'flight', ctx, { t: p.flight.t, y: p.flight.y }); return true; },
@@ -859,7 +916,7 @@ const Core = (() => {
     rewindfoe(s, o, ctx) { const list = powerTargets(s, o, ctx).filter((e) => !e.rewind); if (!list.length) return 'Nessun nuovo bersaglio'; for (const e of list) { e.rewind = { x: e.x, z: e.z, hp: e.hp, t: pn(o, 't', 3, 0.2, 10), d: pn(o, 'd', 20, 0, 100) * (e.boss ? 0.5 : 1), el: ctx.K.el }; powerEvent(s, 'rewindfoe', ctx, { id: e.id, x: e.x, z: e.z, t: e.rewind.t }); } return true; },
     revive(s, o, ctx) { const p = s.player, r = pn(o, 'r', 16, 1, 30), room = 12 - s.mobs.filter((e) => !e.dead && e.team === 'a' && (e.tag === 'sum' || e.revived)).length; if (room <= 0) return 'Troppi alleati evocati'; const corpses = s.powers.corpses.filter((c) => c.t > 0 && dist(c, p) <= r).sort((a, b) => dist(a, p) - dist(b, p)).slice(0, Math.min(room, Math.floor(pn(o, 'n', 2, 1, 6)))); if (!corpses.length) return 'Nessun cadavere recente';
       for (const c of corpses) { const kind = { sgherro: 'spirito', tiratore: 'arciere', bruto: 'colosso' }[c.kind], e = mkMob(s, kind, c.x, c.z, 'a', { el: ctx.K.el, life: pn(o, 't', 12, 0.5, 25), bd: pn(o, 'd', 12, 1, 40), tag: 'sum', revived: true }); e.hp = e.maxHp = pn(o, 'hp', 60, 1, 250); e.spawn = 0.25; c.t = 0; powerEvent(s, 'revive', ctx, { id: e.id, corpse: c.id, x: e.x, z: e.z, kind }); } s.powers.corpses = s.powers.corpses.filter((c) => c.t > 0); return true; },
-    command(s, o, ctx) { const p = s.player, r = pn(o, 'r', 24, 1, 40), allies = s.mobs.filter((e) => !e.dead && e.team === 'a' && e.kind !== 'anima' && !MOB[e.kind].fixed && dist(e, p) <= r).slice(0, Math.floor(pn(o, 'n', 6, 1, 12))); if (!allies.length) return 'Nessun alleato mobile'; const target = o.rally ? null : (ctx.depth > 0 && powerAlive(ctx.tgt) ? ctx.tgt : aimedAny(s, pn(o, 'g', 24, 1, 40))); if (!o.rally && !powerAlive(target)) return 'Nessun bersaglio per gli alleati'; const pt = place(s, o, ctx, {});
+    command(s, o, ctx) { const p = s.player, r = pn(o, 'r', 24, 1, 40), allies = s.mobs.filter((e) => !e.dead && e.team === 'a' && !e.cloned && e.kind !== 'anima' && !MOB[e.kind].fixed && dist(e, p) <= r).slice(0, Math.floor(pn(o, 'n', 6, 1, 12))); if (!allies.length) return 'Nessun alleato mobile'; const target = o.rally ? null : (ctx.depth > 0 && powerAlive(ctx.tgt) ? ctx.tgt : aimedAny(s, pn(o, 'g', 24, 1, 40))); if (!o.rally && !powerAlive(target)) return 'Nessun bersaglio per gli alleati'; const pt = place(s, o, ctx, {});
       for (const e of allies) { e.command = { t: pn(o, 't', 6, 0.2, 15), rally: !!o.rally, x: pt.x, z: pt.z, target: target ? target.id : null }; if (target) { e.tg = target; e.tt = 0.3; } }
       powerEvent(s, 'command', ctx, { x: pt.x, z: pt.z, rally: !!o.rally, target: target ? target.id : null, n: allies.length }); return true; },
     hit(s, o, ctx) {
@@ -868,6 +925,7 @@ const Core = (() => {
       const ang = ctx.ang !== undefined && (o.at === 'pt' || (!o.at && ctx.depth > 0)) ? ctx.ang : yawAng(p);
       const T = { shape: SHAPE[o.op], x: pt.x, z: pt.z, ang, r: (o.r || (o.op === 'cone' ? 8 : 3)) * (o.op === 'cone' && p.form ? p.form.size : 1), r0: o.i || 0, half: o.h || 0.5, len: o.l || 10, w: o.w || 2, el: ctx.K.el };
       if (o.op === 'ring' && !o.i) T.r0 = T.r * 0.5;
+      if (ctx.depth === 0 && !o.in) recordPrimary(s, { type: 'shape', T: Object.assign({}, T), o, K: ctx.K, target: tg && tg.id });
       if (o.in && !tg) { if (s.marks.length < 40) s.marks.push(Object.assign({ id: s.nextId++, t: 0, wind: o.in, fr: true, o, ctx: Object.assign({}, ctx, { x: pt.x, z: pt.z, ang }), dmg: 0 }, T)); return true; }
       return hitNow(s, o, ctx, T, tg);
     },
@@ -937,6 +995,7 @@ const Core = (() => {
     },
     chain(s, o, ctx) {
       const K = ctx.K; let cur = ctx.tgt && !ctx.tgt.dead ? ctx.tgt : aimedAny(s, o.g || 24); if (!cur) { if (ctx.depth > 0) cur = nearestFoe(s, ctx.x, ctx.z, o.r || 8); if (!cur) return 'Nessun bersaglio'; }
+      if (ctx.depth === 0) recordPrimary(s, { type: 'chain', target: cur.id, o, K });
       const seen = new Set(), pts = []; let d = o.d || 10;
       for (let k = 0; cur && k < (o.n || 3); k++) { seen.add(cur.id); pts.push({ x: cur.x, z: cur.z, y: cur.boss ? 2.4 : 1.1 }); if (d > 0) applyHit(s, cur, { dmg: d, el: K.el, src: 'p', knock: 1, trig: ctx.depth > 0 }); applySt(s, cur, o, cur, K); d *= o.fall || 0.7; let nx = null, nd = o.r || 7.5; const c0 = cur; hostiles(s, (e) => { if (seen.has(e.id) || e.dead) return; const dd = Math.hypot(e.x - c0.x, e.z - c0.z) - e.r; if (dd < nd) { nd = dd; nx = e; } }); cur = nx; }
       s.events.push({ type: 'chain', pts, el: K.el, from: ctx.depth > 0 && ctx.x !== undefined ? { x: ctx.x, z: ctx.z } : null }); return true;
@@ -1132,7 +1191,7 @@ const Core = (() => {
       if (sh.aura) { sh.at -= dt; if (sh.at <= 0) { sh.at = 0.2; areaHit(s, sh.x, sh.z, sh.aura, { dmg: sh.dmg, el: sh.el, src: 'p', tick: true, fx: sh.x, fz: sh.z }); if (sh.px && hasSt(sh.px.o)) hostiles(s, (e) => { if (Math.hypot(e.x - sh.x, e.z - sh.z) < sh.aura + e.r) applySt(s, e, sh.px.o, sh, sh.px.K); }); } continue; }
       if (sh.team === 'e') { let stop = false; for (const z of s.zones) if (z.ward && Math.hypot(z.x - sh.x, z.z - sh.z) < z.r) { stop = true; break; } if (stop) { sh.life = 0; continue; } }
       if (sh.team !== 'e') {
-        const src = sh.team === 'p' ? 'p' : 'ally'; let stop = false;
+        const src = sh.clone ? 'clone' : sh.team === 'p' ? 'p' : 'ally'; let stop = false;
         hostiles(s, (e) => { if (stop || (sh.hitSet && sh.hitSet.has(e.id)) || (sh.alt && Math.abs(sh.y - (e.boss ? 2.4 : 1.2)) > e.r + 0.6)) return; if (Math.hypot(e.x - sh.x, e.z - sh.z) < e.r + sh.r) { if (sh.dmg > 0) applyHit(s, e, { dmg: sh.dmg, el: sh.el, src, knock: 1.5, fx: sh.x - sh.vx, fz: sh.z - sh.vz, trig: !!sh.tr }); if (sh.px) applySt(s, e, sh.px.o, sh, sh.px.K); if (sh.hitSet) sh.hitSet.add(e.id); else stop = true; } });
         if (!stop && sh.team === 'p') for (const t of s.turrets) if (t.state === 'hostile' && Math.hypot(t.x - sh.x, t.z - sh.z) < t.r + sh.r) { t.stun = 2.5; if (!sh.hitSet) stop = true; }
         if (stop) sh.life = 0;
@@ -1222,6 +1281,9 @@ const Core = (() => {
         continue;
       }
       const sl = (e.slowT > 0 ? 1 - e.slow : 1), sp = def.speed * sl * dt;
+      if (e.cloned) { const cy = Math.cos(p.yaw), sy = Math.sin(p.yaw), tx = p.x + cy * e.cloneX + sy * e.cloneZ, tz = p.z - sy * e.cloneX + cy * e.cloneZ, dx = tx - e.x, dz = tz - e.z, d = Math.hypot(dx, dz); e.fx = fwdX(p.yaw); e.fz = fwdZ(p.yaw);
+        if (d > 0.3 && e.root <= 0) { if (los(s, e.x, e.z, tx, tz)) { e.x += dx / d * Math.min(d, sp); e.z += dz / d * Math.min(d, sp); } else if (flowDir(s, e, dir)) { e.x += dir.x * sp; e.z += dir.z * sp; } e.moving = true; } collide(s, e, e.r); continue;
+      }
       // anti-incastro
       e.pt -= dt; if (e.pt <= 0) { if (e.wasMoving && Math.hypot(e.x - e.px, e.z - e.pz) < 0.3) { e.dodge = 0.7; e.ds = s.rand() < 0.5 ? 1 : -1; } e.px = e.x; e.pz = e.z; e.pt = 0.5; }
       if (e.dodge > 0 && e.root <= 0) { e.dodge -= dt; e.x += -e.fz * e.ds * sp; e.z += e.fx * e.ds * sp; e.moving = true; e.wasMoving = false; collide(s, e, e.r); continue; }
@@ -1326,6 +1388,6 @@ const Core = (() => {
     }
   }
 
-  return { CELL, N, HALF, EYE, NODE_H, SAG, MOB, PSPEED, QINFO, create, step, setRecipe, cellOf, cellCenter, solidAt, opaqueAt, los, cablePoint, inTele, groundPoint, wakeBoss, bossCast, acceptQuest, pathCells, mkMob, run };
+  return { CELL, N, HALF, EYE, NODE_H, SAG, MOB, PSPEED, QINFO, create, step, setRecipe, cellOf, cellCenter, solidAt, opaqueAt, los, cablePoint, inTele, groundPoint, wakeBoss, bossCast, acceptQuest, pathCells, mkMob, run, canClone };
 })();
 if (typeof module !== 'undefined') module.exports = Core;

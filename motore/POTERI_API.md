@@ -76,6 +76,40 @@ Eventi aggiunti: `form`, `formEnd`, `phase`, `phaseEnd`, `flight`,
 `possess` delle sentinelle.
 `node tcorpo.js` verifica queste sei famiglie e il ripristino del ciclo di vita.
 
+## Repliche e percezione
+
+| Operatore | Parametri | Effetto |
+| --- | --- | --- |
+| `clone` | `n2 t10 hp40 mul.45` | Crea fino a tre copie corporee vulnerabili. Seguono il giocatore e replicano le emissioni offensive dirette del primario, con origine propria, angolo originale e quota di danno base `mul`. Non attaccano da sole. |
+| `scan` | `r24 t6` | Rileva ostili nel raggio, anche attraverso muri: massimo 64 contatti, aggiornati ogni 0.25 secondi. Rende disponibile l'informazione al renderer, senza modificare danno, mira assistita o collisioni. |
+
+`Core.canClone(s)` espone la compatibilità del primario corrente. Sono supportati
+proiettili, raggio, cono, melee e catena originali, oppure operatori diretti
+`shot/circ/cone/line/ring/tgt/near/chain` nel programma del primario, prima di
+qualsiasi `wait`. Un primario che contiene soltanto evocazioni, effetti a terra,
+ritardi, combinatori o callback non è compatibile: l'attivazione fallisce senza
+costo. Le copie replicano soltanto la parte diretta di un attacco compatibile:
+niente buff, costi, risorse esplicite, callback, innesti, aure, esplosioni secondarie,
+ritorni, reazioni hit/kill o nuovi cloni. Gli stati diretti come gelo e bruciatura
+rimangono. Una copia non colpisce oltre un muro con una forma, catena o raggio.
+
+Le copie sono elementi di `s.mobs`, con `kind:'clone'`, `team:'a'`, `cloned:true`,
+`life`, `hp/maxHp`, `cloneMul`, `cloneX/cloneZ` (offset di seguito) e `cloneSlot`.
+Raggio fisico 0.6, altezza grafica consigliata 1.7. Il disarmo e lo stordimento
+impediscono le repliche; il silenzio impedisce proiettili, raggi e catene.
+Gli ordini `command` sono riservati agli alleati con combattimento autonomo.
+
+La scansione è `player.scan={t,r,ids,el,refresh}`: `ids` contiene identificatori
+vivi di nemici e boss; alleati e creature catturate sono esclusi. Una scansione
+senza contatti è comunque valida. Il raggio segue il corpo del giocatore.
+Il renderer deve rendere visibili i contatti occultati per materializzare il
+vantaggio informativo. Scadenza, morte e cambio ricetta puliscono gli effetti.
+
+Eventi: `clone`, `cloneFire` (`attack` identifica l'emissione), `cloneBeam`
+(`x,z,x1,z1` per il raggio), `scan`, `scanEnd`. Le copie usano gli eventi
+standard di danno, morte e scomparsa. `node tcloni.js` verifica contratti,
+vulnerabilità, sincronizzazione, assenza di ricorsione e percezione oltre muri.
+
 ## Stato osservabile e grafica
 
 `s.powers` contiene `fields`, `links`, `portals`, `tethers`, `barriers`, `corpses`.
