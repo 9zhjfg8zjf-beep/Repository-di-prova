@@ -51,6 +51,11 @@ Il controllo statico non è un analizzatore completo di tutte le chiamate di ret
 La CI usa macOS 26/Xcode 26.6, registra versione e UUID del simulatore realmente scelto,
 compila Release per dispositivo senza firma e svolge XCTest Debug su iPhone e iPad.
 Conserva log, `.xcresult`, screenshot allegati dai test e pacchetti `.app` per 14 giorni.
+Sul Mac esporta tutti gli allegati XCTest in `.build/xctest-attachments/`, inclusi i PNG dei test riusciti
+e il manifest del tool; conserva anche help del tool, log di esportazione e `xctest-status.json`.
+L'esportazione viene tentata anche dopo un fallimento XCTest, mantenendone il codice di uscita originale.
+Se i test passano ma l'esportazione fallisce o non contiene PNG, la CI fallisce invece di dichiarare prove visive disponibili.
+Non usa lo screenshot finale del simulatore come foto del gioco: il tearDown può avere già chiuso l'app.
 La `.app` unsigned per dispositivo **non è installabile/distribuibile** come un'app firmata.
 Per eseguire localmente su un Mac configurato: `bash scripts/ci_ios.sh iphone` e `bash scripts/ci_ios.sh ipad`.
 
