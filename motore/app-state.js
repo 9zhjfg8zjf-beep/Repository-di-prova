@@ -1,7 +1,7 @@
 // Stato dell'applicazione, indipendente da DOM, rendering e simulazione.
 const DiteAppState = (() => {
-  const SCREENS = ['boot', 'lobby', 'city', 'loadout', 'forge', 'loading', 'playing', 'pause', 'settings', 'guide', 'error'];
-  const PANELS = new Set(['city', 'loadout', 'forge', 'settings', 'guide']);
+  const SCREENS = ['boot', 'lobby', 'city', 'loadout', 'forge', 'journal', 'loading', 'playing', 'pause', 'settings', 'guide', 'error'];
+  const PANELS = new Set(['city', 'loadout', 'forge', 'journal', 'settings', 'guide']);
   function create() {
     let screen = 'boot', hasSession = false, reason = '';
     const history = [], blockers = new Set(), listeners = new Set();

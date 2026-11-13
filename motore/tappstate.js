@@ -18,6 +18,9 @@ check('officina dalla lobby torna alla lobby, dalla pausa torna alla pausa', () 
     for (const expected of ['forge', 'loadout', origin]) { a.back(); assert.equal(a.snapshot().screen, expected); assert.equal(a.snapshot().playing, false); }
   }
 });
+check('registro e impostazioni conservano il ritorno fino alla lobby', () => {
+  const a = App.create(); a.go('lobby'); a.go('journal'); a.go('settings'); a.back(); assert.equal(a.snapshot().screen, 'journal'); a.back(); assert.equal(a.snapshot().screen, 'lobby'); assert.equal(a.snapshot().playing, false);
+});
 check('destinazione esplicita e doppio tap non duplicano lo storico', () => {
   const a = active(); a.go('guide', { returnTo: 'pause' }); a.go('guide', { returnTo: 'pause' }); assert.deepEqual(a.snapshot().history, ['pause']); a.back(); assert.equal(a.snapshot().screen, 'pause');
 });
