@@ -80,14 +80,36 @@ final class DITEUITests: XCTestCase {
     func testBackgroundRequiresExplicitResume() {
         tap("Entra nel gioco")
         waitForButton("Pausa")
+        var states = ["before Home: \(app.state.rawValue)"]
+        defer {
+            let evidence = XCTAttachment(string: states.joined(separator: "\n"))
+            evidence.name = "Observed application lifecycle states"
+            evidence.lifetime = .keepAlways
+            add(evidence)
+        }
         XCUIDevice.shared.press(.home)
         let background = NSPredicate { _, _ in
             self.app.state == .runningBackground || self.app.state == .runningBackgroundSuspended
         }
+        let firstHome = XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: background, object: app)], timeout: 2)
+        states.append("after first Home: \(app.state.rawValue)")
+        if firstHome != .completed {
+            // Windowed iPadOS can expose Home while keeping app windows at the edges.
+            // Minimize from the system's bottom edge, not the displaced game window.
+            // https://support.apple.com/guide/ipad/ipad08c9970c/ipados
+            let system = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+            let start = system.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.999))
+            let end = system.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.55))
+            start.press(forDuration: 0, thenDragTo: end, withVelocity: .fast, thenHoldForDuration: 0)
+            states.append("after system minimize gesture: \(app.state.rawValue)")
+        }
         XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: background, object: app)], timeout: 10), .completed,
-                       "Home must move the app to the background before activation")
+                       "The app must actually enter the background before activation")
+        states.append("verified background: \(app.state.rawValue)")
+        attachScreenshot("system-with-game-in-background")
         app.activate()
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10))
+        states.append("after activation: \(app.state.rawValue)")
         waitForButton("Riprendi partita")
         attachScreenshot("paused-after-background")
         tap("Riprendi partita")

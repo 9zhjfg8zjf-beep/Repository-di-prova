@@ -110,7 +110,7 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
         configuration.mediaTypesRequiringUserActionForPlayback = .all
         configuration.userContentController.add(WeakScriptHandler(self), name: "dite")
         #if DEBUG
-        if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
+        if ProcessInfo.processInfo.arguments.contains("--ui-testing-event-trace") {
             configuration.userContentController.add(WeakScriptHandler(self), name: "diteUITest")
         }
         #endif
@@ -254,8 +254,9 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
         let script = "Object.defineProperty(window,'__DITE_HOST__',{value:Object.freeze(\(json)),writable:false,configurable:false});"
         controller.addUserScript(WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         #if DEBUG
-        if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
+        if ProcessInfo.processInfo.arguments.contains("--ui-testing-event-trace") {
             // Observe real events without dispatching input or changing game state.
+            // Opt-in only: the normal UI gate must run without extra WebKit event listeners.
             // No input text or saved profile contents enter the diagnostic trace.
             let trace = """
             (() => {
