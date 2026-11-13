@@ -2,9 +2,11 @@
 
 Preparato il 13 novembre 2026. Questo documento contiene testi pronti da trasferire nei campi indicati,
 valori ancora da completare e il percorso per ottenere le immagini della build effettiva.
-La prima CI macOS ha compilato la build Release iPhone **unsigned** e superato 19 test unitari per famiglia
-di simulatori, ma tutti i 6 UI test per famiglia si sono fermati in setUp: il filtro WebKit ha impedito l'avvio
-del gioco. Non esiste una build distribuibile o un invio App Store. La correzione preparata attende verifica.
+La **4.0 candidata è verificata localmente e pronta per il push**: 33/33 comandi verdi, oltre a mirati e packaging.
+La prima CI macOS aveva compilato Release iPhone unsigned e superato 19 unitari per famiglia, ma i 6 UI
+si erano fermati in setUp per il filtro WebKit. Filtro corretto, 20 unitari e 6 UI per famiglia, inclusa la
+rotazione effettiva, attendono la nuova CI macOS. Non esiste una build distribuibile o un invio App Store;
+la versione del gioco pubblicata resta 3.2.
 Esiti e diagnosi del [run 43429444352, commit 678d219](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43429444352)
 sono riportati in [IOS.md](IOS.md).
 Prima del caricamento, associare questi testi alla build nativa realmente verificata, senza usare la sola
@@ -176,7 +178,9 @@ Il numero di build, il commit e il risultato della CI devono permettere di colle
 | --- | --- |
 | Esecuzione CI macOS e commit | [43429444352](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43429444352), `678d219`; run complessivo fallito |
 | Build Swift / XCTest | Release iPhone unsigned riuscita; simulatori compilati, 19 unitari verdi e 6 UI falliti in setUp per famiglia |
-| Correzione avvio WebKit | Preparata con due regole e test sul payload reale; verifica della correzione ancora da eseguire |
+| Candidata 4.0 locale, bundle 13 | 33/33, mirati e packaging 8/8 verdi; bundle iOS sincronizzato, checksum in `AGENTS.md`; pronta per il push |
+| Correzione avvio WebKit | Due regole e test sul payload reale; 20 unitari e avvio/UI ancora da verificare in CI |
+| Rotazione nativa | Test dell'orientamento effettivo della finestra in rotazione e al riavvio; ancora da eseguire su macOS |
 | Screenshot nativi selezionati | PNG di errore disponibili; immagini del gioco per lo Store ancora da acquisire |
 | Prove su hardware fisico | Da eseguire con hardware accessibile al collaudo |
 | Archivio firmato / build App Store Connect | Da preparare con account e firma autorizzati |

@@ -1,6 +1,6 @@
 # DITE — direzione mobile e preparazione iOS
 
-Stato: **4.0 candidata con collaudo locale verde**, pronta per il push e non ancora pubblicata. Aggiornato il 13 novembre 2026.
+Stato: **4.0 candidata locale verificata, pronta per il push**, non ancora pubblicata. Aggiornato il 13 novembre 2026.
 Base verificata: DITE 3.2, commit 5a50c8f70e2f214b0b6d3a704e24d39765262476.
 La versione pubblicata resta 3.2. Il lavoro è nel ramo `codex/dite-mobile`.
 
@@ -28,7 +28,7 @@ L'obiettivo qualitativo indicato dall'utente è ambizioso. Non dichiarare “liv
 - Implementati router, pulizia input, storage schema 3, tutorial basato sulle azioni, registro dei risultati,
   nuova shell orizzontale, impostazioni, risorse grafiche e progetto iOS. I gruppi vengono integrati e verificati
   separatamente: non leggere questa lista come certificazione della release completa.
-- Prove mirate nuove: storage 19 casi, router 11 casi e 2.000 transizioni, tutorial 17 casi, registro 11 casi.
+- Prove mirate nuove: storage 19 casi, router 11 casi e 2.000 transizioni, tutorial 18 casi, registro 11 casi.
   Le prove browser verificano input touch reali, sospensione, rendering fermo, quota storage, cambio città e retry.
 - Risorse: perdita di una texture del committente riprodotta sul codice precedente e risolta; plateau dopo
   disegno delle quattro forme di preavviso, delle tre texture e degli impatti. Pool inattivi senza upload;
@@ -43,13 +43,21 @@ L'obiettivo qualitativo indicato dall'utente è ambizioso. Non dichiarare “liv
   che in pausa non avanzano. Il riepilogo non cambia effetti o durata dei poteri.
 - Stati del potere: riepilogo limitato a tre righe, con corpo alternativo e stasi prioritari; oltre tre stati,
   due righe e conteggio degli altri. Il dettaglio espandibile in pausa conserva tempi, risorse e istruzioni.
-  La modalità mancini rispecchia controlli e gruppi HUD; guida e coach seguono il lato di movimento scelto.
-- La prima nuova interfaccia è stata fotografata e corretta a 667×375 con inset 44/44/21.
-  Collaudo locale finale verde: **14 comandi Node e 19 browser/build**, entrambe le sequenze con esito 0;
-  log `/tmp/dite-final3-node.log` e `/tmp/dite-final9-browser.log`. Foto campione finali approvate,
-  senza regressioni concrete rilevate. Verdi anche packaging iOS (8 prove), progetto, sincronizzazione e asset.
-  I checksum esatti dei bundle dist/site e del Core sono registrati nello Stato di `AGENTS.md`.
-  Compilazione Swift, XCTest e verifiche fisiche restano da eseguire; la pubblicazione è ancora quella della 3.2.
+  La modalità mancini rispecchia controlli e gruppi HUD; la guida adatta le istruzioni al lato scelto.
+- Coach: due ancoraggi scelti dagli ingombri reali, ResizeObserver e cache senza misure nei frame stabili.
+  La missione attiva resta visibile. Riavviare la guida conserva l'incarico reale e completa il percorso dopo
+  le quattro azioni di movimento, mira, primario e abilità, senza seconda missione o premio aggiuntivo.
+  QA verde su 112 snapshot: sei missioni, touch/tastiera, due lati, font, nome lungo, stati e boss.
+- Gate locale finale **33/33 verde**: 14 Node (`/tmp/dite-final11-node.log`) e 19 browser/build
+  (`/tmp/dite-final13-browser.log`), esito 0; sequenza browser continua senza modifiche o riavvii.
+  Verdi i mirati coach/bonus/contatore (`/tmp/dite-final13-mirato.log`), compresi scena densa e Fama lunga.
+  Arena/iOS sincronizzati; packaging 8/8 e controlli sync/progetto/asset/diff verdi. Il bundle finale
+  della candidata 13 è identificato dai checksum in `AGENTS.md`.
+- La prima CI reale [43429444352](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43429444352)
+  su `678d219` aveva rilevato Cataclisma troncato e filtro WebKit non compilabile. Le correzioni comprendono
+  suprema da 80 px, regressioni font sui due lati e due regole native con prova sul payload effettivo.
+  La nuova CI macOS deve ancora eseguire 20 unitari e 6 UI per famiglia, inclusa la verifica dell'orientamento
+  effettivo durante rotazione e riavvio. La versione pubblicata resta 3.2.
 
 ## Riferimenti e applicazione originale
 

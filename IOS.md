@@ -6,6 +6,9 @@ Non chiamare questa preparazione “App Store ready”: firma, distribuzione, pr
 
 ## Stato delle verifiche
 
+- **4.0 verificata localmente, pronta per il push**: 33/33 comandi (14 Node e 19 browser/build),
+  mirati coach/bonus/contatore e packaging 8/8 verdi. Bundle iOS sincronizzato; sync, progetto e asset verdi.
+  Log finali e checksum completi in `AGENTS.md`. Queste prove non eseguono WebKit nativo.
 - Prima CI reale: [run 43429444352](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43429444352)
   sul commit `678d219`. Verdi i 14 comandi Node, le 8 prove di packaging e i controlli bundle/progetto/asset.
 - iPhone: **build Release per dispositivo senza firma riuscita**. Per entrambe le famiglie di simulatori
@@ -13,10 +16,14 @@ Non chiamare questa preparazione “App Store ready”: firma, distribuzione, pr
   Il gioco non ha raggiunto il rifugio: il filtro WebKit `^(https?|wss?)://` è stato rifiutato con
   `Disjunctions are not supported yet.`. Log e PNG confermano il blocco prima dell'avvio del contenuto.
 - Gli screenshot nativi del primo run documentano l'errore, non il gioco funzionante e non sono materiali Store.
-  Preparata la correzione con due regole condivise e una ventesima prova unitaria che compila il payload reale
-  in WebKit; **correzione e nuova prova attendono la prossima CI**, senza esito verificato.
+  La candidata 13 mantiene due regole condivise e una ventesima prova unitaria che compila il payload reale
+  in WebKit; **correzione e 20 unitari attendono la prossima CI**, senza esito verificato.
 - Il job browser della stessa CI ha superato 17 gruppi, poi `tmobile_browser` ha rilevato il nome Cataclisma
-  troncato nello scenario coach con il font del runner. Analisi e nuovo gate in corso: il run complessivo non è verde.
+  troncato nello scenario coach con il font del runner. Sono implementati suprema da 80 px e regressioni font.
+  Il gate locale finale include le correzioni a guida e Fama; la nuova CI deve ancora verificarle sul runner.
+- La prova iOS di rotazione verifica ora la vera `UIWindowScene.interfaceOrientation`, durante rotazione
+  live e riavvio, tramite una sonda solo DEBUG con `--ui-testing`. **Ancora da eseguire su macOS**, insieme
+  ai 20 unitari e 6 UI per famiglia; nessun nuovo avvio nativo riuscito ancora dimostrato.
 - iPhone/iPad fisici, prestazioni, temperatura, autonomia, audio e interruzioni reali: **non verificati**.
 - Nessun certificato, profilo, Team ID, account App Store Connect o invio predisposto automaticamente.
 
@@ -144,6 +151,8 @@ I test unitari coprono protocollo, payload errati/grandi, URL, round-trip, scrit
 migrazione e conservazione dei dati danneggiati/futuri. Non sostituiscono i test semantici del motore.
 Gli UI test sono predisposti per avviare il bundle vero e usare tap e controlli accessibili, senza JS per pilotare il gioco:
 ingresso, pausa, impostazioni/ritorno, rotazioni, background e persistenza di una preferenza dopo rilancio.
+La rotazione richiede l'orientamento effettivo della finestra, non soltanto quello richiesto al dispositivo;
+la sonda accessibile di prova è esclusa da Release e dagli avvii Debug senza `--ui-testing`.
 Una prova apre l'officina senza tastiera automatica, modifica Nome e Cerca con la tastiera reale, ruota
 il simulatore, chiude la tastiera tramite il comando dell'interfaccia e raggiunge il ritorno al rifugio.
 Una prova provoca un primo errore WebGL attraverso uno user script esclusivamente Debug, poi tocca il vero

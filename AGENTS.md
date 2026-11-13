@@ -50,6 +50,8 @@ Il runner fallisce anche se una vecchia prova stampa errori ma restituisce codic
 Le prove nuove usano condizioni osservabili e avanzamento della simulazione: i secondi di attesa del browser
 non equivalgono ai secondi di gioco quando il rendering software e lento.
 Le fotografie sono in `shots/`; i campioni `tpow` base e DSL hanno cartelle separate per non sovrascriversi.
+La regressione tipografica mobile richiede DejaVu Sans installato (`fonts-dejavu-core` su Debian/Ubuntu):
+verifica il font realmente usato dal browser e rifiuta un fallback silenzioso.
 
 Per calibrare solo i nuovi poteri: `node tbal.js scrivi nuovi`. Misura il contributo di danno, **non** il valore di
 controllo, cura, informazione e mobilita; conserva i fattori degli altri poteri. Dopo la generazione rifare le prove.
@@ -117,7 +119,7 @@ Ordine dei file nel build: bricks, mec*, catalogo, city, core, onboarding, journ
 world, fx, anim, poteri-fx, ui, main. Tutto in `'use strict'`. Gli export CommonJS devono restare su una riga
 con guardia indipendente `if (typeof module !== 'undefined') ...`, rimossa dal build per il browser.
 
-## Stato: 4.0 candidata mobile — collaudo locale verde
+## Stato: 4.0 candidata locale verificata — pronta per il push
 
 Aggiornato il 13 novembre 2026. La versione pubblicata resta **3.2**; la 4.0 e nel ramo `codex/dite-mobile`.
 Titolo e interfaccia sorgente indicano 4.0, ma un artifact di sviluppo non e una release pubblicata.
@@ -130,6 +132,8 @@ e indicazione onesta dell'esito di salvataggio. I vecchi profili conservano il k
 
 Primo ingresso con Dardo, Scatto, Scudo, Nova e Cataclisma con costo 8 sul budget iniziale di 12; guida breve, saltabile e riprendibile,
 che avanza su azioni del gioco. Aiuto riapribile e registro delle ultime 32 imprese reali, senza premi o progressi fittizi.
+Riavviando la guida con una missione reale gia attiva, le quattro azioni di movimento, mira, primario e abilita
+completano il percorso senza richiedere una seconda missione e senza assegnare premi.
 Rendering fermo nei menu, profili grafici e comfort, correzione del rilascio risorse e delle zone mobili/crescenti.
 Sisma mantiene preavvisi e scoppi vicino al terreno, senza generare fulmini dal cielo all'impatto.
 I corpi dei proiettili del giocatore sfumano vicino alla camera; i colpi nemici conservano il proprio corpo visibile.
@@ -140,29 +144,40 @@ risorse e istruzioni di rilascio. Il riepilogo separato dei bonus mostra un solo
 copre invulnerabilita, riflessione, Fenice, occultamento, cura nel tempo, furia, velocita e orbite.
 Potenziamenti in pausa usa lo stesso elenco dei bonus rilevati, con nomi completi e secondi residui reali.
 I timer restano fermi insieme alla simulazione. Comandi mancini sposta movimento a destra, poteri a sinistra,
-rispecchia i gruppi HUD e adatta le istruzioni della guida. Il coach segue il lato scelto e nasconde il solo
-promemoria di ricerca missione quando nessuna missione e attiva.
+rispecchia i gruppi HUD e adatta le istruzioni della guida. Il coach sceglie fra due ancoraggi misurati,
+laterale o sopra il reticolo: la missione attiva resta visibile. ResizeObserver e cache evitano misure
+nei frame stabili; viene nascosto il solo promemoria di ricerca quando non c'e una missione attiva.
 
 Preparato contenitore iOS 17+, versione applicazione 4.0/build 1: WKWebView con HTML locale completo,
 rete del gioco bloccata, bridge versionato per lifecycle/salvataggio/haptic e JSON atomico con copie di recupero.
 Generazione deterministica del progetto, sincronizzazione bundle/licenza/checksum e workflow macOS presenti.
 La distribuzione non e predisposta: identificatore tecnico unsigned, nessun Team/certificato/profilo configurato.
 
-Verifiche gia svolte in questo ciclo: baseline 3.2 prima degli edit; prove mirate storage (19), router
-(11 casi e 2000 transizioni), guida (17), registro (11); 8 prove Linux di packaging/metadati iOS.
-**Collaudo locale finale verde: 33 comandi, 14 Node e 19 browser/build**, entrambe le sequenze concluse con esito 0.
-Log della sessione: `/tmp/dite-final3-node.log` e `/tmp/dite-final9-browser.log`. Foto campione finali controllate
-e approvate, senza regressioni concrete rilevate. Verdi anche le 8 prove di packaging iOS e i controlli
-di aggiornamento del progetto, sincronizzazione bundle e asset. Candidata 4.0 locale pronta per il push.
+**Gate locale finale 33/33 verde**: 14 Node (`/tmp/dite-final11-node.log`) e 19 browser/build
+(`/tmp/dite-final13-browser.log`), entrambi con esito 0. La sequenza browser e completa e continua,
+senza modifiche o riavvii. Verdi anche i mirati coach/bonus/contatore (`/tmp/dite-final13-mirato.log`),
+compresi scena densa reale e testo della Fama contenuto senza invadere Pausa.
+Copertura mirata: storage 19 casi, router 11 e 2000 transizioni, onboarding 18, registro 11.
+QA layout: 112 snapshot verdi su sei missioni, touch/tastiera, due lati, font, nome lungo, stati e boss;
+zero misure nei frame stabili. Arena e bundle iOS sono sincronizzati; packaging 8/8, sync, progetto,
+asset e diff check verdi. I checksum sotto identificano il bundle finale verificato, candidata 13.
 
-| File verificato | SHA256 |
+La prima CI reale [43429444352](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43429444352)
+su `678d219` aveva rilevato un filtro WebKit non compilabile e Cataclisma troncato. Sono ora implementati
+due filtri separati con test sul payload reale, suprema da 80 px e regressioni tipografiche sui due lati.
+Le correzioni web hanno superato il gate locale; la nuova CI nativa resta da eseguire.
+
+| File della candidata 13 | SHA256 |
 | --- | --- |
-| `motore/dist/index.html` | `eb83e58dec2afd966427b73299ad36f6113b957da2e74b073e76f5984787de22` |
-| `motore/site/index.html` | `5d7a465b48b93e4f299723ff2a263997be720409bde0122b07a325a954b3be1c` |
+| `motore/dist/index.html` e bundle iOS | `b5c4e0c54516ee3b15a169996f9a34958fa55dd3c5fba737082330b7ee94bed8` |
+| `motore/site/index.html` e `arena/index.html` | `abcb4a4a2345e278b7d6e11f1d2d7993ceccb70894737518d2f11410b76e429e` |
 | `motore/core.js` | `503a2903f3f302782e35183e859679d530443c9c56f6adeafa990a5e4a766190` |
 
-Compilazione Swift, XCTest e schermate iOS su macOS ancora da eseguire; nessun risultato su dispositivi fisici.
-La versione pubblicata resta 3.2: dopo il push verificare il deploy e registrare la versione realmente servita.
+Nella prima CI sono riusciti Release iPhone unsigned, compilazione simulatori e 19 unitari per famiglia;
+i 6 UI test per famiglia sono falliti in setUp. Filtro corretto, 20 unitari e 6 UI attendono la prossima esecuzione.
+La prova di rotazione ora legge l'orientamento effettivo di UIWindowScene, durante rotazione e riavvio,
+tramite una sonda presente solo in DEBUG con `--ui-testing`; non e ancora stata eseguita su macOS.
+Dettagli e PNG diagnostici in `IOS.md`; nessuna verifica su dispositivi fisici. La versione pubblicata resta 3.2.
 
 ## Stato storico: versione 3.2
 
@@ -195,10 +210,10 @@ Calibrazione del danno eseguita sui 336 nuovi programmi; fattori dei 1007 preced
 
 Prima di considerare la 4.0 distribuibile:
 
-1. **Pubblicare la candidata verificata**: trasferire i bundle con i checksum sopra, completare push e deploy,
-   poi verificare la versione servita. Il collaudo locale dei 33 comandi e la revisione delle foto sono conclusi.
-2. **Eseguire davvero la pipeline macOS**: compilazione Swift, XCTest iPhone/iPad, screenshot, rotazione,
-   tastiera, lifecycle, avvio offline, persistenza e recupero. Conservare link, commit e artifact della CI riuscita.
+1. **Push, CI e deploy**: pubblicare il codice e i bundle verificati, controllare la nuova CI e la versione
+   realmente servita. Il gate locale 33/33 e concluso; la pagina pubblicata resta 3.2 fino alla verifica del deploy.
+2. **Nuovo collaudo macOS**: eseguire i 20 unitari e i 6 UI per famiglia con il filtro corretto, inclusi avvio,
+   tastiera, orientamento reale, lifecycle e salvataggio. Conservare log e immagini del gioco funzionante.
 3. **Prestazioni e comportamento fisico**: misurare frame time, memoria, calore, batteria, multi-touch,
    silenzioso/Bluetooth e interruzioni su dispositivi accessibili. Chromium software non certifica fluidita o audio iPhone;
    non chiedere all'utente di sostituirsi al collaudo.

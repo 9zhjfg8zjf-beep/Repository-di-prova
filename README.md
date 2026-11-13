@@ -8,9 +8,10 @@ Il catalogo comprende 1343 meccaniche originali. Il gioco è pensato per il tele
 La versione pubblicata è **3.2**. La **4.0 candidata** introduce un nuovo rifugio, comandi e interfaccia mobile,
 guida giocabile, registro locale e preparazione iOS offline. Gli effetti vicini alla visuale sono più contenuti;
 stati e bonus hanno riepiloghi compatti e dettagli in pausa. Comandi e guida si adattano alla modalità mancini.
-Il collaudo locale completo è verde: 14 comandi Node e 19 browser/build, con foto finali controllate.
-La candidata 4.0 è pronta per il push; la pubblicazione resta da verificare.
-Compilazione Swift, simulatori e dispositivi fisici restano da verificare.
+La **4.0 è verificata localmente e pronta per il push**: 33/33 comandi verdi, oltre ai mirati e al packaging.
+La guida può ricominciare con una missione già attiva, conservandola visibile e senza richiedere un nuovo incarico.
+La nuova CI macOS deve ancora verificare il filtro WebKit corretto, 20 unitari e 6 UI per famiglia.
+La prima CI aveva compilato Swift ma si era fermata all'avvio; dispositivi fisici e distribuzione restano da verificare.
 
 Per lavorare sul progetto, leggere prima [AGENTS.md](AGENTS.md): contiene architettura, stato e regole di pubblicazione.
 Il piano mobile è in [MOBILE_PRODUCTION.md](MOBILE_PRODUCTION.md); pipeline nativa e passaggi ancora necessari
