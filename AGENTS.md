@@ -119,56 +119,52 @@ Ordine dei file nel build: bricks, mec*, catalogo, city, core, onboarding, journ
 world, fx, anim, poteri-fx, ui, main. Tutto in `'use strict'`. Gli export CommonJS devono restare su una riga
 con guardia indipendente `if (typeof module !== 'undefined') ...`, rimossa dal build per il browser.
 
-## Stato: 4.0 candidata 17 — collaudo funzionale verde, revisione visiva aperta
+## Stato: 4.0 — collaudo completo e revisione visiva verificati
 
-Aggiornato il 13 novembre 2026. Pubblicata ancora **3.2**, main
-`5a50c8f70e2f214b0b6d3a704e24d39765262476`; la 4.0 e nel ramo `codex/dite-mobile`.
-Il catalogo resta di 1343 meccaniche. Il ciclo include una correzione di due righe per Sisma nel Core;
-il checksum sotto identifica lo stato verificato.
+Aggiornato il 13 novembre 2026. Pubblicazione web: **3.2**, main `5a50c8f70e2f214b0b6d3a704e24d39765262476`; la 4.0 verificata attende il deploy.
+La versione iOS resta 4.0/build 1 unsigned, senza distribuzione App Store. Il catalogo comprende
+1343 meccaniche originali; il ciclo include una correzione di due righe per Sisma nel Core.
+Il checksum sotto identifica lo stato verificato.
 
 Rifugio, kit/citta, officina e HUD landscape usano un router unico. Input touch/pen e capture vengono
 azzerati alle interruzioni; background, rotazione e canvas verticale richiedono ripresa esplicita.
 La guardia osserva il canvas. Audio senza retry infinito, rendering fermo nei menu e recupero manuale
 dagli errori. Preferenze per mancini, sensibilita, grafica e comfort; nomi lunghi contenuti nell'officina.
 Guida basata sulle azioni reali, saltabile e riprendibile anche con una missione attiva; registro locale
-delle ultime 32 imprese. Storage schema 3 conserva kit/progressi e conferma il salvataggio nativo dopo ack.
-Stati e bonus sono compatti nell'HUD e completi in pausa; timer fermi con la simulazione. Coach e HUD
-mantengono leggibile la missione, mentre effetti vicini alla visuale e lampi sono contenuti.
+delle ultime 32 imprese. Storage schema 3 conserva kit/progressi e conferma il salvataggio nativo solo dopo ack.
+Stati e bonus sono compatti nell'HUD, completi in pausa; i timer si fermano con la simulazione.
+Coach e HUD mantengono leggibile la missione; effetti vicini alla visuale e lampi sono contenuti.
 
-Il contenitore iOS 17+, versione 4.0/build 1, carica il bundle offline con bridge limitato e salvataggio
-atomico con recupero. Target universale: due landscape per iPhone, quattro orientamenti dichiarati iPad.
-La preparazione e unsigned; account/Team, firma e distribuzione App Store non sono configurati.
+Il contenitore iOS 17+ carica il bundle offline con bridge limitato e salvataggio atomico con recupero.
+Target universale: due landscape per iPhone, quattro orientamenti dichiarati per iPad. XCTest usa Home
+su entrambe le famiglie e richiede veri stati OS background 2/3 → foreground 4, pausa e ripresa esplicita.
+Le sonde `effectiveGeometry` sono solo DEBUG/`--ui-testing`; la traccia JS e opt-in.
 
-Il gate locale della web 17 e verde: **14 Node + 19 browser/build, 33/33**, esito 0 nei log
-`/tmp/dite-final17-node.log` e `/tmp/dite-final17-browser.log`; packaging 8/8, sync, progetto e asset verdi.
-La settima CI [43488987332](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43488987332), commit `066f8f7d3d851306ce44cf00b973952917dba1ab`, conferma:
+Collaudo locale web 17 gia verificato: **14 Node + 19 browser/build, 33/33**, entrambi con esito 0
+(`/tmp/dite-final17-node.log`, `/tmp/dite-final17-browser.log`); packaging 8/8, sync, progetto e asset verdi.
+CI finale [43497161293](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43497161293), commit `3ba5abe95502fc00332b8fb50503bcde063317aa`:
 
-| Verifica | Esito CI7 |
+| Gruppo | Esito CI finale |
 | --- | --- |
-| Node, browser/build, packaging | 14/14, 19/19 e 8/8 verdi |
-| iPhone | 20/20 unitari e 6/6 UI verdi |
-| iPad | 20/20 unitari e 6/6 UI verdi |
-| Orientamento e tastiera | landscapeRight all'avvio, live landscapeLeft, nuovo avvio landscapeLeft e officina/tastiera verdi su entrambi |
-| Home e ripresa | Stati OS reali 4 → 3 → 4 su entrambi, pausa al ritorno e ripresa esplicita verdi |
+| Logica, packaging e controlli bundle | 14/14 Node, packaging 8/8 e controlli bundle verdi |
+| Browser/build | 19/19 verdi, esito 0 |
+| iPhone: unitari e UI | 20/20 unitari e 6/6 UI verdi |
+| iPad: unitari e UI | 20/20 unitari e 6/6 UI verdi |
+| Landscape effettivi, tastiera, Home e ripresa | Entrambi i landscape effettivi, officina/tastiera e Home 4 → 3 → 4 con ripresa esplicita verificati su iPhone e iPad |
 
-**La revisione visiva finale non passa**: fra i 26 PNG originali della CI7, la lobby iPad
-`F1DF7132-A72D-4969-95B5-0B55040AAD3C.png` e interamente uniforme RGB (9, 8, 11). La causa non e provata.
-Una guardia nativa sui pixel e in preparazione e deve essere verificata nella CI8: centro 80%, campione
-64×64 RGB, contrasto almeno 16 e attesa fino a 20 secondi senza azioni, con snapshot falliti e metriche.
-Non dichiarare gia verificata questa guardia o approvato il set visivo.
-
-| File della candidata 17 | SHA256 |
+| File web 17 | SHA256 |
 | --- | --- |
 | `motore/dist/index.html` e bundle iOS | `95849cc1c7675cb0b4ac25133845bc17d40acd499023fd812c94183dd6c8fe34` |
 | `motore/site/index.html` e `arena/index.html` | `4fa61a6d2776915466de8b318cb1c589e6577cde048f5919436dfe4c53d6b03a` |
 | `motore/core.js` | `503a2903f3f302782e35183e859679d530443c9c56f6adeafa990a5e4a766190` |
 
-Provenienza: originali in `ios-run43488987332` nel workspace. La selezione finale prevista di 15 PNG,
-manifest e TXT in `docs/qa/4.0` e ancora da creare dopo collaudo e revisione visiva riusciti.
-Il selettore scratch rifiuta PNG uniformi/trasparenti preservando originali ed EXIF; le sue 31 fixture verdi
-non sono il gate della build. Sonde native solo DEBUG/`--ui-testing`, traccia JS opt-in.
-Restano prove fisiche, firma e account/Team, TestFlight, privacy/supporto e metadati reali; nessuna verifica
-di Minimize in Windowed Apps. Chromium e simulatore non certificano prestazioni o audio su hardware.
+Provenienza nativa: `ios-run43497161293`, stesso run/head indicati sopra. Originali disponibili; 26 PNG non uniformi e 24 osservazioni accettate al primo tentativo;
+revisione finale dei 15 PNG superata, con ricevuta [`docs/qa/4.0/root-review.json`](docs/qa/4.0/root-review.json) dello stesso run/head. Il set QA `docs/qa/4.0` raccoglie la selezione e collega originali PNG/TXT, SHA256, run/head,
+dispositivi e ricevuta della revisione visiva. I PNG restano originali con orientamento EXIF; non sono il set Store.
+La causa della precedente cattura uniforme resta non dimostrata. La guardia controlla il contenuto
+del campione accettato e non identifica quella causa; le catture attuali sono state sottoposte anche a revisione visiva.
+Restano separati prove fisiche, account/Team e firma, TestFlight, privacy/supporto e metadati reali.
+Nessuna verifica di Minimize in Windowed Apps; il simulatore non certifica prestazioni o audio fisici.
 
 ## Stato storico: versione 3.2
 
@@ -201,9 +197,8 @@ Calibrazione del danno eseguita sui 336 nuovi programmi; fattori dei 1007 preced
 
 Prima di considerare la 4.0 distribuibile:
 
-1. **CI8, revisione visiva e pubblicazione**: verificare la guardia nativa contro catture vuote, mantenere
-   verdi le prove e approvare gli originali visivi. Solo dopo procedere a pubblicazione e verifica della
-   versione servita. Pubblicata ancora 3.2.
+1. **Verifica finale e pubblicazione web**: CI8 e revisione visiva concluse; deploy della web 4.0 ancora da verificare. Solo dopo
+   conferma del deploy e della versione realmente servita aggiornare il riferimento alla pubblicazione.
 2. **Prestazioni e comportamento fisico**: misurare frame time, memoria, calore, batteria, multi-touch,
    silenzioso/Bluetooth e interruzioni su dispositivi accessibili. Chromium software non certifica fluidita o audio iPhone;
    non chiedere all'utente di sostituirsi al collaudo.

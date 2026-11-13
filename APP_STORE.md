@@ -2,17 +2,16 @@
 
 Preparato il 13 novembre 2026. Questo documento contiene testi pronti da trasferire nei campi indicati,
 valori ancora da completare e il percorso per ottenere le immagini della build effettiva.
-La **candidata 17 ha il collaudo funzionale verde e la revisione visiva aperta**. Il gate locale supera
-33/33 prove e packaging 8/8; la settima CI [43488987332](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43488987332), commit `066f8f7d3d851306ce44cf00b973952917dba1ab`,
-supera 14 Node, 19 browser/build, packaging 8 e 20 unitari + 6 UI per ciascuna famiglia iPhone/iPad.
-Home con stati OS reali 4 → 3 → 4, ripresa esplicita, entrambi i landscape e tastiera sono verificati.
-Una cattura della lobby iPad è però interamente uniforme: causa non provata, revisione visiva finale fallita.
-La guardia nativa contro catture vuote attende la CI8; il set QA finale non è stato creato.
+Il gate locale della web 17 è verde: 33/33 prove (14 Node e 19 browser/build), packaging 8/8 e
+controlli bundle. CI finale [43497161293](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43497161293), commit `3ba5abe95502fc00332b8fb50503bcde063317aa`:
+14/14 Node, 19/19 browser/build e packaging 8/8 verdi; 20/20 unitari e 6/6 UI per famiglia. Evidenze native e revisione visiva: Originali nativi disponibili; 26 PNG non uniformi e 24 osservazioni accettate al primo tentativo;
+revisione finale dei 15 PNG superata, con ricevuta [`docs/qa/4.0/root-review.json`](docs/qa/4.0/root-review.json) dello stesso run/head.
+Pubblicazione web: **3.2**, main `5a50c8f70e2f214b0b6d3a704e24d39765262476`; la 4.0 verificata attende il deploy.
 
 **La preparazione non è pronta per App Store.** Mancano account/Team e firma autorizzati, prove fisiche,
 privacy e supporto pubblici, metadati e identità reali, archivio distribuibile e invio App Store Connect.
-La versione web pubblicata resta 3.2; l'app 4.0/build 1 è unsigned. Associare testi e immagini alla build
-firmata effettivamente sottoposta. Esiti, checksum e limiti sono in `IOS.md` e `AGENTS.md`.
+Associare testi e immagini alla build firmata effettivamente sottoposta; il collaudo web o simulatori
+non sostituisce questi passaggi. Dettagli e checksum in `IOS.md` e `AGENTS.md`.
 
 ## Scheda italiana
 
@@ -138,11 +137,13 @@ Rivedere le note se cambiano testi, funzionalità, monetizzazione o salvataggio 
 
 ## Immagini dalla build reale
 
-La settima CI esporta 26 PNG originali; la lobby iPad `F1DF7132-A72D-4969-95B5-0B55040AAD3C.png`
-è uniforme RGB (9, 8, 11), con causa non provata. **La revisione visiva finale non è superata**, pur con XCTest verdi.
-Gli originali restano in `ios-run43488987332`; non devono essere ritoccati o sostituiti per far passare la selezione.
-La guardia nativa sui pixel attende la CI8. Il set QA previsto di 15 PNG, manifest e TXT è ancora da creare;
-il set Store resta separato e deve corrispondere alla build distribuibile verificata.
+Evidenze del run finale [43497161293](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43497161293): Originali nativi disponibili; 26 PNG non uniformi e 24 osservazioni accettate al primo tentativo;
+revisione finale dei 15 PNG superata, con ricevuta [`docs/qa/4.0/root-review.json`](docs/qa/4.0/root-review.json) dello stesso run/head.
+Gli originali sono in `ios-run43497161293`; le lobby di entrambe le famiglie sono visibili prima del tap.
+La selezione QA `docs/qa/4.0` è diagnostica e conserva PNG/TXT originali, EXIF e provenienza.
+La causa della precedente cattura uniforme resta non dimostrata; la selezione QA dei 15 PNG è stata revisionata, mentre il set Store resta da preparare.
+Il set Store deve essere acquisito e approvato sulla build distribuibile, con dimensioni conformi e
+schermate reali; non chiamare il set diagnostico già pronto per il caricamento.
 Il workflow `.github/workflows/dite.yml` conserva `ios-iphone-evidence` e `ios-ipad-evidence`, con
 `SimulatorTests.xcresult`, log, `selected-simulator.json` e immagini; la conservazione attuale è di 14 giorni.
 La CI esporta gli allegati in `.build/xctest-attachments/`. Dopo il completamento del collaudo UI, selezionare
@@ -166,8 +167,8 @@ corrisponde a questa famiglia. Per il landscape iPhone,
 la tabella consultata comprende **2622×1206** e **2556×1179** per la famiglia Dynamic Island media.
 Confrontare i pixel esportati e il simulatore realmente scelto con i campi del Media Manager: lo script CI
 sceglie tra simulatori installati e non garantisce da solo una specifica dimensione commerciale.
-Il progetto è universale (`TARGETED_DEVICE_FAMILY = 1,2`): la settima CI verifica orientamenti, tastiera
-e vero background con Home su entrambe le famiglie; la revisione delle immagini resta aperta. Acquisire
+Il progetto è universale (`TARGETED_DEVICE_FAMILY = 1,2`); i risultati finali sono documentati sopra.
+Per la build universale acquisire
 anche il set iPad richiesto da 13 pollici sul target nativo verificato, senza ingrandire una foto iPhone. Fonte:
 [Screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/).
 
@@ -180,16 +181,14 @@ Il numero di build, il commit e il risultato della CI devono permettere di colle
 
 | Evidenza da collegare | Valore attuale |
 | --- | --- |
-| Settima CI e commit | [43488987332](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43488987332), `066f8f7d3d851306ce44cf00b973952917dba1ab`; 14 Node, 19 browser/build e packaging 8 verdi |
-| XCTest | 20/20 unitari e 6/6 UI per famiglia; orientamenti, tastiera, Home 4 → 3 → 4 e ripresa esplicita verdi |
-| Gate locale web 17 | 33/33 prove, esito 0; packaging 8/8 e controlli bundle verdi; checksum in `AGENTS.md` |
-| Revisione visiva | Fallita: una lobby iPad uniforme fra 26 PNG, causa non provata |
-| Prossima CI8 | Verificare la guardia nativa sui pixel e le nuove catture; nessun risultato ancora disponibile |
-| Set QA e Store | Selezione QA finale di 15 PNG, manifest e TXT ancora da creare; set Store della build distribuibile separato |
+| CI finale e commit | [43497161293](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43497161293), `3ba5abe95502fc00332b8fb50503bcde063317aa`; 14/14 Node, 19/19 browser/build e packaging 8/8 verdi; 20/20 unitari e 6/6 UI per famiglia |
+| XCTest e lifecycle finali | Entrambi i landscape effettivi, officina/tastiera e Home 4 → 3 → 4 con ripresa esplicita verificati su iPhone e iPad; 20/20 unitari e 6/6 UI verdi; 20/20 unitari e 6/6 UI verdi |
+| Gate locale web 17 | 33/33 ed esito 0; packaging 8/8 e controlli bundle verdi, checksum in `AGENTS.md` |
+| Evidenze native e revisione | Originali nativi disponibili; 26 PNG non uniformi e 24 osservazioni accettate al primo tentativo; revisione finale dei 15 PNG superata, con ricevuta [`docs/qa/4.0/root-review.json`](docs/qa/4.0/root-review.json) dello stesso run/head; set Store della build distribuibile separato |
 | Prove su hardware fisico | Da eseguire con hardware accessibile al collaudo |
 | Archivio firmato / build App Store Connect | Da preparare con account e firma autorizzati |
 | Supporto e policy pubblici | Da configurare con identità reale |
 
 La compilazione, la firma, l'invio e l'approvazione sono risultati separati. Questo documento prepara
-i contenuti del caricamento. Il collaudo funzionale è verde; revisione visiva, prove fisiche, firma,
+i contenuti del caricamento. Il collaudo UI segue l'esito finale registrato sopra; firma, prove fisiche,
 privacy/supporto, metadati e distribuzione restano da completare.

@@ -1,8 +1,8 @@
 # DITE — direzione mobile e preparazione iOS
 
-Stato: **4.0 candidata 17, collaudo funzionale verde e revisione visiva aperta**, non ancora pubblicata. Aggiornato il 13 novembre 2026.
-Base verificata: DITE 3.2, commit 5a50c8f70e2f214b0b6d3a704e24d39765262476.
-La versione pubblicata resta 3.2. Il lavoro è nel ramo `codex/dite-mobile`.
+Stato 4.0: collaudo completo e revisione visiva verificati. Aggiornato il 13 novembre 2026.
+Pubblicazione web: **3.2**, main `5a50c8f70e2f214b0b6d3a704e24d39765262476`; la 4.0 verificata attende il deploy.
+Baseline storica 3.2: `5a50c8f70e2f214b0b6d3a704e24d39765262476`.
 
 ## Obiettivo
 
@@ -14,32 +14,28 @@ leggibilità, stabilità e prestazioni devono avere verifiche proprie.
 L'obiettivo qualitativo indicato dall'utente è ambizioso. Non dichiarare “livello SOTA”, “App Store ready” o
 “60 fps su iPhone” sulla base di un restyling, di una compilazione o di screenshot del browser.
 
-## Comportamento e verifiche attuali
+## Comportamento e verifiche finali
 
 - Rifugio, kit/città e officina con ritorno coerente; router unico, pulizia input e recupero manuale degli errori.
-  HUD landscape con comandi mancini, missione leggibile, bonus/stati compatti e dettagli completi in pausa.
-- Guida basata sulle azioni reali e riprendibile, registro locale e storage schema 3 con conferma del salvataggio.
-  Pausa touch/pen, rilascio dei poteri, audio coerente con l'attività e ripresa esplicita dopo interruzioni.
-- Guardia sul canvas verticale, rendering fermo nei menu e risorse verificate dopo cambi città ed effetti.
-  Il ciclo include una correzione di due righe per Sisma nel Core; il checksum in `AGENTS.md` identifica
-  lo stato verificato.
-- Gate locale della web 17: **14 Node + 19 browser/build, 33/33 verdi**, packaging 8/8, sync, progetto e asset verdi.
-  Log `/tmp/dite-final17-node.log` e `/tmp/dite-final17-browser.log`, esito 0.
-- Settima CI [43488987332](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43488987332), commit `066f8f7d3d851306ce44cf00b973952917dba1ab`: **14 Node, 19 browser/build e packaging 8/8 verdi**;
-  sul target universale **20 unitari e 6 UI verdi per famiglia**. Verificati entrambi i landscape effettivi,
-  officina/tastiera e Home con stati OS reali 4 → 3 → 4 su iPhone e iPad, pausa al ritorno e ripresa esplicita.
-- **La revisione visiva finale fallisce**: fra 26 PNG originali, la lobby iPad
-  `F1DF7132-A72D-4969-95B5-0B55040AAD3C.png` è interamente RGB (9, 8, 11). Causa non provata.
-  La guardia nativa in preparazione controlla centro 80%, campione 64×64 RGB e contrasto almeno 16,
-  attendendo fino a 20 secondi senza azioni e conservando snapshot falliti e metriche. Attende la CI8.
-- Provenienza originale: `ios-run43488987332`. Il set QA finale previsto di 15 PNG, manifest e TXT è ancora
-  da creare. Le 31 fixture verdi del selettore scratch verificano il rifiuto di catture uniformi/trasparenti
-  e gli altri controlli del selettore; non sono un gate della build né una revisione visiva positiva.
+- HUD landscape con comandi mancini, missione leggibile, bonus/stati compatti e dettagli completi in pausa.
+  Guida basata sulle azioni reali, riprendibile; registro locale e persistenza schema 3 con conferma onesta.
+- Pausa touch/pen, rilascio dei poteri, audio coerente con l'attività e ripresa esplicita dopo interruzioni.
+  Guardia sul canvas verticale; rendering fermo nei menu e risorse verificate dopo cambi città ed effetti.
+  Il ciclo include la correzione di due righe per Sisma nel Core, identificato dal checksum in `AGENTS.md`.
+- Prove locali web 17: **14 Node + 19 browser/build, 33/33 verdi**, packaging 8/8, sync, progetto e asset verdi.
+  Log `/tmp/dite-final17-node.log` e `/tmp/dite-final17-browser.log`, esito 0; checksum in `AGENTS.md`.
+- CI finale [43497161293](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43497161293), commit `3ba5abe95502fc00332b8fb50503bcde063317aa`: 14/14 Node, 19/19 browser/build e packaging 8/8 verdi; 20/20 unitari e 6/6 UI per famiglia.
+  Entrambi i landscape effettivi, officina/tastiera e Home 4 → 3 → 4 con ripresa esplicita verificati su iPhone e iPad. Target universale, Home su entrambe le famiglie,
+  veri stati OS background/foreground, pausa e ripresa esplicita sono parte del collaudo richiesto.
+- Originali nativi in `ios-run43497161293`: 26 PNG non uniformi e 24 osservazioni accettate al primo tentativo;
+  revisione finale dei 15 PNG superata, con ricevuta [`docs/qa/4.0/root-review.json`](docs/qa/4.0/root-review.json) dello stesso run/head. Conservare originali PNG/TXT, EXIF, run/head, SHA256 e revisione visiva
+  in `docs/qa/4.0`; non confonderli con il set Store finale.
 
-Il gioco pubblico resta 3.2; il contenitore iOS 4.0/build 1 è unsigned. Restano hardware fisico e prestazioni,
-account/Team e firma, TestFlight, privacy/supporto pubblici e metadati veri. Il simulatore non certifica
-hardware o distribuzione; Minimize in Windowed Apps non è verificato. Prima della pubblicazione occorrono
-CI8 e revisione visiva riuscite, poi conferma della versione realmente servita.
+La causa della precedente cattura uniforme resta non dimostrata. La nuova guardia ha accettato i campioni
+nativi correnti; la revisione dei 15 PNG è superata e la CI è interamente verde.
+Restano prove su dispositivi fisici e prestazioni, account/Team e firma, TestFlight, privacy/supporto
+pubblici e metadati veri. Il simulatore non certifica hardware o distribuzione; Minimize in Windowed Apps
+non è stato verificato. La pubblicazione web richiede conferma della versione realmente servita.
 
 ## Riferimenti e applicazione originale
 
@@ -130,7 +126,7 @@ meno maiuscole decorative, gerarchia tipografica più chiara e superfici meno lu
 - Conservare le API di collaudo esistenti. Aggiungere snapshot di schermata/input e renderOnce:
   tvis modifica appositamente una scena in pausa e deve richiedere il nuovo disegno.
 - Un unico proprietario di main.js. Ownership separate per interfaccia, rendering, progetto iOS e prove.
-  Le modifiche al Core vanno documentate; questo ciclo include la correzione di due righe per Sisma.
+  Documentare le modifiche al Core; questo ciclo include la correzione di due righe per Sisma.
 
 ## Percorso iOS
 
@@ -144,8 +140,8 @@ Audio rispettoso del silenzioso e della musica dell'utente, da verificare su dis
 Preparare progetto Xcode, schema condiviso, risorse, licenze e procedura di sincronizzazione con checksum.
 Aggiungere CI macOS per build unsigned e test su simulatore; una workflow è verificata solo dopo esecuzione riuscita.
 Alla data dell'audit gli upload richiedono Xcode 26+ e SDK iOS 26+: il deployment target è una scelta distinta.
-La settima CI prova i due landscape effettivi, tastiera e Home su entrambe le famiglie. Rimane aperta
-la revisione visiva delle catture: la guardia nativa sui pixel deve ancora essere verificata nella CI8.
+Il run finale e i suoi artifact definiscono il perimetro nativo verificato: orientamenti effettivi,
+tastiera e stati OS non vanno dedotti dalla sola configurazione universale.
 
 Privacy policy, manifest privacy e dichiarazioni App Store Connect sono elementi distinti:
 compilarli dai comportamenti reali, senza dichiarare automaticamente assenza di raccolta o API usate.
