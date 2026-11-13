@@ -1231,7 +1231,7 @@ const Core = (() => {
       if (trig) { t.life = 0; areaHit(s, t.x, t.z, t.r, { dmg: t.dmg, el: t.el, src: 'p', stun: t.stun, knock: 5, fx: t.x, fz: t.z }); s.events.push({ type: 'boom', x: t.x, z: t.z, r: t.r, el: t.el }); }
     }
     if (s.traps.some((t) => t.life <= 0)) s.traps = s.traps.filter((t) => t.life > 0);
-    for (const L of s.lobs) { L.t += dt; if (L.t >= L.T) { L.done = true; areaHit(s, L.x, L.z, L.r, { dmg: L.dmg, el: L.el, src: 'p', stun: L.stun, knock: 6, fx: L.x, fz: L.z }); s.events.push({ type: 'boom', x: L.x, z: L.z, r: L.r, el: L.el, sky: !L.arc }); } }
+    for (const L of s.lobs) { L.t += dt; if (L.t >= L.T) { L.done = true; areaHit(s, L.x, L.z, L.r, { dmg: L.dmg, el: L.el, src: 'p', stun: L.stun, knock: 6, fx: L.x, fz: L.z }); s.events.push({ type: 'boom', x: L.x, z: L.z, r: L.r, el: L.el, sky: !L.arc && !L.low }); } }
     if (s.lobs.some((L) => L.done)) s.lobs = s.lobs.filter((L) => !L.done);
     if (s.mobs.some((e) => e.dead)) s.mobs = s.mobs.filter((e) => !e.dead);
 

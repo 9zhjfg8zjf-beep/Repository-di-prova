@@ -235,6 +235,123 @@ const wants = (name) => selected.includes('all') || selected.includes(name);
       await draw(); await photo('boss-late');
       assert.ok(await page.evaluate(() => window.__teleDraws) > 0, 'Il preavviso del boss deve essere disegnato');
     }
+    if (wants('lobs')) {
+      await fixture('dite');
+      const samples = [];
+      for (const power of ['sisma', 'meteora', 'giudizio']) {
+        const sample = await page.evaluate((power) => {
+          const D = window.__dite, G = D.G, s = D.state(), a = s.city.arenas[0], p = s.player;
+          s.grid.fill(0); s.city.props = []; s.npcs = []; s.patrols = []; s.turrets = []; s.mobs = []; s.boss = null; s.lobs = []; s.events = [];
+          Object.assign(p, { x: a.x + 10, z: a.z + 7, yaw: Math.PI / 2, pitch: -0.12, res: 100, invuln: 999, orbit: 0, fury: 0 });
+          Object.assign(p.cam, { x: p.x, y: 1.7, z: p.z });
+          const ids = ['dardo', 'scatto', power === 'giudizio' ? 'cura' : power, 'scudo', power === 'giudizio' ? power : 'fenice'];
+          D.Core.setRecipe(s, { nome: 'Impatti', slots: ids.map((id) => ({ id, el: 'vento', t: 1 })) });
+          const e = D.Core.mkMob(s, 'bruto', p.x - 7, p.z, 'e'); e.spawn = 0; e.atk = 99; e.hp = e.maxHp = 5000;
+          const input = { mx: 0, my: 0, yaw: p.yaw, pitch: p.pitch, fire: false, b: [false, false, power !== 'giudizio', false, power === 'giudizio'], use: false };
+          D.Core.step(s, 1 / 60, input); input.b.fill(false);
+          const pending = s.lobs.map((l) => ({ ...l })); if (!pending.length) throw Error(power + ': nessun impatto creato');
+          G.syncThings(s, 0, 0); G.scene.updateMatrixWorld(true);
+          const heights = [];
+          // Il preavviso deve essere disegnato davvero: altezza mondo del suo lampo.
+          for (const l of pending) {
+            const o = G.scene.children.find((o) => o.name === 'dite-lob-' + l.id) || G.scene.children.find((o) => o.isGroup && Math.abs(o.position.x - l.x) < 0.001 && Math.abs(o.position.z - l.z) < 0.001 && o.children.some((c) => c.isSprite));
+            const sprite = o && o.children.find((c) => c.isSprite); if (!sprite) throw Error('Anticipatore assente');
+            heights.push(sprite.getWorldPosition(new THREE.Vector3()).y);
+            sprite.onBeforeRender = () => { window.__lobDraws[l.id] = (window.__lobDraws[l.id] || 0) + 1; };
+          }
+          G.camera.position.set(p.x, 8, p.z + 6); G.camera.lookAt(p.x - 7, power === 'sisma' ? 0.25 : 26, p.z); G.camera.updateMatrixWorld();
+          window.__lobDraws = Object.fromEntries(pending.map((l) => [l.id, 0]));
+          window.__lobStep = { input, pending };
+          return { power, heights, count: pending.length };
+        }, power);
+        await draw(); await photo('anticipatore-' + power);
+        const result = await page.evaluate(() => {
+          const D = window.__dite, s = D.state(), q = window.__lobStep, start = s.events.length;
+          for (let i = 0; i < 180; i++) D.Core.step(s, 1 / 60, q.input);
+          return { draws: window.__lobDraws, booms: s.events.slice(start).filter((e) => e.type === 'boom').map((e) => ({ sky: e.sky, x: e.x, z: e.z, r: e.r })) };
+        });
+        samples.push({ ...sample, ...result });
+      }
+      console.log('impatti bassi e dal cielo', JSON.stringify(samples));
+      for (const sample of samples) {
+        assert.ok(Object.values(sample.draws).every((n) => n > 0), sample.power + ': almeno un anticipatore mai disegnato');
+        assert.equal(sample.booms.length, sample.count, sample.power + ': numero impatti cambiato');
+        if (sample.power === 'sisma') {
+          assert.ok(sample.heights.every((y) => y >= 0 && y < 0.8), 'Sisma: il preavviso deve correre vicino al terreno');
+          assert.ok(sample.booms.every((e) => e.sky === false), 'Sisma: un impatto basso non deve generare fulmini dal cielo');
+        } else {
+          assert.ok(sample.heights.every((y) => y > 20), sample.power + ': preavviso dal cielo perso');
+          assert.ok(sample.booms.every((e) => e.sky === true), sample.power + ': impatto dal cielo perso');
+        }
+      }
+    }
+    if (wants('near')) {
+      await fixture('dite');
+      // Bersaglio a contrasto dietro gli effetti: misura occlusione e clipping
+      // separatamente dal bloom, con stessa camera e nessun avanzamento tra A/B.
+      await page.evaluate(() => {
+        const D = window.__dite, G = D.G, s = D.state(), p = s.player;
+        const oldVisibility = G.scene.children.map((o) => [o, o.visible]); for (const [o] of oldVisibility) o.visible = false;
+        G.handScene.visible = false;
+        const style = document.createElement('style'); style.textContent = 'body > :not(#c){visibility:hidden!important}'; document.head.append(style);
+        const canvas = document.createElement('canvas'); canvas.width = 400; canvas.height = 200; const ctx = canvas.getContext('2d');
+        for (let y = 0; y < 10; y++) for (let x = 0; x < 20; x++) { ctx.fillStyle = (x + y) % 2 ? '#8197ad' : '#182332'; ctx.fillRect(x * 20, y * 20, 20, 20); }
+        const texture = new THREE.CanvasTexture(canvas), geometry = new THREE.PlaneGeometry(40, 20), material = new THREE.MeshBasicMaterial({ map: texture }), board = new THREE.Mesh(geometry, material);
+        board.position.set(0, 1.7, -12); G.scene.add(board);
+        G.camera.position.set(0, 1.7, 0); G.camera.rotation.set(0, 0, 0, 'YXZ'); G.camera.updateMatrixWorld();
+        Object.assign(p, { x: 0, z: -0.8, yaw: 0 }); Object.assign(p.cam, { x: 0, y: 1.7, z: 0 }); s.aim.kind = ''; s.shots = []; s.zones = []; s.traps = []; s.lobs = [];
+        // La ricetta DSL9 usa questa stessa emissione: quattro lance proprie.
+        const rand = s.rand; s.rand = () => 0; D.Core.run(s, D.Bricks.parseProg('shot n4 ringall d22 v36 pierce t.6 r.6'), { K: { el: 'luce' }, slot: 4, depth: 0 }); s.rand = rand;
+        const own = s.shots; s.shots = [];
+        window.__nearProof = { oldVisibility, style, board, texture, geometry, material, own, draws: {}, pixels: {} };
+      });
+      const capture = async (name, bloom) => {
+        const frame = await page.evaluate((bloom) => { const D = window.__dite, before = D.info().renderFrames, time = D.state().t; D.renderOnce({ bloom }); return { frames: D.info().renderFrames - before, dt: D.state().t - time }; }, bloom);
+        assert.equal(frame.frames, 1, 'Un solo draw per confronto'); assert.equal(frame.dt, 0, 'Il confronto non deve avanzare Core');
+        const tag = (process.env.DITE_RENDER_TAG || '').replace(/[^a-z0-9-]/gi, ''), file = 'shots/rendering-near-' + name + '-' + (bloom ? 'bloom' : 'raw') + (tag ? '-' + tag : '') + '.png';
+        const png = await page.screenshot({ path: file });
+        return page.evaluate(async ({ data, name, bloom }) => {
+          const image = new Image(); image.src = 'data:image/png;base64,' + data; await image.decode();
+          const canvas = document.createElement('canvas'); canvas.width = image.width; canvas.height = image.height; const ctx = canvas.getContext('2d'); ctx.drawImage(image, 0, 0);
+          const pixels = ctx.getImageData(220, 100, 404, 220).data, proof = window.__nearProof, key = bloom ? 'bloom' : 'raw';
+          let changed = 0, white = 0; const base = proof.pixels[key];
+          for (let i = 0; i < pixels.length; i += 4) { if (Math.min(pixels[i], pixels[i + 1], pixels[i + 2]) >= 245) white++; if (base && Math.max(Math.abs(pixels[i] - base[i]), Math.abs(pixels[i + 1] - base[i + 1]), Math.abs(pixels[i + 2] - base[i + 2])) > 30) changed++; }
+          if (name === 'empty') proof.pixels[key] = Array.from(pixels);
+          return { name, bloom, changed: changed / (pixels.length / 4), white: white / (pixels.length / 4), draws: { ...proof.draws } };
+        }, { data: png.toString('base64'), name, bloom });
+      };
+      const samples = [];
+      try {
+        for (const bloom of [false, true]) samples.push(await capture('empty', bloom));
+        for (const kind of ['own-close', 'own-far', 'enemy-close', 'enemy-far', 'bolts-close', 'bolts-far']) {
+          await page.evaluate((kind) => {
+            const D = window.__dite, G = D.G, s = D.state(), proof = window.__nearProof;
+            s.shots = []; G.syncThings(s, 0, 0); G.updateFx(10, 0, G.camera.position); proof.draws = {};
+            if (kind.startsWith('bolts')) {
+              const z = kind.endsWith('close') ? -0.9 : -6;
+              for (let i = 0; i < 8; i++) { const x = (i - 3.5) * 0.055; const b = G.bolt(x, 8, z, x, 0, z, 0.5, 1, 0x3fc8ff, 0); b.core.onBeforeRender = () => proof.draws.core = (proof.draws.core || 0) + 1; b.halo.onBeforeRender = () => proof.draws.halo = (proof.draws.halo || 0) + 1; }
+              G.updateFx(0.01, 0, G.camera.position);
+            } else {
+              const enemy = kind.startsWith('enemy'), far = kind.endsWith('far');
+              s.shots = enemy ? proof.own.slice(0, far ? 2 : 1).map((sh, i) => ({ ...sh, team: 'e', x: far ? (i - 0.5) : 0, z: far ? -6 : -1.2, vx: 0, vz: 36 })) : proof.own.map((sh) => ({ ...sh, z: sh.z - (far ? 6 : 0) }));
+              const before = new Set(G.scene.children); G.syncThings(s, 0, 0);
+              for (const o of G.scene.children) if (!before.has(o)) o.traverse((m) => { if (m.isMesh) m.onBeforeRender = () => proof.draws.shots = (proof.draws.shots || 0) + 1; });
+            }
+          }, kind);
+          for (const bloom of [false, true]) samples.push(await capture(kind, bloom));
+        }
+        console.log('effetti davanti alla camera', JSON.stringify(samples));
+        for (const sample of samples) {
+          if (sample.name === 'empty') continue;
+          assert.ok(Object.values(sample.draws).reduce((a, b) => a + b, 0) > 0, sample.name + ': geometria mai disegnata');
+          if (sample.name === 'own-close') assert.ok(sample.changed < 0.14, 'Lance proprie vicine: il bersaglio e occultato ' + sample.changed);
+          if (sample.name === 'bolts-close') { assert.ok(sample.white < 0.025, 'Fasci vicini: centro sbiancato ' + sample.white); assert.ok(sample.changed < 0.16, 'Fasci vicini: bersaglio occultato ' + sample.changed); }
+          if (sample.name.endsWith('far') || sample.name === 'enemy-close') assert.ok(sample.changed > 0.002, sample.name + ': minaccia o effetto lontano scomparso');
+        }
+      } finally {
+        await page.evaluate(() => { const G = window.__dite.G, s = window.__dite.state(), p = window.__nearProof; s.shots = []; G.syncThings(s, 0, 0); G.updateFx(10, 0, G.camera.position); G.scene.remove(p.board); p.geometry.dispose(); p.material.dispose(); p.texture.dispose(); p.style.remove(); G.handScene.visible = true; for (const [o, visible] of p.oldVisibility) o.visible = visible; delete window.__nearProof; });
+      }
+    }
     if (wants('comfort')) {
       await fixture('dite');
       const result = await page.evaluate(() => {

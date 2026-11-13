@@ -341,12 +341,30 @@ G.buildFx = function (s) {
     for (let k = 0; k < n; k++) { const p = parts[pi], sp = speed * (0.6 + Math.random() * 0.5); p.x = x; p.y = y; p.z = z; p.vx = (dx + (Math.random() - 0.5) * spread) * sp; p.vy = (dy + (Math.random() - 0.5) * spread) * sp; p.vz = (dz + (Math.random() - 0.5) * spread) * sp; p.life = p.max = life * (0.6 + Math.random() * 0.6); p.s = size * (0.5 + Math.random() * 0.8); p.g = grav === undefined ? 0 : grav; p.color = color; pi = (pi + 1) % PN; }
   };
   const SEG = 11, bolts = [];
-  function boltMesh(color) { const g = new THREE.BufferGeometry(), pos = new Float32Array((SEG + 1) * 2 * 3), idx = []; for (let i = 0; i < SEG; i++) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setIndex(idx); const m = new THREE.Mesh(g, add(color)); m.frustumCulled = false; m.visible = false; return m; }
-  for (let i = 0; i < 30; i++) { const core = boltMesh(0xffffff), halo = boltMesh(0x3fc8ff); scene.add(core, halo); bolts.push({ core, halo, life: 0, max: 1, a: new THREE.Vector3(), b: new THREE.Vector3(), w: 0.1, jit: 0, jag: 1, pts: Array.from({ length: SEG + 1 }, () => new THREE.Vector3()) }); }
-  let bi = 0; const T1 = new THREE.Vector3(), T2 = new THREE.Vector3(), T3 = new THREE.Vector3();
+  function boltMesh(color) { const g = new THREE.BufferGeometry(), pos = new Float32Array((SEG + 1) * 2 * 3), idx = []; for (let i = 0; i < SEG; i++) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setIndex(idx); const material = surface(color, 1);
+    // Il nucleo conserva il colore: fasci sovrapposti non sommano bianco.
+    // Il fade e' per frammento, per non spegnere la parte lontana del fulmine.
+    material.onBeforeCompile = (shader) => {
+      shader.vertexShader = 'varying float diteBoltDepth;\n' + shader.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\nditeBoltDepth = -mvPosition.z;');
+      shader.fragmentShader = 'varying float diteBoltDepth;\n' + shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.a *= smoothstep(0.35, 2.2, diteBoltDepth);');
+    };
+    material.customProgramCacheKey = () => 'dite-bolt-near-v1';
+    const m = new THREE.Mesh(g, material); m.frustumCulled = false; m.visible = false; return m; }
+  for (let i = 0; i < 30; i++) { const core = boltMesh(0xffffff), halo = boltMesh(0x3fc8ff); core.name = 'dite-bolt-core'; halo.name = 'dite-bolt-halo'; scene.add(core, halo); bolts.push({ core, halo, life: 0, max: 1, a: new THREE.Vector3(), b: new THREE.Vector3(), w: 0.1, jit: 0, jag: 1, pts: Array.from({ length: SEG + 1 }, () => new THREE.Vector3()) }); }
+  let bi = 0; const boltWhite = new THREE.Color(0xffffff), T1 = new THREE.Vector3(), T2 = new THREE.Vector3(), T3 = new THREE.Vector3();
   function rejag(b) { const len = b.a.distanceTo(b.b), amp = Math.min(1.1, len * 0.07) * b.jag; for (let i = 0; i <= SEG; i++) { const t = i / SEG, k = Math.sin(t * Math.PI); b.pts[i].lerpVectors(b.a, b.b, t); if (i > 1 && i < SEG) { b.pts[i].x += (Math.random() - 0.5) * amp * 2 * k; b.pts[i].y += (Math.random() - 0.5) * amp * 2 * k; b.pts[i].z += (Math.random() - 0.5) * amp * 2 * k; } } }
-  function ribbon(mesh, pts, w, cam) { const pos = mesh.geometry.attributes.position; for (let i = 0; i <= SEG; i++) { T1.subVectors(pts[Math.min(SEG, i + 1)], pts[Math.max(0, i - 1)]).normalize(); T2.subVectors(cam, pts[i]).normalize(); T3.crossVectors(T1, T2).normalize().multiplyScalar(w * Math.min(1, 0.1 + cam.distanceTo(pts[i]) / 9)); pos.setXYZ(i * 2, pts[i].x + T3.x, pts[i].y + T3.y, pts[i].z + T3.z); pos.setXYZ(i * 2 + 1, pts[i].x - T3.x, pts[i].y - T3.y, pts[i].z - T3.z); } pos.needsUpdate = true; }
-  G.bolt = function (ax, ay, az, bx, by, bz, w, life, color, jag) { const b = bolts[bi]; bi = (bi + 1) % bolts.length; b.a.set(ax, ay, az); b.b.set(bx, by, bz); b.w = w; b.life = b.max = life; b.jit = 0; b.jag = jag === undefined ? 1 : jag; b.halo.material.color.setHex(color || 0x3fc8ff); b.core.visible = b.halo.visible = true; rejag(b); return b; };
+  function ribbon(mesh, pts, w, cam) {
+    const pos = mesh.geometry.attributes.position, view = G.camera.matrixWorldInverse.elements;
+    for (let i = 0; i <= SEG; i++) {
+      const p = pts[i], depth = -(view[2] * p.x + view[6] * p.y + view[10] * p.z + view[14]);
+      // Un limite angolare evita che un fascio vicino diventi una parete.
+      const width = Math.min(w * Math.min(1, 0.1 + cam.distanceTo(p) / 9), Math.max(0, depth) * (0.006 + Math.min(w, 0.5) * 0.015));
+      T1.subVectors(pts[Math.min(SEG, i + 1)], pts[Math.max(0, i - 1)]).normalize(); T2.subVectors(cam, p).normalize(); T3.crossVectors(T1, T2).normalize().multiplyScalar(width);
+      pos.setXYZ(i * 2, p.x + T3.x, p.y + T3.y, p.z + T3.z); pos.setXYZ(i * 2 + 1, p.x - T3.x, p.y - T3.y, p.z - T3.z);
+    }
+    pos.needsUpdate = true;
+  }
+  G.bolt = function (ax, ay, az, bx, by, bz, w, life, color, jag) { const b = bolts[bi]; bi = (bi + 1) % bolts.length; b.a.set(ax, ay, az); b.b.set(bx, by, bz); b.w = w; b.life = b.max = life; b.jit = 0; b.jag = jag === undefined ? 1 : jag; b.halo.material.color.setHex(color || 0x3fc8ff); b.core.material.color.copy(b.halo.material.color).lerp(boltWhite, 0.25); b.core.visible = b.halo.visible = true; rejag(b); return b; };
   const rings = [];
   for (let i = 0; i < 18; i++) { const m = new THREE.Mesh(new THREE.RingGeometry(0.9, 1, 44), surface(0xffffff, 0)); m.rotation.x = -Math.PI / 2; m.visible = false; scene.add(m); rings.push({ m, life: 0, max: 1, r0: 0, r1: 1 }); }
   let ri = 0;
@@ -360,7 +378,7 @@ G.buildFx = function (s) {
     for (const sh of s.shots) {
       seen.add(sh.id); let v = pools.shot.get(sh.id);
       if (v && v.team !== sh.team) { drop(pools.shot, sh.id); v = null; }
-      if (!v) { v = G.shotView(sh); v.team = sh.team; scene.add(v.o); pools.shot.set(sh.id, v); }
+      if (!v) { v = G.shotView(sh); v.o.name = 'dite-shot-' + sh.id; v.team = sh.team; scene.add(v.o); pools.shot.set(sh.id, v); }
       v.upd(sh, dt);
     }
     for (const id of pools.shot.keys()) if (!seen.has(id)) drop(pools.shot, id);
@@ -384,9 +402,9 @@ G.buildFx = function (s) {
     seen.clear();
     for (const L of s.lobs) {
       seen.add(L.id); let v = pools.lob.get(L.id); const c = elc(L.el), k = Math.min(1, L.t / L.T);
-      if (!v) { const o = new THREE.Group(), m1 = add(c, 0.2), m2 = add(c, 0.9); o.position.set(L.x, 0.06, L.z); const d = new THREE.Mesh(discGeo, m1), r = new THREE.Mesh(rimGeo, m2); r.scale.setScalar(L.r); o.add(d, r); const sp = glowSprite(c); sp.scale.setScalar(1.6); o.add(sp); scene.add(o); v = { o, mats: [m1, m2, sp.material] }; pools.lob.set(L.id, v); }
+      if (!v) { const o = new THREE.Group(), m1 = add(c, 0.2), m2 = add(c, 0.9); o.name = 'dite-lob-' + L.id; o.position.set(L.x, 0.06, L.z); const d = new THREE.Mesh(discGeo, m1), r = new THREE.Mesh(rimGeo, m2); r.scale.setScalar(L.r); o.add(d, r); const sp = glowSprite(c); sp.scale.setScalar(1.6); o.add(sp); scene.add(o); v = { o, mats: [m1, m2, sp.material] }; pools.lob.set(L.id, v); }
       v.o.children[0].scale.setScalar(Math.max(0.01, L.r * k));
-      const sp = v.o.children[2]; if (L.arc) { const d = Math.hypot(L.x - L.x0, L.z - L.z0); sp.position.set((L.x0 - L.x) * (1 - k), 1.4 * (1 - k) + (2 + d * 0.25) * 4 * k * (1 - k), (L.z0 - L.z) * (1 - k)); } else sp.position.set(0, 30 * (1 - k) * (1 - k) + 0.5, 0);
+      const sp = v.o.children[2]; if (L.arc) { const d = Math.hypot(L.x - L.x0, L.z - L.z0); sp.position.set((L.x0 - L.x) * (1 - k), 1.4 * (1 - k) + (2 + d * 0.25) * 4 * k * (1 - k), (L.z0 - L.z) * (1 - k)); } else sp.position.set(0, L.low ? 0.25 : 30 * (1 - k) * (1 - k) + 0.5, 0);
     }
     for (const id of pools.lob.keys()) if (!seen.has(id)) drop(pools.lob, id);
   };
@@ -433,7 +451,7 @@ G.buildFx = function (s) {
     // Un pool vuoto non invia 640 matrici ferme e non produce draw call.
     if (drawn) { pm.instanceMatrix.updateRange.count = drawn * 16; pm.instanceMatrix.needsUpdate = true; }
     if (colorsChanged) { pm.instanceColor.updateRange.count = drawn * 3; pm.instanceColor.needsUpdate = true; }
-    for (const b of bolts) { if (b.life <= 0) continue; b.life -= dt; b.jit -= dt; if (b.life <= 0) { b.core.visible = b.halo.visible = false; continue; } if (b.jit <= 0) { b.jit = 0.035; rejag(b); } const k = b.life / b.max; ribbon(b.core, b.pts, b.w * 0.3, cam); ribbon(b.halo, b.pts, b.w, cam); b.core.material.opacity = Math.min(1, k * 2); b.halo.material.opacity = 0.55 * k; }
+    for (const b of bolts) { if (b.life <= 0) continue; b.life -= dt; b.jit -= dt; if (b.life <= 0) { b.core.visible = b.halo.visible = false; continue; } if (b.jit <= 0) { b.jit = 0.035; rejag(b); } const k = b.life / b.max; ribbon(b.core, b.pts, b.w * 0.18, cam); ribbon(b.halo, b.pts, b.w, cam); b.core.material.opacity = Math.min(0.9, k * 1.8) * flashGain(); b.halo.material.opacity = 0.36 * k * flashGain(); }
     for (const r of rings) { if (r.life <= 0) continue; r.life -= dt; const k = 1 - Math.max(0, r.life) / r.max, rad = r.r0 + (r.r1 - r.r0) * (1 - (1 - k) * (1 - k)); r.m.scale.setScalar(rad); r.m.material.opacity = (1 - k) * 0.75 * flashGain(); if (r.life <= 0) r.m.visible = false; }
     for (let i = hitFx.length - 1; i >= 0; i--) { const h = hitFx[i]; h.life -= dt; h.m.opacity = Math.max(0, h.life / 0.32) * 0.42 * flashGain(); if (h.life <= 0) { scene.remove(h.grp); h.m.dispose(); if (h.own) h.own.dispose(); hitFx.splice(i, 1); } }
   };

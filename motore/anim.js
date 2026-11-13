@@ -79,9 +79,22 @@ G.buildAnim = function (s) {
 
   // ---------- Proiettili con un corpo ----------
   G.shotView = function (sh) {
-    const o = new THREE.Group(), mats = [], enemy = sh.team === 'e', c = enemy ? 0xff5a18 : col(sh.el), c2 = enemy ? 0xffd0a0 : col2(sh.el), sp = Math.hypot(sh.vx, sh.vz);
-    const put = (geo, cc, op, x, y, z, sx, sy, sz) => { const mt = new THREE.MeshBasicMaterial({ color: cc, transparent: op < 0.5, opacity: op < 0.5 ? op : 1, depthWrite: op >= 0.5, side: THREE.DoubleSide }), m = new THREE.Mesh(geo, mt); m.position.set(x, y, z); m.scale.set(sx, sy, sz); o.add(m); mats.push(mt); return m; };
-    const glow = (size, op) => { const g = new THREE.Sprite(new THREE.SpriteMaterial({ map: G.glowTex, color: c, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: op })); g.scale.setScalar(size); o.add(g); mats.push(g.material); return g; };
+    const o = new THREE.Group(), mats = [], glows = [], enemy = sh.team === 'e', c = enemy ? 0xff5a18 : col(sh.el), c2 = enemy ? 0xffd0a0 : col2(sh.el), sp = Math.hypot(sh.vx, sh.vz);
+    const put = (geo, cc, op, x, y, z, sx, sy, sz) => {
+      const mt = new THREE.MeshBasicMaterial({ color: cc, transparent: !enemy || op < 0.5, opacity: op < 0.5 ? op : 1, depthWrite: enemy && op >= 0.5, side: THREE.DoubleSide });
+      // Le proprie lame possono nascere dietro la camera o attraversarla.
+      // Sfumare il singolo frammento evita triangoli pieni; i colpi nemici
+      // mantengono il loro corpo anche quando stanno per raggiungere il giocatore.
+      if (!enemy) {
+        mt.onBeforeCompile = (shader) => {
+          shader.vertexShader = 'varying float diteShotDepth;\n' + shader.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\nditeShotDepth = -mvPosition.z;');
+          shader.fragmentShader = 'varying float diteShotDepth;\n' + shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.a *= smoothstep(1.0, 3.4, diteShotDepth);');
+        };
+        mt.customProgramCacheKey = () => 'dite-own-shot-near-v1';
+      }
+      const m = new THREE.Mesh(geo, mt); m.position.set(x, y, z); m.scale.set(sx, sy, sz); o.add(m); mats.push(mt); return m;
+    };
+    const glow = (size, op) => { const g = new THREE.Sprite(new THREE.SpriteMaterial({ map: G.glowTex, color: c, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: op })); g.scale.setScalar(size); o.add(g); mats.push(g.material); glows.push({ sprite: g, size, opacity: op }); return g; };
     let kind = 'orb', spin = null, y = 1.35;
     if (sh.w) { kind = 'wave'; y = 1.1; const big = sh.w > 3; put(A.cres, c, big ? 0.4 : 0.85, 0, 0, -sh.w * 0.75, sh.w * 1.25, 1, sh.w * 1.25); put(A.cres, c2, big ? 0.3 : 0.6, 0, 0.02, -sh.w * 0.5, sh.w * 0.95, 1, sh.w * 0.95); glow(sh.w * 1.6, 0.2); }
     else if (sh.aura) { kind = 'aura'; put(A.sph, c, 0.14, 0, 0, 0, sh.aura, sh.aura * 0.7, sh.aura); put(A.ico, c2, 0.9, 0, 0, 0, 0.55, 0.55, 0.55); spin = put(A.tor, c, 0.8, 0, 0, 0, sh.aura * 0.9, sh.aura * 0.9, sh.aura * 0.9); glow(sh.aura * 1.6, 0.4); }
@@ -92,6 +105,10 @@ G.buildAnim = function (s) {
     o.rotation.y = Math.atan2(sh.vx, sh.vz); let tt = R() * 6, pt = 0;
     return { o, mats, c, upd(sh2, dt) {
       tt += dt; const height = sh2.alt && Number.isFinite(sh2.y) ? sh2.y : y; o.position.set(sh2.x, height + (kind === 'hom' && motion() ? Math.sin(tt * 14) * 0.18 : 0), sh2.z); o.rotation.y = Math.atan2(sh2.vx, sh2.vz);
+      if (!enemy) for (const glow of glows) {
+        const distance = o.position.distanceTo(G.camera.position), coverage = glow.size / Math.max(0.2, distance * 1.45), near = Math.min(1, distance / 1.5);
+        glow.sprite.material.opacity = glow.opacity * near * near * Math.min(1, 0.16 / Math.max(0.16, coverage * coverage));
+      }
       o.rotation.x = sh2.alt ? -Math.atan2(sh2.vy || 0, Math.hypot(sh2.vx, sh2.vz)) : 0;
       if (spin && motion()) spin.rotation.y += dt * 12; if (kind === 'wave') o.rotation.z = motion() ? Math.sin(tt * 9) * 0.12 : 0;
       pt -= dt; if (dt > 0 && pt <= 0 && near(sh2.x, sh2.z)) { pt = kind === 'aura' ? 0.1 : kind === 'wave' ? 0.12 : 0.06; const e = enemy ? '' : bel(sh2.el);
