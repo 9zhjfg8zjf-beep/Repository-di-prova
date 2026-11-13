@@ -1,0 +1,6 @@
+node_modules/
+dist/
+site/
+shots/*.png
+shots/*.jpg
+*.bak

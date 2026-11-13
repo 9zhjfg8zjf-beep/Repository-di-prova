@@ -1,0 +1,1 @@
+{ "name": "dite-motore", "private": true, "version": "3.1.0", "dependencies": { "three": "0.128.0" }, "devDependencies": { "playwright": "*" } }
