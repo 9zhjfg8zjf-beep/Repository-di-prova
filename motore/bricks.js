@@ -124,10 +124,12 @@ const Bricks = (() => {
   // ---------- Linguaggio dei poteri: una meccanica e' un piccolo programma scritto a mano ----------
   function splitTop(src, sep) { const out = []; let d = 0, cur = ''; for (const ch of src) { if (ch === '(') d++; else if (ch === ')') d--; if (ch === sep && d === 0) { out.push(cur); cur = ''; } else cur += ch; } out.push(cur); return out; }
   const num = (t) => (t.indexOf('/') > 0 ? t.split('/').map(Number) : Number(t));
+  const PROGRAM_OPS = new Set(('circ cone line ring tgt near shot zone sum dash blink leap buff trig chain pop rep if nth heal res cost cdr freeze mem ret aim wait absorb release magnet transmute link debt disarm silence cleanse infect portal tether barrier mimic rewindfoe revive command').split(' '));
   function parseProg(src) {
     const out = [];
     for (const st of splitTop(src, ';')) {
-      const toks = splitTop(st.trim(), ' ').filter(Boolean); if (!toks.length) continue; const o = { op: toks[0] };
+      const toks = splitTop(st.trim(), ' ').filter(Boolean); if (!toks.length) continue; const nth = /^nth(\d+)$/.exec(toks[0]), o = nth ? { op: 'nth', n: Number(nth[1]) } : { op: toks[0] };
+      if (!PROGRAM_OPS.has(o.op)) throw new Error('Operatore sconosciuto: ' + o.op);
       for (let i = 1; i < toks.length; i++) {
         const t = toks[i], pi = t.indexOf('(');
         if (pi > 0 && t[t.length - 1] === ')') { o[t.slice(0, pi)] = parseProg(t.slice(pi + 1, -1)); continue; }
@@ -151,7 +153,7 @@ const Bricks = (() => {
       const f = line.split('|'); if (f.length !== 6) { errors.push('campi: ' + line.slice(0, 50)); continue; }
       const [slot, nome, co, cd, desc, src] = f.map((x) => x.trim()), id = slug(nome);
       if (ARCH[id]) { errors.push('nome doppio: ' + nome); continue; }
-      let prog; try { prog = parseProg(src); } catch (e) { errors.push('programma: ' + nome); continue; }
+      let prog; try { prog = parseProg(src); } catch (e) { errors.push('programma: ' + nome + ': ' + e.message); continue; }
       if (!prog.length || !COSTS[co] || !'PMSU'.includes(slot)) { errors.push('riga non valida: ' + nome); continue; }
       const sig = slot + ':' + src.replace(/-?\.?\d[\d.\/:]*/g, '#');
       if (SIG[sig]) { errors.push('stessa struttura di ' + SIG[sig] + ': ' + nome); continue; } SIG[sig] = nome;

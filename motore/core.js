@@ -41,6 +41,7 @@ const Core = (() => {
     for (let j = cz - 1; j <= cz + 1; j++) for (let i = cx - 1; i <= cx + 1; i++) if (solidCell(s, i, j)) pushOut(o, r, i * CELL - HALF + CELL / 2, j * CELL - HALF + CELL / 2, CELL / 2, CELL / 2);
     for (const b of s.city.props) if (Math.abs(o.x - b.x) < 4 && Math.abs(o.z - b.z) < 4) pushOut(o, r, b.x, b.z, b.hx, b.hz);
     if (!skipTurrets) for (const t of s.turrets) { const dx = o.x - t.x, dz = o.z - t.z, m = r + t.r, d2 = dx * dx + dz * dz; if (d2 < m * m && d2 > 1e-9) { const d = Math.sqrt(d2); o.x = t.x + (dx / d) * m; o.z = t.z + (dz / d) * m; } }
+    barrierCollision(s, o, r);
   }
   function los(s, x0, z0, x1, z1) {
     const dx = x1 - x0, dz = z1 - z0, n = Math.ceil(Math.hypot(dx, dz));
@@ -111,6 +112,7 @@ const Core = (() => {
         cd: [0, 0, 0, 0, 0], res: 0, haste: 0, hasteMul: 1, veil: 0, veilBonus: 1, shield: 0, shieldT: 0, hot: 0, hotRate: 0, oc: 0, ocDur: 1, eclipse: 0, orbit: 0, invuln: 0,
         dash: null, leap: null, ride: null, drain: null, beam: { on: false, x: 0, y: 0, z: 0, hit: false }, cone: false, tick: 0, hurtT: 9, dead: 0, touchT: 0, fury: 0, furyMul: 1, reflect: 0, thorns: 0, reflEl: '', phoenix: 0, phK: null, grab: null, anchor: null, hist: [], histT: 0, trigs: [], cnt: {}, mem: null, lsT: 0, lsV: 0, armT: 0, armV: 1, cdrT: 0, cdrV: 1, rrT: 0, rrV: 1 },
       mobs: [], npcs: [], shots: [], zones: [], traps: [], lobs: [], teles: [], boss: null, freeze: 0,
+      powers: { fields: [], links: [], portals: [], tethers: [], barriers: [], corpses: [] },
       turrets: city.turrets.map((t, id) => ({ id, x: t.x, z: t.z, r: 1.0, yaw: 0, state: t.arena !== undefined ? 'idle' : 'hostile', idle: t.arena !== undefined, timer: 0, dur: 1, stun: 0, atk: 1 })),
       arenas: city.arenas.map((a) => ({ id: a.id, status: 'sealed', t: 0, wins: 0 })),
       givers: city.givers.map((g) => ({ id: g.id, x: g.x, z: g.z, nome: g.nome, offer: null, cool: 0, n: 0 })),
@@ -119,6 +121,7 @@ const Core = (() => {
       aim: { kind: '', id: -1, x: 0, z: 0, d: 0 }, gp: { x: 0, z: 0 }, hint: { node: -1, turret: -1, screen: -1, use: null }, act: [0, 0, 0, 0, 0], ready: [true, true, true, true, false],
       stats: { casts: [0, 0, 0, 0, 0], fizz: 0, dmg: 0, taken: 0, kills: 0, deaths: 0, quests: 0, qfail: 0, bossWins: 0, rides: 0, watch: 0 },
     };
+    s.player.absorb = null; s.player.bank = 0; s.player.mimic = null;
     for (const g of s.givers) makeOffer(s, g);
     for (let i = 0; i < NPC_N; i++) {
       let x = 0, z = 0; for (let k = 0; k < 40; k++) { const cx = Math.floor(rand() * N), cz = Math.floor(rand() * N); if (grid[cx + cz * N] === 0) { x = cellCenter(cx); z = cellCenter(cz); if (!city.arenas.some((a) => Math.abs(x - a.x) < 22 && Math.abs(z - a.z) < 22)) break; } }
@@ -127,7 +130,7 @@ const Core = (() => {
     for (const p of s.patrols) spawnPack(s, p.x, p.z, ['sgherro', 'sgherro', 'tiratore'], 'ronda', p);
     return s;
   }
-  function setRecipe(s, recipe) { if (!B.valid(recipe)) return false; s.recipe = recipe; s.kit = buildKit(recipe); const p = s.player; p.cd = [0, 0, 0, 0, 0]; p.beam.on = false; p.cone = false; p.drain = null; dropGrab(s); if (p.anchor) { const z = s.zones.find((o) => o.id === p.anchor.zid); if (z) z.t = z.dur; p.anchor = null; } s.echo.length = 0; p.trigs.length = 0; p.cnt = {}; s.timers.length = 0; s.marks.length = 0; return true; }
+  function setRecipe(s, recipe) { if (!B.valid(recipe)) return false; resetPowers(s); s.recipe = recipe; s.kit = buildKit(recipe); const p = s.player; p.cd = [0, 0, 0, 0, 0]; p.beam.on = false; p.cone = false; p.drain = null; dropGrab(s); if (p.anchor) { const z = s.zones.find((o) => o.id === p.anchor.zid); if (z) z.t = z.dur; p.anchor = null; } s.echo.length = 0; p.trigs.length = 0; p.cnt = {}; s.timers.length = 0; s.marks.length = 0; return true; }
   function dropGrab(s) { const p = s.player; if (!p.grab) return; const e = findMob(s, p.grab.id); if (e) e.held = false; p.grab = null; }
 
   function mkMob(s, kind, x, z, team, extra) {
@@ -164,7 +167,13 @@ const Core = (() => {
     }
     if (e.markT > 0) d *= e.markMul;
     if (mod) { if (mod === 'critico') { if (!h.tick && s.rand() < 0.25) d *= 2; } else if (mod === 'ammazzagiganti') { if (heavy) d *= 1.25; } else if (mod === 'falciante') { if (!heavy) d *= 1.3; } }
+    const dealt = Math.min(Math.max(0, e.hp), Math.max(0, d));
     e.hp -= d; e.aggro = 8;
+    if (e.debt && !h.debt) e.debt.amount = Math.min(e.debt.cap, e.debt.amount + dealt * e.debt.mul);
+    if (!h.link && e.team === 'e' && dealt > 0) for (const L of s.powers.links) {
+      if (L.t <= 0 || !L.ids.includes(e.id)) continue;
+      for (const id of L.ids) { const other = powerEntity(s, id); if (!other || other === e || other.dead || other.team !== 'e') continue; applyHit(s, other, { dmg: dealt * L.share * (other.boss ? 0.25 : 1), src: 'link', sub: true, link: true, trig: true, tick: true }); }
+    }
     const k = h.tick ? 0.25 : 1;
     if (el && h.src !== 'dot') {
       if (el === 'folgore') { if (!heavy && e.shockCd <= 0) { e.stun = Math.max(e.stun, 0.35); e.shockCd = 1.6; } }
@@ -202,6 +211,7 @@ const Core = (() => {
   }
   function killMob(s, e, src) {
     if (e.dead) return; e.dead = true;
+    if (e.team === 'e' && e.tag !== 'sum' && !e.revived && ['sgherro', 'tiratore', 'bruto'].includes(e.kind)) { s.powers.corpses.push({ id: e.id, x: e.x, z: e.z, kind: e.kind, t: 20 }); if (s.powers.corpses.length > 24) s.powers.corpses.shift(); }
     s.events.push({ type: 'kill', id: e.id, kind: e.kind, x: e.x, z: e.z, team: e.team, src: src || '' });
     if (e.kind === 'esca') explodeDecoy(s, e);
     if (e.pd) mobDie(s, e);
@@ -223,7 +233,7 @@ const Core = (() => {
     if (p.hp > 0 && p.trigs.length) fire(s, 'hurt', sx === undefined ? p.x : sx, sz === undefined ? p.z : sz, src && src.kind ? src : null);
     if (p.hp <= 0 && p.phoenix > 0) { const K = p.phK; p.phoenix = 0; p.hp = p.maxHp * 0.5; p.invuln = 1.5; areaHit(s, p.x, p.z, K.r, { dmg: K.dmg, el: K.el, src: 'p', knock: 14, stun: 1.2, fx: p.x, fz: p.z }); s.events.push({ type: 'boom', x: p.x, z: p.z, r: K.r, el: K.el, self: true, big: true }); s.events.push({ type: 'msg', text: 'La fenice ti rialza' }); return; }
     if (p.hp <= 0) {
-      dropGrab(s); p.hp = 0; p.dead = 3; p.beam.on = false; p.cone = false; p.drain = null; s.stats.deaths++;
+      dropGrab(s); resetPowers(s); p.hp = 0; p.dead = 3; p.beam.on = false; p.cone = false; p.drain = null; s.stats.deaths++;
       s.events.push({ type: 'down' });
       if (s.quest) failQuest(s, 'Sei caduto');
       if (s.boss) resetBoss(s, 'Sei caduto');
@@ -380,13 +390,14 @@ const Core = (() => {
       if (b.def.move === 'walk') { if (d > 7) { b.x += (dx / d) * b.def.speed * sl * dt; b.z += (dz / d) * b.def.speed * sl * dt; } }
       else if (b.def.move === 'fly') { b.mt -= dt; if (b.mt <= 0) { b.mt = 3.5; const a = s.rand() * 6.28; b.tx = b.ax + Math.sin(a) * 10; b.tz = b.az + Math.cos(a) * 10; } const ex = b.tx - b.x, ez = b.tz - b.z, ed = Math.hypot(ex, ez); if (ed > 0.5) { b.x += (ex / ed) * b.def.speed * sl * dt; b.z += (ez / ed) * b.def.speed * sl * dt; } }
       b.wait -= dt * sl;
-      if (b.wait <= 0 && p.dead <= 0) { const seq = F[b.phase].seq; bossCast(s, b, seq[b.seqI % seq.length]); b.seqI++; b.wait = F[b.phase].pausa; }
+      if (b.wait <= 0 && p.dead <= 0 && !(b.silenceT > 0)) { const seq = F[b.phase].seq; bossCast(s, b, seq[b.seqI % seq.length]); b.seqI++; b.wait = F[b.phase].pausa; }
     }
     const ex = b.x - b.ax, ez = b.z - b.az, ed = Math.hypot(ex, ez), m = b.ar - b.r - 0.5; if (ed > m) { b.x = b.ax + (ex / ed) * m; b.z = b.az + (ez / ed) * m; }
     const d = Math.hypot(p.x - b.x, p.z - b.z), min = b.r + p.r;
-    if (d < min && !p.ride && !p.leap && p.dead <= 0) { const nx = (p.x - b.x) / (d || 1), nz = (p.z - b.z) / (d || 1); p.x = b.x + nx * min; p.z = b.z + nz * min; collide(s, p, p.r); p.touchT -= dt; if (p.touchT <= 0) { p.touchT = 0.7; damagePlayer(s, b.def.touch, b.x, b.z, b, 'contatto'); } }
+    if (d < min && !p.ride && !p.leap && p.dead <= 0) { const nx = (p.x - b.x) / (d || 1), nz = (p.z - b.z) / (d || 1); p.x = b.x + nx * min; p.z = b.z + nz * min; collide(s, p, p.r); p.touchT -= dt; if (p.touchT <= 0 && !(b.disarmT > 0)) { p.touchT = 0.7; damagePlayer(s, b.def.touch, b.x, b.z, b, 'contatto'); } }
   }
   function tickStatus(s, e, dt) {
+    if (e.disarmT > 0) e.disarmT = Math.max(0, e.disarmT - dt); if (e.silenceT > 0) e.silenceT = Math.max(0, e.silenceT - dt);
     if (e.stun > 0) e.stun -= dt; if (e.root > 0) e.root -= dt; if (e.weakT > 0) e.weakT -= dt; if (e.fearT > 0) e.fearT -= dt; if (e.markT > 0) e.markT -= dt; if (e.shockCd > 0) e.shockCd -= dt;
     if (e.slowT > 0) { e.slowT -= dt; if (e.slowT <= 0) e.slow = 0; }
     if (e.chill > 0) e.chill = Math.max(0, e.chill - dt * 0.5); else if (e.chill < 0) e.chill = Math.min(0, e.chill + dt);
@@ -649,7 +660,144 @@ const Core = (() => {
     return true;
   }
   const hasSt = (o) => !!(o.stun || o.root || o.slow || o.burn || o.pois || o.weak || o.fear || o.mark || o.chill || o.lift || o.poly || o.charm || o.pull || o.push || o.yank || o.fling);
+  // ---------- Interazioni dei poteri: risorse, legami e oggetti persistenti ----------
+  const pn = (o, k, d, lo, hi) => clamp(typeof o[k] === 'number' && Number.isFinite(o[k]) ? o[k] : d, lo, hi);
+  const powerEntity = (s, id) => s.boss && s.boss.id === id ? s.boss : findMob(s, id);
+  const powerAlive = (e) => e && !e.dead && e.team === 'e' && e.spawn <= 0;
+  function powerTargets(s, o, ctx, accept) {
+    let out = [];
+    if (o.r) { const pt = place(s, o, ctx, {}), r = pn(o, 'r', 6, 0.5, 24); hostiles(s, (e) => { if (Math.hypot(e.x - pt.x, e.z - pt.z) <= r + e.r && los(s, pt.x, pt.z, e.x, e.z)) out.push(e); }); out.sort((a, b) => dist(a, pt) - dist(b, pt)); }
+    else { const e = ctx.depth > 0 && powerAlive(ctx.tgt) ? ctx.tgt : aimedAny(s, pn(o, 'g', 24, 1, 40)); if (powerAlive(e)) out.push(e); }
+    if (accept) out = out.filter(accept);
+    return out.slice(0, Math.floor(pn(o, 'n', o.r ? 4 : 1, 1, 8)));
+  }
+  function powerEvent(s, type, ctx, obj) { s.events.push(Object.assign({ type, el: ctx.K.el, x: s.player.x, z: s.player.z }, obj || {})); }
+  function restoreMimic(s) {
+    const p = s.player, m = p.mimic; if (!m) return;
+    s.kit[0] = m.original; p.mimic = null; p.beam.on = false; p.cone = false; p.cd[0] = Math.min(p.cd[0], Math.max(0.1, m.original.cd));
+    s.events.push({ type: 'mimicEnd', x: p.x, z: p.z, el: m.el });
+  }
+  function resetPowers(s) {
+    restoreMimic(s); const p = s.player; p.absorb = null; p.bank = 0; p.portalUntil = 0;
+    for (const key of Object.keys(s.powers)) s.powers[key].length = 0;
+    for (const e of s.mobs.concat(s.boss ? [s.boss] : [])) { e.debt = e.infection = e.rewind = e.command = null; e.disarmT = e.silenceT = e.portalUntil = 0; if (e.revived && !e.dead) { e.dead = true; s.events.push({ type: 'vanish', id: e.id, x: e.x, z: e.z }); } }
+  }
+  function segmentPoint(b, x, z) {
+    const along = clamp((x - b.x) * b.dx + (z - b.z) * b.dz, -b.l / 2, b.l / 2);
+    return { x: b.x + b.dx * along, z: b.z + b.dz * along };
+  }
+  function barrierCollision(s, e, r) {
+    if (!s.powers || e.team !== 'e' || e.boss) return;
+    for (const b of s.powers.barriers) { if (b.t <= 0 || b.hp <= 0) continue; const q = segmentPoint(b, e.x, e.z), dx = e.x - q.x, dz = e.z - q.z, d = Math.hypot(dx, dz), limit = r + 0.25;
+      if (d < limit) { const nx = d > 1e-7 ? dx / d : -b.dz, nz = d > 1e-7 ? dz / d : b.dx; e.x = q.x + nx * limit; e.z = q.z + nz * limit; }
+    }
+  }
+  function powerTravel(s, e, shot) {
+    if (e.dead || e.boss || e.portalUntil > s.t || (!shot && (e.held || e.thrown || e.spawn > 0)) || (e === s.player && (e.dead > 0 || e.ride || e.leap))) return;
+    for (const P of s.powers.portals) {
+      if (P.t <= 0 || (shot && !P.shots) || (!shot && e.team === 'e' && !P.foes)) continue;
+      for (const [from, to] of [[P.a, P.b], [P.b, P.a]]) {
+        if (Math.hypot(e.x - from.x, e.z - from.z) > P.r) continue;
+        const d = Math.hypot(to.x - from.x, to.z - from.z) || 1, off = P.r + (e.r || 0.5) + 0.3;
+        const q = freeNear(s, to.x + (to.x - from.x) / d * off, to.z + (to.z - from.z) / d * off, to.x, to.z);
+        if (Math.hypot(q.x - to.x, q.z - to.z) < P.r || solidAt(s, q.x, q.z)) { e.portalUntil = s.t + 0.3; continue; }
+        const x0 = e.x, z0 = e.z; e.x = q.x; e.z = q.z; e.portalUntil = s.t + 0.65;
+        if (e === s.player) { e.cam.x = e.x; e.cam.z = e.z; }
+        s.events.push({ type: 'portalTravel', id: P.id, entity: e.id, x: e.x, z: e.z, x0, z0, el: P.el, player: e === s.player }); return;
+      }
+    }
+  }
+  function powersFrame(s, dt) {
+    const p = s.player, ps = s.powers;
+    if (p.dead > 0) return;
+    if (p.absorb) { p.absorb.t -= dt; if (p.absorb.t <= 0) p.absorb = null; }
+    if (p.mimic) { p.mimic.t -= dt; if (p.mimic.t <= 0) restoreMimic(s); }
+    for (const key of ['fields', 'links', 'portals', 'tethers', 'barriers', 'corpses']) { for (const v of ps[key]) v.t -= dt; ps[key] = ps[key].filter((v) => v.t > 0 && (v.hp === undefined || v.hp > 0)); }
+    for (const f of ps.fields) if (f.fol) { f.x = p.x; f.z = p.z; }
+    ps.links = ps.links.filter((L) => { L.ids = L.ids.filter((id) => powerAlive(powerEntity(s, id))); return L.ids.length >= 2; });
+    for (const e of s.mobs.concat(s.boss ? [s.boss] : [])) {
+      if (e.dead) continue;
+      if (e.command) { e.command.t -= dt; if (e.command.t <= 0 || e.team !== 'a') e.command = null; }
+      if (e.team !== 'e' || s.freeze > 0) continue;
+      if (e.debt) { const d = e.debt; d.t -= dt; if (d.t <= 0) { e.debt = null; if (d.amount > 0) { applyHit(s, e, { dmg: d.amount, src: 'debt', sub: true, debt: true, link: true, tick: true }); s.events.push({ type: 'debtPay', id: e.id, x: e.x, z: e.z, amount: d.amount, el: d.el }); } } }
+      if (e.dead) continue;
+      if (e.rewind) { const r = e.rewind; r.t -= dt; if (r.t <= 0) { e.rewind = null; const x0 = e.x, z0 = e.z; if (!e.boss && !e.held) { const q = freeNear(s, r.x, r.z, e.x, e.z); e.x = q.x; e.z = q.z; e.kx = e.kz = 0; e.pull = e.thrown = null; } e.hp = Math.min(e.hp, r.hp); if (r.d > 0) applyHit(s, e, { dmg: r.d, el: r.el, src: 'p', sub: true, trig: true }); s.events.push({ type: 'rewindReturn', id: e.id, x: e.x, z: e.z, x0, z0, el: r.el }); } }
+      if (e.dead || !e.infection) continue;
+      const inf = e.infection, used = Math.min(dt, inf.t); inf.t -= dt; inf.acc += used; inf.spreadT -= used;
+      if (inf.acc >= 0.5 || inf.t <= 0) { const dmg = inf.dps * inf.acc * (e.boss ? 0.5 : 1); inf.acc = 0; applyHit(s, e, { dmg, src: 'infection', sub: true, tick: true }); }
+      if (!e.dead && inf.t > 0 && inf.gen < 2 && inf.spreadT <= 0 && inf.left > 0) {
+        inf.spreadT = 1; let count = s.mobs.filter((m) => !m.dead && m.infection).length + (s.boss && s.boss.infection ? 1 : 0);
+        hostiles(s, (other) => { if (inf.left <= 0 || count >= 24 || other === e || other.infection || other.infectUntil > s.t || dist(e, other) > inf.spread || !los(s, e.x, e.z, other.x, other.z)) return;
+          other.infection = { t: Math.min(inf.t, inf.total * 0.7), total: inf.total * 0.7, dps: inf.dps * 0.7, spread: inf.spread, gen: inf.gen + 1, left: inf.n, n: inf.n, acc: 0, spreadT: 1, el: inf.el }; inf.left--; count++; s.events.push({ type: 'infect', id: other.id, x: other.x, z: other.z, el: inf.el, gen: inf.gen + 1 });
+        });
+      }
+      if (inf.t <= 0) { e.infection = null; e.infectUntil = s.t + 2; }
+    }
+  }
+  function powersMove(s, dt) {
+    if (s.player.dead > 0) return;
+    for (const T of s.powers.tethers) { const e = powerEntity(s, T.target); if (!powerAlive(e)) { T.t = 0; continue; } const dx = T.x - e.x, dz = T.z - e.z, d = Math.hypot(dx, dz);
+      if (d > T.break) { T.t = 0; s.events.push({ type: 'tetherBreak', id: T.id, x: e.x, z: e.z, el: T.el }); }
+      else if (d > T.l && !e.boss && !MOB[e.kind].fixed && !e.held && !e.thrown && s.freeze <= 0) { const step = Math.min(d - T.l, T.pull * dt / MOB[e.kind].mass); e.x += dx / d * step; e.z += dz / d * step; collide(s, e, e.r); }
+    }
+    powerTravel(s, s.player, false); for (const e of s.mobs) powerTravel(s, e, false);
+  }
+  function powersShot(s, sh, dt) {
+    if (sh.life <= 0) return true;
+    powerTravel(s, sh, true);
+    if (sh.team !== 'e') return false;
+    const p = s.player, A = p.absorb;
+    if (A && p.dead <= 0 && Math.hypot(sh.x - p.x, sh.z - p.z) <= A.r + sh.r) { const amount = Math.max(0, sh.dmg || 0); p.bank = Math.min(A.cap, p.bank + amount); sh.life = 0; sh.boom = sh.back = 0; sh.px = null; s.events.push({ type: 'absorbHit', x: sh.x, z: sh.z, amount, bank: p.bank, el: A.el }); return true; }
+    for (const f of s.powers.fields) { const dx = f.x - sh.x, dz = f.z - sh.z, d = Math.hypot(dx, dz); if (d > f.r || d < 0.05) continue; const sp = Math.hypot(sh.vx, sh.vz) || 1, sign = f.repel ? -1 : 1; sh.vx += dx / d * f.force * dt * sign; sh.vz += dz / d * f.force * dt * sign; const ns = Math.hypot(sh.vx, sh.vz) || 1; sh.vx *= sp / ns; sh.vz *= sp / ns; }
+    for (const b of s.powers.barriers) { if (b.t <= 0 || b.hp <= 0) continue; const q = segmentPoint(b, sh.x, sh.z), q2 = segmentPoint(b, sh.x + sh.vx * dt, sh.z + sh.vz * dt), d = Math.hypot(q.x - sh.x, q.z - sh.z), d2 = Math.hypot(q2.x - sh.x - sh.vx * dt, q2.z - sh.z - sh.vz * dt);
+      const nx = -b.dz, nz = b.dx, a = (sh.x - b.x) * nx + (sh.z - b.z) * nz, next = a + (sh.vx * nx + sh.vz * nz) * dt;
+      const crossing = a * next <= 0 && Math.abs((sh.x - b.x) * b.dx + (sh.z - b.z) * b.dz) <= b.l / 2 + sh.r;
+      if (Math.min(d, d2) > 0.25 + sh.r && !crossing) continue;
+      b.hp -= Math.max(0, sh.dmg || 0); s.events.push({ type: 'barrierHit', id: b.id, x: sh.x, z: sh.z, hp: b.hp, el: b.el });
+      if (b.reflect) { const dot = sh.vx * nx + sh.vz * nz; sh.vx -= 2 * dot * nx; sh.vz -= 2 * dot * nz; sh.team = 'p'; sh.el = b.el; sh.from = null; sh.hom = ''; sh.tr = true; }
+      else { sh.life = 0; sh.boom = sh.back = 0; sh.px = null; return true; }
+      break;
+    }
+    return false;
+  }
   const OPS = {
+    absorb(s, o, ctx) { const p = s.player; p.absorb = { t: pn(o, 't', 6, 0.2, 20), r: pn(o, 'r', 4, 1, 10), cap: pn(o, 'cap', 120, 1, 300), el: ctx.K.el }; p.bank = Math.min(p.bank, p.absorb.cap); powerEvent(s, 'absorbStart', ctx, { r: p.absorb.r, t: p.absorb.t }); return true; },
+    release(s, o, ctx) {
+      const p = s.player; if (!(p.bank > 0)) return 'Nessuna energia assorbita'; if (o.heal && p.hp >= p.maxHp) return 'Sei gia in piena salute';
+      const amount = Math.min(300, p.bank * pn(o, 'mul', 1, 0.1, 2));
+      if (!o.heal && !o.shield && s.shots.length >= 220) return 'Troppi proiettili';
+      p.bank = 0; if (o.heal) healPlayer(s, amount); else if (o.shield) { p.shield = Math.min(300, p.shield + amount); p.shieldT = Math.max(p.shieldT, 6); }
+      else { const n = Math.min(220 - s.shots.length, Math.floor(pn(o, 'n', 5, 1, 12))), v = pn(o, 'v', 28, 8, 60), sp = pn(o, 'sp', 0.12, 0, 0.5), ang = yawAng(p); for (let i = 0; i < n; i++) { const a = ang + (i - (n - 1) / 2) * sp; s.shots.push({ id: s.nextId++, team: 'p', x: p.x + Math.sin(a), z: p.z + Math.cos(a), vx: Math.sin(a) * v, vz: Math.cos(a) * v, life: 1.5, dmg: amount / n, el: ctx.K.el, r: 0.45, hom: '', tr: true }); } }
+      powerEvent(s, 'energyRelease', ctx, { amount, heal: !!o.heal, shield: !!o.shield }); return true;
+    },
+    magnet(s, o, ctx) { const pt = place(s, o, ctx, {}), f = { id: s.nextId++, x: pt.x, z: pt.z, r: pn(o, 'r', 7, 1, 20), t: pn(o, 't', 6, 0.2, 20), force: pn(o, 'force', 12, 1, 60), repel: !!o.repel, fol: !!o.fol, el: ctx.K.el }; if (s.powers.fields.length >= 4) s.powers.fields.shift(); s.powers.fields.push(f); powerEvent(s, 'magnet', ctx, f); return true; },
+    transmute(s, o, ctx) { const p = s.player, pt = place(s, o, ctx, {}), r = pn(o, 'r', 10, 1, 24), shots = s.shots.filter((sh) => sh.team === 'e' && sh.life > 0 && dist(sh, pt) <= r); if (!shots.length) return 'Nessun proiettile da trasmutare'; if (o.heal && p.hp >= p.maxHp) return 'Sei gia in piena salute'; let value = 0;
+      for (const sh of shots) { value += Math.max(0, sh.dmg || 0); if (o.heal || o.shield || o.res) { sh.life = 0; sh.boom = sh.back = 0; sh.px = null; } else { sh.team = 'p'; sh.vx = -sh.vx; sh.vz = -sh.vz; sh.el = ctx.K.el; sh.hom = ''; sh.from = null; sh.tr = true; } }
+      value = Math.min(200, value * pn(o, 'mul', 0.5, 0.1, 1)); if (o.heal) healPlayer(s, value); else if (o.shield) { p.shield = Math.min(300, p.shield + value); p.shieldT = Math.max(p.shieldT, 5); } else if (o.res) gainRes(s, value);
+      powerEvent(s, 'transmute', ctx, { x: pt.x, z: pt.z, r, n: shots.length, amount: value }); return true;
+    },
+    link(s, o, ctx) { const pt = place(s, o, ctx, {}), r = pn(o, 'r', 8, 1, 24), list = []; hostiles(s, (e) => { if (dist(e, pt) < r + e.r && los(s, pt.x, pt.z, e.x, e.z)) list.push(e); }); list.sort((a, b) => dist(a, pt) - dist(b, pt)); const ids = list.slice(0, Math.floor(pn(o, 'n', 3, 2, 6))).map((e) => e.id); if (ids.length < 2) return 'Servono almeno due nemici'; const L = { id: s.nextId++, x: pt.x, z: pt.z, ids, t: pn(o, 't', 6, 0.2, 15), share: pn(o, 'share', 0.35, 0.05, 0.7), el: ctx.K.el }; if (s.powers.links.length >= 3) s.powers.links.shift(); s.powers.links.push(L); powerEvent(s, 'link', ctx, L); return true; },
+    debt(s, o, ctx) { const list = powerTargets(s, o, ctx); if (!list.length) return 'Nessun bersaglio'; for (const e of list) { if (e.debt) continue; e.debt = { t: pn(o, 't', 4, 0.2, 12), mul: pn(o, 'mul', 0.5, 0.1, 1.5) * (e.boss ? 0.25 : 1), cap: pn(o, 'cap', 100, 1, 300), amount: 0, el: ctx.K.el }; powerEvent(s, 'debt', ctx, { id: e.id, x: e.x, z: e.z, t: e.debt.t }); } return true; },
+    disarm(s, o, ctx) { const list = powerTargets(s, o, ctx); if (!list.length) return 'Nessun bersaglio'; for (const e of list) { e.disarmT = Math.max(e.disarmT || 0, pn(o, 't', 3, 0.2, 10) * (e.boss ? 0.3 : 1)); powerEvent(s, 'disarm', ctx, { id: e.id, x: e.x, z: e.z, t: e.disarmT }); } return true; },
+    silence(s, o, ctx) { const list = powerTargets(s, o, ctx, (e) => e.boss || e.kind === 'tiratore' || e.kind === 'torretta' || MOB[e.kind].shooter); if (!list.length) return 'Nessun bersaglio con abilita a distanza'; for (const e of list) { e.silenceT = Math.max(e.silenceT || 0, pn(o, 't', 3, 0.2, 10) * (e.boss ? 0.35 : 1)); powerEvent(s, 'silence', ctx, { id: e.id, x: e.x, z: e.z, t: e.silenceT }); } return true; },
+    cleanse(s, o, ctx) { const p = s.player, r = pn(o, 'r', 8, 1, 24); let n = 0; for (const e of s.mobs) if (!e.dead && e.team === 'a' && dist(e, p) <= r) { for (const k of ['stun', 'root', 'slowT', 'burnT', 'poisT', 'weakT', 'fearT', 'markT', 'poly', 'lift', 'disarmT', 'silenceT']) if (e[k] > 0) { e[k] = 0; n++; } e.slow = e.burn = e.pois = e.chill = 0; for (const k of ['infection', 'debt', 'rewind']) if (e[k]) { e[k] = null; n++; } }
+      s.zones = s.zones.filter((z) => { if (z.team === 'e' && dist(z, p) <= r) { n++; return false; } return true; }); if (!n) return 'Nessun effetto da purificare'; healPlayer(s, Math.min(100, n * pn(o, 'heal', 6, 0, 20))); powerEvent(s, 'cleanse', ctx, { r, n }); return true; },
+    infect(s, o, ctx) { const list = powerTargets(s, Object.assign({}, o, { r: undefined }), ctx); if (!list.length) return 'Nessun bersaglio'; const e = list[0], t = pn(o, 't', 6, 0.5, 12); e.infection = { t, total: t, dps: pn(o, 'dps', 8, 0.1, 40), spread: pn(o, 'spread', 3.5, 0.5, 8), gen: 0, left: Math.floor(pn(o, 'n', 3, 0, 4)), n: Math.floor(pn(o, 'n', 3, 0, 4)), acc: 0, spreadT: 1, el: ctx.K.el }; powerEvent(s, 'infect', ctx, { id: e.id, x: e.x, z: e.z, t }); return true; },
+    portal(s, o, ctx) { const p = s.player, pt = place(s, Object.assign({ at: 'aim' }, o), ctx, {}), r = pn(o, 'r', 1.2, 0.6, 2.5), a = freeNear(s, p.x + fwdX(p.yaw) * (r + 2), p.z + fwdZ(p.yaw) * (r + 2), p.x, p.z), b = freeNear(s, pt.x, pt.z, p.x, p.z); if (dist(a, b) < r * 2 + 3 || dist(a, p) < r + 0.7) return 'Spazio insufficiente per due varchi'; const P = { id: s.nextId++, x: a.x, z: a.z, a, b, r, t: pn(o, 't', 10, 0.5, 20), foes: !!o.foes, shots: !!o.shots, el: ctx.K.el }; s.powers.portals = [P]; powerEvent(s, 'portal', ctx, P); return true; },
+    tether(s, o, ctx) { const list = powerTargets(s, o, ctx); if (!list.length) return 'Nessun bersaglio'; for (const e of list) { const l = pn(o, 'l', 4, 0.5, 10), T = { id: s.nextId++, target: e.id, x: e.x, z: e.z, l, break: Math.max(l + 1, pn(o, 'break', 12, 2, 30)), pull: pn(o, 'pull', 12, 1, 40), t: pn(o, 't', 5, 0.2, 12), el: ctx.K.el }; s.powers.tethers = s.powers.tethers.filter((v) => v.target !== e.id); if (s.powers.tethers.length >= 12) s.powers.tethers.shift(); s.powers.tethers.push(T); if (e.boss) { e.slowT = Math.max(e.slowT, T.t); e.slow = Math.max(e.slow, 0.15); } powerEvent(s, 'tether', ctx, T); } return true; },
+    barrier(s, o, ctx) { const pt = place(s, Object.assign({ at: 'fwd4' }, o), ctx, {}), ang = ctx.ang === undefined ? yawAng(s.player) : ctx.ang; if (solidAt(s, pt.x, pt.z)) return 'Nessun punto libero'; const b = { id: s.nextId++, x: pt.x, z: pt.z, dx: Math.cos(ang), dz: -Math.sin(ang), l: pn(o, 'l', 8, 1, 20), t: pn(o, 't', 7, 0.2, 20), hp: pn(o, 'hp', 120, 1, 500), reflect: !!o.reflect, el: ctx.K.el }; b.maxHp = b.hp; if (s.powers.barriers.length >= 4) s.powers.barriers.shift(); s.powers.barriers.push(b); powerEvent(s, 'barrier', ctx, b); return true; },
+    mimic(s, o, ctx) { const list = powerTargets(s, Object.assign({}, o, { r: undefined }), ctx); if (!list.length) return 'Nessun bersaglio da imitare'; const e = list[0], p = s.player, original = p.mimic ? p.mimic.original : s.kit[0], mul = pn(o, 'mul', 1, 0.3, 1.6); let prog, kind;
+      if (e.boss) { kind = 'boss'; prog = [{ op: 'line', l: 18, w: 2.5, d: 28 * mul, push: 6 }]; }
+      else if (e.kind === 'tiratore' || MOB[e.kind].shooter || e.kind === 'torretta') { kind = 'tiro'; prog = [{ op: 'shot', d: 12 * mul, v: 30 }]; }
+      else if (MOB[e.kind].heavy) { kind = 'pesante'; prog = [{ op: 'cone', r: 4, h: 1, d: 26 * mul, push: 5 }]; }
+      else { kind = 'artiglio'; prog = [{ op: 'cone', r: 3.2, h: 0.8, d: 15 * mul }]; }
+      p.mimic = { t: pn(o, 't', 8, 0.3, 20), original, sourceKind: e.kind, attack: kind, el: ctx.K.el }; s.kit[0] = Object.assign({}, original, { kind: 'x', prog, el: ctx.K.el, cd: kind === 'tiro' ? 0.45 : kind === 'artiglio' ? 0.5 : 0.85, nome: 'Eco: ' + kind }); p.beam.on = false; p.cone = false; powerEvent(s, 'mimic', ctx, { id: e.id, attack: kind, t: p.mimic.t }); return true; },
+    rewindfoe(s, o, ctx) { const list = powerTargets(s, o, ctx); if (!list.length) return 'Nessun bersaglio'; for (const e of list) { if (e.rewind) continue; e.rewind = { x: e.x, z: e.z, hp: e.hp, t: pn(o, 't', 3, 0.2, 10), d: pn(o, 'd', 20, 0, 100) * (e.boss ? 0.5 : 1), el: ctx.K.el }; powerEvent(s, 'rewindfoe', ctx, { id: e.id, x: e.x, z: e.z, t: e.rewind.t }); } return true; },
+    revive(s, o, ctx) { const p = s.player, r = pn(o, 'r', 16, 1, 30), room = 12 - s.mobs.filter((e) => !e.dead && e.team === 'a' && (e.tag === 'sum' || e.revived)).length; if (room <= 0) return 'Troppi alleati evocati'; const corpses = s.powers.corpses.filter((c) => c.t > 0 && dist(c, p) <= r).sort((a, b) => dist(a, p) - dist(b, p)).slice(0, Math.min(room, Math.floor(pn(o, 'n', 2, 1, 6)))); if (!corpses.length) return 'Nessun cadavere recente';
+      for (const c of corpses) { const kind = { sgherro: 'spirito', tiratore: 'arciere', bruto: 'colosso' }[c.kind], e = mkMob(s, kind, c.x, c.z, 'a', { el: ctx.K.el, life: pn(o, 't', 12, 0.5, 25), bd: pn(o, 'd', 12, 1, 40), tag: 'sum', revived: true }); e.hp = e.maxHp = pn(o, 'hp', 60, 1, 250); e.spawn = 0.25; c.t = 0; powerEvent(s, 'revive', ctx, { id: e.id, corpse: c.id, x: e.x, z: e.z, kind }); } s.powers.corpses = s.powers.corpses.filter((c) => c.t > 0); return true; },
+    command(s, o, ctx) { const p = s.player, r = pn(o, 'r', 24, 1, 40), allies = s.mobs.filter((e) => !e.dead && e.team === 'a' && e.kind !== 'anima' && !MOB[e.kind].fixed && dist(e, p) <= r).slice(0, Math.floor(pn(o, 'n', 6, 1, 12))); if (!allies.length) return 'Nessun alleato mobile'; const target = o.rally ? null : (ctx.depth > 0 && powerAlive(ctx.tgt) ? ctx.tgt : aimedAny(s, pn(o, 'g', 24, 1, 40))); if (!o.rally && !powerAlive(target)) return 'Nessun bersaglio per gli alleati'; const pt = place(s, o, ctx, {});
+      for (const e of allies) { e.command = { t: pn(o, 't', 6, 0.2, 15), rally: !!o.rally, x: pt.x, z: pt.z, target: target ? target.id : null }; if (target) { e.tg = target; e.tt = 0.3; } }
+      powerEvent(s, 'command', ctx, { x: pt.x, z: pt.z, rally: !!o.rally, target: target ? target.id : null, n: allies.length }); return true; },
     hit(s, o, ctx) {
       const p = s.player, pt = place(s, o, ctx, {}); let tg = null;
       if (o.op === 'tgt') { tg = ctx.tgt && !ctx.tgt.dead && ctx.depth > 0 ? ctx.tgt : aimedAny(s, o.g || 26); if (!tg) return 'Nessun bersaglio'; ctx.tgt = tg; pt.x = tg.x; pt.z = tg.z; }
@@ -796,6 +944,7 @@ const Core = (() => {
       if (p.dead <= 0) { p.dead = 0; p.x = s.city.spawn.x; p.z = s.city.spawn.z; p.hp = p.maxHp; p.invuln = 2; p.res = Math.floor(p.res * 0.5); p.haste = p.veil = p.shield = p.hot = p.oc = p.eclipse = p.orbit = p.fury = p.reflect = p.phoenix = 0; p.hist.length = 0; s.echo.length = 0; p.trigs.length = 0; s.timers.length = 0; s.marks.length = 0; p.lsT = p.armT = p.cdrT = p.rrT = 0; p.dash = p.leap = p.ride = null; p.cam.x = p.x; p.cam.y = EYE; p.cam.z = p.z; s.events.push({ type: 'respawn' }); }
     }
     const dead = p.dead > 0;
+    powersFrame(s, dt);
     s.flowT -= dt; if (s.flowT <= 0) { s.flowT = 0.3; updateFlow(s); }
     updateQuest(s, dt); updateBoss(s, dt);
     for (const pt of s.patrols) if (pt.alive <= 0) { pt.t -= dt; if (pt.t <= 0 && Math.hypot(pt.x - p.x, pt.z - p.z) > 45) spawnPack(s, pt.x, pt.z, s.level >= 3 ? ['sgherro', 'sgherro', 'tiratore', 'bruto'] : ['sgherro', 'sgherro', 'tiratore'], 'ronda', pt); }
@@ -895,11 +1044,13 @@ const Core = (() => {
     }
 
     updateMobs(s, dt, free);
+    powersMove(s, dt);
     updateNpcs(s, dt);
 
     // Proiettili
     for (const sh of s.shots) {
       if (sh.team === 'e' && s.freeze > 0) continue;
+      if (powersShot(s, sh, dt)) continue;
       if (sh.hom) { const e = sh.hom[0] === 'b' ? s.boss : sh.hom[0] === 'e' ? findMob(s, +sh.hom.slice(1)) : null; if (e && !e.dead) { const sp = Math.hypot(sh.vx, sh.vz), dx = e.x - sh.x, dz = e.z - sh.z, d = Math.hypot(dx, dz) || 1, k = Math.min(1, 9 * dt); sh.vx += ((dx / d) * sp - sh.vx) * k; sh.vz += ((dz / d) * sp - sh.vz) * k; const n = Math.hypot(sh.vx, sh.vz) || 1; sh.vx *= sp / n; sh.vz *= sp / n; } }
       sh.x += sh.vx * dt; sh.z += sh.vz * dt; sh.life -= dt;
       if (Math.abs(sh.x) > HALF || Math.abs(sh.z) > HALF || opaqueAt(s, sh.x, sh.z)) {
@@ -987,6 +1138,7 @@ const Core = (() => {
       if (e.aggro > 0 && e.aggro < 900) e.aggro -= dt;
       const kd = Math.exp(-6 * dt); e.x += e.kx * dt; e.z += e.kz * dt; e.kx *= kd; e.kz *= kd;
       e.moving = false; if (e.atk > 0) e.atk -= dt;
+      if (e.disarmT > 0 || (e.silenceT > 0 && (e.kind === 'tiratore' || e.kind === 'torretta' || def.shooter))) e.atk = Math.max(e.atk, 0.05);
       if (e.pull) { const P = e.pull; P.t += dt; const k = Math.min(1, P.t / 0.22); e.x += (P.x - e.x) * k; e.z += (P.z - e.z) * k; if (k >= 1) e.pull = null; collide(s, e, e.r, true); continue; }
       if (e.stun > 0 || def.fixed) {
         collide(s, e, e.r, true);
@@ -1038,6 +1190,9 @@ const Core = (() => {
         else if (tg === p && flowDir(s, e, dir)) { e.x += dir.x * sp; e.z += dir.z * sp; e.fx = dir.x; e.fz = dir.z; e.moving = true; }
         else { e.x += dx * sp; e.z += dz * sp; e.moving = true; }
       } else { // alleati: ipnotizzati, spiriti, colosso
+        if (e.command && e.command.rally) { const c = e.command, dx = c.x - e.x, dz = c.z - e.z, d = Math.hypot(dx, dz); e.tg = null;
+          if (d > 1.2 && e.root <= 0) { e.fx = dx / d; e.fz = dz / d; e.x += e.fx * Math.min(d - 1.2, sp * 1.2); e.z += e.fz * Math.min(d - 1.2, sp * 1.2); e.moving = true; } e.wasMoving = e.moving; collide(s, e, e.r); continue; }
+        if (e.command) { const target = powerEntity(s, e.command.target); if (powerAlive(target)) { e.tg = target; e.tt = 0.4; } else { e.command = null; e.tt = 0; } }
         if (def.healer) { e.tt = 1; e.tg = null; if (Math.hypot(p.x - e.x, p.z - e.z) < 8) healPlayer(s, (e.bd || 4) * dt); }
         e.tt -= dt;
         if (e.tt <= 0) { e.tt = 0.3; let tg = null, td = 32; hostiles(s, (o) => { const d = Math.hypot(o.x - e.x, o.z - e.z) - o.r; if (d < td) { td = d; tg = o; } }); e.tg = tg; }
