@@ -1,8 +1,8 @@
 # DITE — direzione mobile e preparazione iOS
 
-Stato: audit e progetto, **non implementazione completata**. Aggiornato il 13 novembre 2026.
+Stato: **implementazione e collaudo della 4.0 in corso**, non ancora pubblicata. Aggiornato il 13 novembre 2026.
 Base verificata: DITE 3.2, commit 5a50c8f70e2f214b0b6d3a704e24d39765262476.
-La versione pubblicata resta 3.2.
+La versione pubblicata resta 3.2. Il lavoro è nel ramo `codex/dite-mobile`.
 
 ## Obiettivo
 
@@ -19,11 +19,31 @@ L'obiettivo qualitativo indicato dall'utente è ambizioso. Non dichiarare “liv
 - Git pull eseguito prima dell'audit; checkout inizialmente pulito e aggiornato.
 - Lettura dei sorgenti 3.2 tramite GitHub, con audit indipendenti di navigazione, persistenza, input e rendering.
 - Ricerca in documentazione ufficiale Apple, Supercell, Riot e Activision.
-- Le 27 prove della release 3.2 erano verdi nel ciclo precedente; non sono nuove prove di questo progetto mobile.
-- L'ambiente di esecuzione è diventato indisponibile prima di poter avviare il nuovo collaudo.
-  Nessun codice di gioco modificato in questo ciclo, nessuna nuova fotografia o misura di prestazioni.
-- Le osservazioni visive pregresse riguardano il browser 844×390 della 3.2.
-  Le altre risoluzioni sotto sono criteri da verificare, non risultati già ottenuti.
+- Dopo la riconnessione, clone e pull aggiornati; tutte le 27 prove iniziali eseguite sullo stesso codice 3.2.
+  Il primo `tend` ha perso il banner transitorio pur avendo già verificato vittoria, premio e salvataggio;
+  la ripetizione identica è passata. Le nuove prove osservano il vero annuncio prima dell'azione e fissano
+  la camera per confrontare risorse realmente renderizzate.
+- Audit visivo della 3.2: 25 foto a 667×375, 844×390, 932×430 e 1024×768, compresi inset simulati.
+  Rilevati comandi tagliati, ricerca nascosta, sovrapposizione missione/suprema e saturazione durante i poteri.
+- Implementati router, pulizia input, storage schema 3, tutorial basato sulle azioni, registro dei risultati,
+  nuova shell orizzontale, impostazioni, risorse grafiche e progetto iOS. I gruppi vengono integrati e verificati
+  separatamente: non leggere questa lista come certificazione della release completa.
+- Prove mirate nuove: storage 19 casi, router 11 casi e 2.000 transizioni, tutorial 17 casi, registro 11 casi.
+  Le prove browser verificano input touch reali, sospensione, rendering fermo, quota storage, cambio città e retry.
+- Risorse: perdita di una texture del committente riprodotta sul codice precedente e risolta; plateau dopo
+  disegno delle quattro forme di preavviso, delle tre texture e degli impatti. Pool inattivi senza upload;
+  le zone mobili e crescenti ora seguono i dati del Core anche nel mondo disegnato.
+- Leggibilità degli effetti: Sisma mantiene il preavviso basso e non produce fulmini dal cielo all'impatto.
+  I corpi dei proiettili propri sfumano vicino alla camera, mentre quelli nemici conservano la loro visibilità.
+  I fasci hanno larghezza apparente limitata e nucleo colorato, evitando che la sovrapposizione sommi solo bianco;
+  l'attenuazione rispetta anche l'opzione Lampi ridotti.
+- Bonus: un solo potenziamento prioritario nel riepilogo HUD, seguito da `+N` quando ce ne sono altri.
+  Il pannello Potenziamenti in pausa mostra nomi completi e secondi residui dagli stessi timer della simulazione,
+  che in pausa non avanzano. Il riepilogo non cambia effetti o durata dei poteri.
+- La prima nuova interfaccia è stata fotografata e corretta a 667×375 con inset 44/44/21.
+  La suite Node finale è verde: 14 comandi sul Core con SHA256 iniziante per `503a2903f3f3`.
+  I 19 comandi browser/build finali e la revisione conclusiva delle foto sono ancora in corso;
+  compilazione e test iOS su macOS restano da eseguire.
 
 ## Riferimenti e applicazione originale
 
@@ -31,13 +51,14 @@ L'obiettivo qualitativo indicato dall'utente è ambizioso. Non dichiarare “liv
 | --- | --- | --- |
 | mo.co, rilancio | Rooftop HQ, armi con abilità predefinite, accesso diretto alle attività. | Rifugio riconoscibile e kit pronti all'ingresso; conservare l'officina completa. |
 | mo.co, note UI di maggio | Equipaggiamento attivo più evidente, ritorno alla schermata di provenienza, VFX meno affaticanti. | Selezione ed equipaggiamento distinti, navigazione con contesto, segnali leggibili al picco degli effetti. |
-| Brawl Stars, lobby | Personaggio, attività e stato di preparazione convergono nell'accesso alla partita. | Rendere immediati “con cosa gioco?” e “cosa faccio adesso?”. |
+| Brawl Stars, squadra | Documentazione del flusso squadra; asset osservato limitato alla barra squadra, non a una lobby completa. | Rendere immediati “con cosa gioco?” e “cosa faccio adesso?”, senza attribuire una verifica visiva della lobby non svolta. |
 | Wild Rift 5.0 | HUD iniziale semplice e impostazioni per personalizzarne l'aspetto. | Buone impostazioni iniziali e dettagli avanzati separati. |
 | COD Mobile, guida 2019 | Movimento a sinistra, camera a destra, azioni contestuali e controlli personalizzabili. | Riferimento pertinente alla prima persona; guida storica, non verifica dell'interfaccia attuale. |
 | Apple, HIG e WWDC | Controlli raggiungibili, aree sicure, feedback percepibile e interfacce adattive. | Gruppi ancorati ai bordi, spazio centrale libero, dimensioni comode e impostazioni di comfort. |
 
-Sono state lette le pagine e le trascrizioni ufficiali. L'ispezione visiva comparativa dei loro asset
-non è conclusa: nessuna affermazione di aver visionato filmati o analizzato pixel non accessibili.
+Sono state lette le pagine e le trascrizioni ufficiali e osservati gli asset mo.co HQ/profilo e COD HUD/editor.
+Gli asset Brawl disponibili non mostrano una lobby completa; nessuna affermazione di aver visionato filmati
+o analizzato pixel non accessibili.
 Non importare grafica, personaggi, suoni o testi dei giochi di riferimento.
 
 ## Difetti riscontrati nel codice 3.2
@@ -90,6 +111,8 @@ Budget e causa di un rifiuto rimangono vicino all'azione finale.
 Movimento a sinistra, camera nella zona destra libera, primario dominante e quattro poteri vicini al pollice.
 Mantenere icona, ricarica e verbo di rilascio degli stati reversibili. Nessun dato essenziale affidato soltanto al colore.
 Pausa con Riprendi prioritario; sottopannelli tornano al chiamante senza riattivare la simulazione.
+Per i bonus temporanei, il nome prioritario e il conteggio aggiuntivo lasciano spazio al gioco;
+il dettaglio espandibile in pausa permette di leggere tutti i nomi e il tempo rimanente.
 Impostazioni per comandi, audio, grafica e comfort; anteprima e ripristino dei valori.
 Direzione visiva originale: antracite caldo, ambra per azione, ciano per informazione, rosso per pericolo;
 meno maiuscole decorative, gerarchia tipografica più chiara e superfici meno luminose.
@@ -159,8 +182,10 @@ e l'eventuale accesso va affrontato quando esiste una build concreta.
 6. CI macOS, prove simulator e preparazione metadati.
 7. Collaudo completo, versione e Stato di AGENTS.md aggiornati, pubblicazione verificata.
 
-Non pubblicare modifiche al gioco senza prove verdi. Questo ramo contiene soltanto il presente audit;
-il primo passo alla riconnessione è rileggere main/AGENTS.md, fare pull e verificare il punto di ripartenza.
+Non pubblicare modifiche al gioco senza prove verdi. In caso di riconnessione, leggere `AGENTS.md`,
+controllare ramo e modifiche presenti, fare pull e riprendere dai risultati verificati senza scambiare
+gli artifact di sviluppo per una release pubblicata. `IOS.md` distingue packaging, compilazione,
+simulatore, firma e distribuzione; una workflow scritta non equivale a una sua esecuzione riuscita.
 
 ## Fonti ufficiali consultate
 
