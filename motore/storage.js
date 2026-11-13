@@ -44,7 +44,7 @@ const DiteStorage = (() => {
     out.sens = number(raw.sens, PREFS.sens, 0.4, 2.2); out.volume = number(raw.volume, PREFS.volume, 0, 1); out.quality = ['auto', 'performance', 'quality'].includes(raw.quality) ? raw.quality : PREFS.quality;
     out.onboarding = defaults.normalizeOnboarding ? defaults.normalizeOnboarding(raw.onboarding) : onboarding(raw.onboarding);
     // Un profilo preesistente senza checkpoint non diventa un nuovo tutorial.
-    if (raw.onboarding == null) out.onboarding = null;
+    if (!plain(raw.onboarding) || raw.onboarding.version !== 1) out.onboarding = null;
     out.journal = defaults.normalizeJournal ? defaults.normalizeJournal(raw.journal) : journal(raw.journal);
     return out;
   }

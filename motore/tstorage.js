@@ -1,6 +1,6 @@
 // Profili reali, migrazione non distruttiva e conferme di scrittura: nessun DOM.
 'use strict';
-const assert = require('node:assert/strict'), B = require('./bricks.js'), Storage = require('./storage.js');
+const assert = require('node:assert/strict'), B = require('./bricks.js'), Storage = require('./storage.js'), Onboarding = require('./onboarding.js');
 const clone = (v) => JSON.parse(JSON.stringify(v));
 const kit = () => clone(B.PRESETS[0]);
 function memory(initial = {}) {
@@ -31,6 +31,13 @@ async function check(name, fn) { try { await fn(); passed++; console.log('ok ' +
     assert.equal(Storage.normalize({ fame: '12', sens: NaN }, B).fame, 0);
     const preferred = Storage.normalize({}, B, { reducedMotion: true }); assert.equal(preferred.reducedMotion, true);
     assert.equal(Storage.normalize({ reducedMotion: false }, B, { reducedMotion: true }).reducedMotion, false);
+  });
+  await check('il normalizzatore browser non trasforma checkpoint assenti o corrotti in una nuova guida', () => {
+    const defaults = { normalizeOnboarding: Onboarding.normalize };
+    for (const onboarding of [null, [], true, 4, 'corrotto', { version: 2, step: 2 }]) {
+      const value = Storage.normalize({ recipe: kit(), onboarding }, B, defaults); assert.equal(value.onboarding, null);
+    }
+    assert.deepEqual(Storage.normalize({ recipe: kit(), onboarding: { version: 1, step: 2, skipped: true } }, B, defaults).onboarding, { version: 1, step: 2, skipped: true });
   });
   await check('le cinque posizioni, gli elementi, i gradi e gli innesti sono validati davvero', () => {
     for (const mutate of [r => r.slots.pop(), r => r.slots.push(r.slots[0]), r => r.slots[0].id = 'fantasma', r => r.slots[0].id = 'scatto', r => r.slots[0].el = 'radioattivo', r => r.slots[0].t = 4, r => r.slots[0].t = 1.5, r => r.slots[0].m = 'inesistente']) {
