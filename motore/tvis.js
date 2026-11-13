@@ -74,11 +74,11 @@ const wants = (name) => selected.includes('all') || selected.includes(name) || (
         G.syncMobs(s, 0.016, 1); G.syncPowerFx(1);
         for (const ev of s.events) G.powerEvent(ev);
         G.updateFx(0.05, 1, G.camera.position);
-        return { result, count: G.powerFxCount, hud: document.getElementById('powerHud').textContent };
+        return { result, count: G.powerFxCount, hud: document.getElementById('powerHud').textContent, mimic: s.player.mimic && s.player.mimic.attack };
       }, [prog, name]);
       assert.equal(result.result, true, name + ' deve attivarsi');
       if (name !== 'imitazione') assert.ok(result.count > 0, name + ' deve avere una rappresentazione persistente');
-      else assert.match(result.hud, /IMITAZIONE/);
+      else { assert.equal(result.mimic, 'tiro'); assert.equal(result.hud, 'Imitazione · Tiro'); }
       await inspect();
       await page.screenshot({ path: 'shots/nuovi-' + name + '.png' });
       console.log(name, JSON.stringify(result));
