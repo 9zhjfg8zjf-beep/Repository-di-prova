@@ -598,13 +598,56 @@ G.start = function () {
   // ---------- Citta', schermate e sessione ----------
   const panels = { lobby: 'home', pause: 'menu', city: 'cityScreen', loadout: 'loadout', forge: 'forge', journal: 'journalScreen', settings: 'settings', guide: 'tips', loading: 'loading', error: 'appError' };
   const focusMemory = new Map(); let previousScreen = 'boot', loadToken = 0, failedLoad = null;
+  let coachLayoutQueued = false, coachLayoutKey = '';
   const mode = () => ({ kind: coarse ? 'touch' : 'keyboard', movementSide: st.leftHanded ? 'right' : 'left' });
+  // Due ancoraggi: sotto le informazioni laterali, oppure sopra il reticolo.
+  // Le misure avvengono solo quando cambia un ingombro, non durante ogni frame.
+  function positionCoach() {
+    const coach = $('guideCoach');
+    if (!active() || !coach || coach.classList.contains('hidden')) return;
+    if (!s.quest && $('powerHud').classList.contains('hidden')) {
+      coach.classList.remove('coach-fit');
+      for (const property of ['width', 'left', 'right', 'top']) coach.style.removeProperty(property);
+      delete coach.dataset.layout; return;
+    }
+    const rect = (id) => $(id).getBoundingClientRect();
+    const left = rect('left'), info = rect('info'), supreme = rect('b4'), aim = rect('xh'), joyBox = rect('joy'), useBox = rect('useBtn');
+    const hand = st.leftHanded, edge = hand ? left.right - 2 : left.left + 2;
+    const room = hand ? edge - supreme.right - 10 : supreme.left - 10 - edge;
+    const aimRoom = hand ? edge - aim.right - 6 : aim.left - 6 - edge;
+    const width = Math.min(292, room, aimRoom);
+    coach.classList.add('coach-fit'); coach.style.width = width + 'px'; coach.style.right = 'auto';
+    coach.style.left = (hand ? edge - width : edge) + 'px';
+    const bottom = Math.min(rect('b0').top, joyBox.width ? joyBox.top - 8 : Infinity, useBox.width ? useBox.top - 6 : Infinity);
+    let top = left.bottom + 6, layout = 'side';
+    if (top + coach.getBoundingClientRect().height > bottom) {
+      layout = 'center';
+      const gap = hand ? left.left - info.right : info.left - left.right, centerWidth = Math.min(224, gap - 16);
+      coach.style.width = centerWidth + 'px'; coach.style.left = (W - centerWidth) / 2 + 'px';
+      const boss = rect('boss'), cast = rect('bossCast');
+      top = Math.max(left.top, boss.width ? boss.bottom + 6 : 0, cast.width && cast.height ? cast.bottom + 6 : 0);
+    }
+    coach.style.top = top + 'px'; coach.dataset.layout = layout;
+  }
+  function queueCoachLayout() {
+    if (coachLayoutQueued) return;
+    coachLayoutQueued = true;
+    requestAnimationFrame(() => { coachLayoutQueued = false; positionCoach(); });
+  }
+  if (typeof ResizeObserver === 'function') {
+    const observer = new ResizeObserver(queueCoachLayout);
+    for (const id of ['guideCoach', 'left', 'info', 'boss', 'bossCast', 'joy', 'useBtn']) observer.observe($(id));
+  }
   function renderCoach() {
     if (!guide || !$('guideCoach') || !s) return;
     const view = guide.view(s, mode());
-    $('guideCoach').classList.toggle('hidden', !active() || !view.visible || !!window.__dite.lockQ);
-    if ($('guideStep')) $('guideStep').textContent = view.index + '/' + view.total + ' · ' + view.title;
+    const visible = active() && view.visible && !window.__dite.lockQ;
+    $('guideCoach').classList.toggle('hidden', !visible);
+    const stepText = view.index + '/' + view.total + ' · ' + view.title;
+    if ($('guideStep') && $('guideStep').textContent !== stepText) $('guideStep').textContent = stepText;
     if ($('guideText') && $('guideText').textContent !== (view.text || '')) $('guideText').textContent = view.text || '';
+    const key = [visible, view.stepId, view.text, st.leftHanded, W, Hh, !!s.quest].join('|');
+    if (key !== coachLayoutKey) { coachLayoutKey = key; if (visible) queueCoachLayout(); }
   }
   function suspendAudio() { audioWanted = false; if (rideGain) rideGain.gain.value = 0; audioTransition(ac, false); }
   function nativeState(value) { try { G.native.send({ v: 1, type: 'state', screen: value.screen, playing: value.playing }); } catch (error) { /* il gioco web resta autonomo */ } }

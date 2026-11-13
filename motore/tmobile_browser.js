@@ -11,6 +11,18 @@ const empty = input => {
   assert.equal(input.fireBtn, false); assert.equal(input.fireMouse, false); assert.ok(input.buf.every(x => x === 0)); assert.ok(input.fresh.every(x => x === false)); assert.equal(input.useBuf, 0); assert.equal(input.useFresh, false);
   assert.equal(Math.abs(input.input.mx), 0); assert.equal(Math.abs(input.input.my), 0); assert.equal(input.input.fire, false); assert.equal(input.input.use, false); assert.ok(input.input.b.every(x => x === false));
 };
+// Fixture condivisa: gli operatori creano sei stati, il colpo assorbito crea la banca.
+const sevenPowerStates = () => {
+  const D = window.__dite, s = D.state(), p = s.player, C = D.Core, A = s.city.arenas[0];
+  Object.assign(p, { x: A.x + 10, z: A.z + 7, yaw: Math.PI / 2, pitch: 0 }); D.setLook(p.yaw, 0);
+  s.mobs = []; s.shots = []; s.zones = []; s.patrols = [];
+  const target = C.mkMob(s, 'tiratore', p.x - 3, p.z, 'e'), other = C.mkMob(s, 'sgherro', p.x - 6, p.z + 2, 'e');
+  for (const e of [target, other]) Object.assign(e, { spawn: 0, atk: 999, root: 999, hp: 800, maxHp: 800 });
+  const run = (program, tgt) => C.run(s, D.Bricks.parseProg(program), { K: { el: 'gelo' }, slot: 2, depth: tgt ? 1 : 0, tgt });
+  const results = { absorb: run('absorb t20 r3 cap120'), mimic: run('mimic g24 t20', target), form: run('form size0.6 t20'), stasis: run('stasis g24 t12', target), scan: run('scan r32 t20'), clone: run('clone n2 t20') };
+  s.shots.push({ id: s.nextId++, team: 'e', x: p.x, z: p.z - 2, dmg: 75, vx: 0, vz: 12, r: .3, life: 5, el: 'gelo', hom: '' });
+  return results;
+};
 (async () => {
   fs.mkdirSync(__dirname + '/shots', { recursive: true });
   const browser = await chromium.launch({ executablePath: process.env.CHROME || undefined, args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
@@ -94,7 +106,76 @@ const empty = input => {
       assert.equal(await page.locator('#quest.none').isVisible(), true); assert.match(await page.locator('#qLine').textContent(), /Cerca chi ha un !/);
       assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('dite2')).onboarding.skipped), true);
       await page.screenshot({ path: __dirname + '/shots/mobile-coach-saltato.png' });
-      assert.deepEqual(errors, []); await fresh.close(); console.log('coach: profilo nuovo, font di sistema e DejaVu reale, due lati via impostazioni, nomi interi, safe area/joystick/poteri distinti e Salta ripristina il suggerimento');
+      // La guida si può riavviare durante una missione: conserva il contratto e il suo HUD.
+      await page.evaluate(() => {
+        const D = window.__dite, s = D.state(), p = s.player, giver = s.givers[0];
+        giver.offer = { type: 'consegna', ...D.Core.QINFO.consegna, fama: D.Core.QINFO.consegna.fama + 2 * s.level }; giver.cool = 0;
+        p.x = giver.x + 2.5; p.z = giver.z + 1; D.setLook(Math.atan2(giver.x - p.x, giver.z - p.z) + Math.PI, 0);
+      });
+      await page.waitForFunction(() => window.__dite.state().hint.use?.kind === 'giver');
+      await page.locator('#useBtn').tap();
+      await page.waitForFunction(() => window.__dite.state().quest?.type === 'consegna');
+      const accepted = await page.evaluate(() => {
+        const q = window.__dite.state().quest; window.__coachQuest = q;
+        return { type: q.type, giver: q.giver, obj: { ...q.obj }, time: q.time };
+      });
+      for (const dense of [false, true]) for (const leftHanded of [false, true]) {
+        await page.locator('#menuBtn').tap();
+        if (await page.evaluate(left => window.__dite.store.leftHanded !== left, leftHanded)) {
+          await page.locator('#menuSettings').tap(); await page.locator('[data-settings-tab="controls"]').tap();
+          await page.locator('[data-pref="leftHanded"]').setChecked(leftHanded);
+          await page.locator('#settings [data-nav="back"]').tap();
+        }
+        await page.locator('#menuTips').tap(); await page.locator('#guideRestart').tap();
+        await page.waitForFunction(() => window.__dite.screen().playing && !document.getElementById('guideCoach').classList.contains('hidden') && document.getElementById('guideStep').textContent.includes('Cammina'));
+        if (dense) {
+          assert.equal(await page.evaluate(() => window.__dite.setRecipe(window.__dite.state().recipe)), true);
+          const states = await page.evaluate(sevenPowerStates);
+          assert.ok(Object.values(states).every(value => value === true));
+          await page.waitForFunction(() => window.__dite.state().player.bank === 75);
+          await page.evaluate(() => { const D = window.__dite, s = D.state(); D.Core.wakeBoss(s, 0); D.Core.bossCast(s, s.boss, 'pioggia'); });
+          await page.waitForFunction(() => !document.getElementById('boss').classList.contains('hidden') && document.getElementById('bossCast').textContent === window.__dite.Bricks.ATK.pioggia.nome && document.getElementById('banner').classList.contains('go'));
+        }
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: leftHanded ? 557 : 110, y: 314, id: 41 }] });
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        const restarted = await page.evaluate(() => {
+          const D = window.__dite, s = D.state(), q = s.quest, p = s.player;
+          const rects = Object.fromEntries(['guideCoach', 'quest', 'joy', 'b0', 'b1', 'b2', 'b3', 'b4', 'useBtn', 'guideSkip', 'guideHelp', 'xh', 'boss', 'bossCast', 'banner'].map(id => {
+            const node = document.getElementById(id), r = node.getBoundingClientRect(), style = getComputedStyle(node);
+            return [id, { ...r.toJSON(), visible: style.display !== 'none' && style.visibility !== 'hidden' && r.width > 0 && r.height > 0 }];
+          }));
+          const coach = rects.guideCoach, collisions = [];
+          for (const id of ['quest', 'joy', 'b0', 'b1', 'b2', 'b3', 'b4', 'useBtn', 'xh', 'boss', 'bossCast']) {
+            const r = rects[id];
+            if (r.visible && Math.min(coach.right, r.right) > Math.max(coach.left, r.left) && Math.min(coach.bottom, r.bottom) > Math.max(coach.top, r.top)) collisions.push(id);
+          }
+          const clipped = ['guideStep', 'guideText', 'guideSkip', 'guideHelp'].filter(id => { const node = document.getElementById(id); return node.scrollWidth > node.clientWidth + 1 || node.scrollHeight > node.clientHeight + 1; });
+          const livePowers = { bank: p.bank, absorb: !!p.absorb, mimic: p.mimic && p.mimic.attack, form: p.form && p.form.size, captive: !!p.captive, scan: !!p.scan, clones: s.mobs.filter(e => e.cloned && !e.dead).length };
+          return { rects, collisions, clipped, layout: document.getElementById('guideCoach').dataset.layout, livePowers, boss: s.boss && { key: s.boss.key, cast: s.boss.cast, attackSerial: s.boss.attackSerial }, banner: document.getElementById('banner').textContent, leftHanded: D.store.leftHanded, pointer: D.inputSnapshot().joy.id, checkpoint: D.store.onboarding, sameQuest: q === window.__coachQuest, quest: q && { type: q.type, giver: q.giver, obj: { ...q.obj }, time: q.time }, questText: document.getElementById('qLine').textContent, questNone: document.getElementById('quest').classList.contains('none') };
+        });
+        await page.screenshot({ path: __dirname + '/shots/mobile-coach-' + (dense ? 'denso-' : 'missione-') + (leftHanded ? 'mancino' : 'destro') + '.png' });
+        const diagnostic = JSON.stringify(restarted);
+        assert.equal(restarted.leftHanded, leftHanded); assert.notEqual(restarted.pointer, null);
+        assert.equal(restarted.sameQuest, true, 'Ricomincia deve conservare la missione già accettata: ' + diagnostic);
+        assert.deepEqual({ type: restarted.quest.type, giver: restarted.quest.giver, obj: restarted.quest.obj }, { type: accepted.type, giver: accepted.giver, obj: accepted.obj });
+        assert.ok(restarted.quest.time > 0 && restarted.quest.time <= accepted.time, 'La missione deve restare attiva con il proprio tempo');
+        assert.equal(restarted.checkpoint.step, 0); assert.equal(restarted.checkpoint.skipped, false);
+        assert.equal(restarted.questNone, false); assert.equal(restarted.rects.quest.visible, true); assert.ok(restarted.questText.length > 0);
+        assert.deepEqual(restarted.collisions, [], 'Guida riavviata, missione, joystick e comandi devono restare distinti: ' + diagnostic);
+        assert.deepEqual(restarted.clipped, [], 'Testo e azioni della guida devono essere interi: ' + diagnostic);
+        if (dense) {
+          assert.equal(restarted.layout, 'center', 'Il caso denso deve esercitare il secondo ancoraggio');
+          assert.deepEqual(restarted.livePowers, { bank: 75, absorb: true, mimic: 'tiro', form: .6, captive: true, scan: true, clones: 2 });
+          assert.ok(restarted.rects.boss.visible && restarted.rects.bossCast.visible && restarted.boss.attackSerial > 0 && restarted.boss.cast.length > 0);
+          assert.ok(restarted.rects.banner.visible && restarted.banner.length > 0, 'Il boss deve aver prodotto il suo annuncio reale');
+        }
+        const coach = restarted.rects.guideCoach;
+        assert.ok(coach.left >= 44 && coach.right <= 623 && coach.top >= 0 && coach.bottom <= 354, 'Guida riavviata dentro la safe area: ' + diagnostic);
+        for (const id of ['guideSkip', 'guideHelp']) assert.ok(restarted.rects[id].width >= 44 && restarted.rects[id].height >= 44, 'Azione guida raggiungibile con un bersaglio di almeno 44 px: ' + id + ' ' + diagnostic);
+        console.log(dense ? 'coach denso:' : 'coach missione:', diagnostic);
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      }
+      assert.deepEqual(errors, []); await fresh.close(); console.log('coach: profilo nuovo, font di sistema e DejaVu reale, due lati via impostazioni, nomi interi, safe area/joystick/poteri distinti, Salta ripristina il suggerimento e Ricomincia preserva la missione visibile');
       if (selected.length === 1 && selected[0] === 'coach') { console.log('nessun errore'); return; }
     }
     const context = await browser.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true, deviceScaleFactor: 1 });
@@ -306,18 +387,7 @@ const empty = input => {
         return { ok, phoenixCasts: s.stats.casts[4], timers: Object.fromEntries(['invuln', 'reflect', 'phoenix', 'veil', 'hot', 'fury', 'haste', 'orbit'].map(key => [key, s.player[key]])) };
       });
       assert.equal(cast.ok, true); assert.ok(cast.phoenixCasts > 0); assert.ok(Object.values(cast.timers).every(t => Number.isFinite(t) && t > 0));
-      const states = await page.evaluate(() => {
-        const D = window.__dite, s = D.state(), p = s.player, C = D.Core, A = s.city.arenas[0];
-        Object.assign(p, { x: A.x + 10, z: A.z + 7, yaw: Math.PI / 2, pitch: 0 }); D.setLook(p.yaw, 0);
-        s.mobs = []; s.shots = []; s.zones = []; s.patrols = [];
-        const target = C.mkMob(s, 'tiratore', p.x - 3, p.z, 'e'), other = C.mkMob(s, 'sgherro', p.x - 6, p.z + 2, 'e');
-        for (const e of [target, other]) Object.assign(e, { spawn: 0, atk: 999, root: 999, hp: 800, maxHp: 800 });
-        const run = (program, tgt) => C.run(s, D.Bricks.parseProg(program), { K: { el: 'gelo' }, slot: 2, depth: tgt ? 1 : 0, tgt });
-        const results = { absorb: run('absorb t20 r3 cap120'), mimic: run('mimic g24 t20', target), form: run('form size0.6 t20'), stasis: run('stasis g24 t12', target), scan: run('scan r32 t20'), clone: run('clone n2 t20') };
-        // La banca compare solo dopo che la simulazione intercetta un colpo nemico.
-        s.shots.push({ id: s.nextId++, team: 'e', x: p.x, z: p.z - 2, dmg: 75, vx: 0, vz: 12, r: .3, life: 5, el: 'gelo', hom: '' });
-        return results;
-      });
+      const states = await page.evaluate(sevenPowerStates);
       assert.ok(Object.values(states).every(value => value === true), 'Tutti i sei operatori devono creare stati reali');
       await page.waitForFunction(() => window.__dite.state().player.bank === 75);
       const livePowers = await page.evaluate(() => { const s = window.__dite.state(), p = s.player; return { bank: p.bank, absorb: !!p.absorb, mimic: p.mimic && p.mimic.attack, form: p.form && p.form.size, captive: !!p.captive, scan: !!p.scan, clones: s.mobs.filter(e => e.cloned && !e.dead).length }; });
