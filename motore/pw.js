@@ -1,3 +1,4 @@
-// Playwright per le prove nel browser: `npm install` e poi `npx playwright install chromium`, oppure CHROME=percorso di un Chrome gia installato.
-let pw; try { pw = require('playwright'); } catch (e) { pw = require('./pw.js'); }
-module.exports = pw;
+// La shell ufficiale evita i socket di profilo richiesti da Chrome completo.
+// npm ci && npx playwright install chromium-headless-shell
+// CHROME puo comunque indicare un altro eseguibile compatibile.
+module.exports = require('playwright');

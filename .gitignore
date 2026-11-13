@@ -1,0 +1,6 @@
+motore/node_modules/
+motore/dist/
+motore/site/
+motore/shots/
+motore/logs/
+__pycache__/
