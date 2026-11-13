@@ -119,7 +119,7 @@ Ordine dei file nel build: bricks, mec*, catalogo, city, core, onboarding, journ
 world, fx, anim, poteri-fx, ui, main. Tutto in `'use strict'`. Gli export CommonJS devono restare su una riga
 con guardia indipendente `if (typeof module !== 'undefined') ...`, rimossa dal build per il browser.
 
-## Stato: 4.0 candidata 15 — 33/33 prove locali verdi, nuova CI nativa da eseguire
+## Stato: 4.0 candidata 17 — 33/33 prove locali verdi, nuova CI nativa da eseguire
 
 Aggiornato il 13 novembre 2026. La versione pubblicata resta **3.2**; la 4.0 e nel ramo `codex/dite-mobile`.
 Titolo e interfaccia sorgente indicano 4.0, ma un artifact di sviluppo non e una release pubblicata.
@@ -129,9 +129,12 @@ Implementati rifugio e navigazione coerente, scelta kit/citta, HUD e officina la
 audio, qualita e comfort. Router unico con ritorno al pannello chiamante, pulizia input, pausa esplicita dopo
 background e rotazione, cambio citta con recupero dagli errori. Storage schema 3 condiviso web/iOS, migrazioni
 e indicazione onesta dell'esito di salvataggio. I vecchi profili conservano il kit e non avviano automaticamente la guida.
-Nella candidata 15: transizioni audio senza retry infinito; Pausa attivata su pointerup touch/pen con deduplica
-e rispetto dei gesti cancellati, attivabile anche con Spazio. La rotazione di 180 gradi sospende solo il gioco
-attivo; ridimensionamento e tastiera non lo sospendono.
+Transizioni audio senza retry infinito; Pausa su pointerup touch/pen con deduplica, rispetto dei gesti
+cancellati e attivazione con Spazio. Dalla candidata 16 il menu recupera anche un pointer ID pen obsoleto.
+La candidata 17 limita i nomi lunghi dell'officina a una riga e protegge il gioco quando il canvas diventa verticale,
+indipendentemente dall'orientamento fisico. Tornare a una finestra orizzontale richiede Riprendi.
+Il flip di 180 gradi sospende il gioco attivo; la guardia usa le dimensioni del canvas, non quelle del
+visual viewport. La tastiera nel nuovo target universale resta da verificare in CI nativa.
 
 Primo ingresso con Dardo, Scatto, Scudo, Nova e Cataclisma con costo 8 sul budget iniziale di 12; guida breve, saltabile e riprendibile,
 che avanza su azioni del gioco. Aiuto riapribile e registro delle ultime 32 imprese reali, senza premi o progressi fittizi.
@@ -156,33 +159,41 @@ rete del gioco bloccata, bridge versionato per lifecycle/salvataggio/haptic e JS
 Generazione deterministica del progetto, sincronizzazione bundle/licenza/checksum e workflow macOS presenti.
 La distribuzione non e predisposta: identificatore tecnico unsigned, nessun Team/certificato/profilo configurato.
 
-**Candidata 15: 33/33 prove locali verdi**, con i 14 Node invariati e verdi in locale e nella terza CI,
-piu tutti i 19 browser/build completati in sequenza continua, senza modifiche a sorgenti o prove
-(`/tmp/dite-final15-browser.log`, esito 0). Il Core conserva il checksum sotto.
-Regressioni audio, menu e input riprodotte sui pacchetti precedenti e superate sulla candidata,
-con foto controllate. Packaging 8/8, sincronizzazione bundle, progetto e asset verdi.
+**Candidata 17: 33/33 prove locali verdi**, eseguite sulla candidata attuale senza modifiche ai sorgenti
+o alle prove: 19 browser/build in `/tmp/dite-final17-browser.log`, poi 14 Node in
+`/tmp/dite-final17-node.log`, entrambi con esito 0. Packaging 8/8, sincronizzazione bundle, progetto e asset
+ripetuti con esito 0. Il checkpoint locale e `/tmp/dite-candidate17-checkpoint.json`.
+Pointer ID pen obsoleto: regressione riprodotta sulla 15 e superata sulla 16. Guardia nelle finestre strette
+e verticali: regressione riprodotta sulla 16 e superata sulla 17. Il precedente timeout screenshot in
+`DSL 19-b` sulla 16 resta di causa non dimostrata; l'esito qui registrato viene dal gate completo della 17.
 Copertura mirata: storage 19 casi, router 11 e 2000 transizioni, onboarding 18, registro 11.
-QA layout: 112 snapshot verdi su sei missioni, touch/tastiera, due lati, font, nome lungo, stati e boss;
-zero misure nei frame stabili. Arena e bundle iOS sono sincronizzati; i checksum sotto identificano la candidata 15.
+QA layout precedente: 112 snapshot verdi su sei missioni, touch/tastiera, due lati, font, nome lungo, stati
+e boss; zero misure nei frame stabili. Arena e bundle iOS sono sincronizzati ai checksum della candidata 17.
 
-La terza CI [43452554318](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43452554318)
-su `4a7badac` conferma **14 Node, 19 browser/build e packaging 8/8 verdi sul codice precedente**.
-Sono risolti il filtro WebKit e il nome troncato emersi nella prima CI
-[43429444352](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43429444352).
+La quarta CI [43467319898](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43467319898),
+sul commit remoto `a67ee7071addbd39bf3672e565748f060baef677` (candidata 15), conferma **14 Node,
+19 browser/build e packaging 8/8 verdi**. Nativo: **20/20 unitari per famiglia, 6/6 UI iPhone e 4/6 UI iPad**.
+Su iPhone sono verificati entrambi i landscape effettivi e il background OS con ripresa esplicita.
+Pausa risolta su entrambe le famiglie senza diagnostica JS. Su iPad restano due fallimenti: lo stato OS
+background non viene raggiunto e la scena rimane landscapeRight mentre il sistema passa a landscapeLeft.
+Le immagini mostrano ancora una finestra iPhone ingrandita in compatibilita, non un layout iPad nativo.
 
-| File della candidata 15 | SHA256 |
+| File della candidata 17 | SHA256 |
 | --- | --- |
-| `motore/dist/index.html` e bundle iOS | `522eaeb6ca39e1486ad39acbfe295a783f3b8da44c7e8bbf97067de0c925ead6` |
-| `motore/site/index.html` e `arena/index.html` | `8b8940f96708a2a4697ffb695293bfe25184815232e9a78be88be61663649516` |
+| `motore/dist/index.html` e bundle iOS | `95849cc1c7675cb0b4ac25133845bc17d40acd499023fd812c94183dd6c8fe34` |
+| `motore/site/index.html` e `arena/index.html` | `4fa61a6d2776915466de8b318cb1c589e6577cde048f5919436dfe4c53d6b03a` |
 | `motore/core.js` | `503a2903f3f302782e35183e859679d530443c9c56f6adeafa990a5e4a766190` |
 
-Terza CI nativa: **20/20 unitari per famiglia, 4/6 UI iPhone e 3/6 UI iPad**. Preferenza Switch risolta e
-background iPhone verde; pausa/orientamento non ricevono il click dopo pointer/touch trusted sul menu,
-senza attribuzione a un difetto specifico di WebKit. Su iPad Home lascia la finestra visibile, senza stato OS background.
-La prossima CI verifica le correzioni della candidata 15: ripresa prima del flip di 180 gradi e, per iPad,
-Home seguito se necessario da swipe reale sul bordo SpringBoard; background OS obbligatorio prima di activate.
-La traccia JS e solo opt-in `--ui-testing-event-trace`, assente dai test normali; log nativo e sonda di orientamento
-restano DEBUG/`--ui-testing`. WPE Linux resta una prova complementare, non iOS. Pubblicata ancora 3.2.
+La candidata 17 prepara il target universale `1,2`: telefono nei due landscape, iPad con tutti e quattro
+gli orientamenti e guardia del canvas verticale. La sonda DEBUG usa `effectiveGeometry` e, quando disponibili,
+i flag iOS 26. Il test iPad prova i controlli reali `Window Controls` → `Minimize`, senza sostituire il requisito
+di background OS o quello dei due landscape effettivi. Le etichette di sistema e le modifiche native devono
+ancora essere verificate in CI; se i controlli non sono disponibili, la prova fallisce con diagnostica.
+La traccia JS resta opt-in `--ui-testing-event-trace`; le sonde native sono solo DEBUG/`--ui-testing`.
+Gli originali della quarta CI sono mappati in `ios-run43467319898/evidence-map.json` e
+`verified-evidence.json` nel workspace. Il set finale `docs/qa/4.0` (PNG originali, manifest e TXT)
+e ancora da creare; non e un set App Store approvato. WPE Linux resta complementare, non iOS.
+La versione pubblicata resta **3.2**, main `5a50c8f70e2f214b0b6d3a704e24d39765262476`.
 
 ## Stato storico: versione 3.2
 
@@ -215,8 +226,9 @@ Calibrazione del danno eseguita sui 336 nuovi programmi; fattori dei 1007 preced
 
 Prima di considerare la 4.0 distribuibile:
 
-1. **Push, nuova CI e pubblicazione verificata**: verificare pausa, entrambi gli orientamenti e background iPad
-   con le correzioni nuove; poi completare deploy e verificare la versione servita. Pubblicata ancora 3.2.
+1. **Nuova CI e pubblicazione verificata**: dopo il gate locale verde, verificare target universale, tastiera,
+   entrambi i landscape effettivi e background OS iPad. Solo dopo prove verdi procedere a pubblicazione
+   e verifica della versione servita. Pubblicata ancora 3.2.
 2. **Prestazioni e comportamento fisico**: misurare frame time, memoria, calore, batteria, multi-touch,
    silenzioso/Bluetooth e interruzioni su dispositivi accessibili. Chromium software non certifica fluidita o audio iPhone;
    non chiedere all'utente di sostituirsi al collaudo.

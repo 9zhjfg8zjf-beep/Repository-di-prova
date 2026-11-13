@@ -8,10 +8,15 @@ Il catalogo comprende 1343 meccaniche originali. Il gioco è pensato per il tele
 La versione pubblicata è **3.2**. La **4.0 candidata** introduce un nuovo rifugio, comandi e interfaccia mobile,
 guida giocabile, registro locale e preparazione iOS offline. Gli effetti vicini alla visuale sono più contenuti;
 stati e bonus hanno riepiloghi compatti e dettagli in pausa. Comandi e guida si adattano alla modalità mancini.
-La **candidata 15 supera tutte le 33 prove locali**: 14 Node e 19 browser/build; packaging 8/8 verde.
 La guida può ricominciare con una missione già attiva, conservandola visibile e senza richiedere un nuovo incarico.
-La terza CI supera 20 unitari per famiglia, 4/6 UI iPhone e 3/6 UI iPad. Le nuove correzioni di audio,
-pausa touch e rotazione superano il collaudo locale e attendono una nuova CI nativa; dispositivi fisici e distribuzione restano da verificare.
+La **candidata 17** aggiunge la pausa nelle finestre verticali, con ripresa manuale, e conserva il recupero
+dei tocchi sul menu introdotto nella candidata 16.
+La candidata supera **33/33 prove locali attuali** (14 Node e 19 browser/build), più packaging 8/8
+e verifiche di sincronizzazione, progetto e asset.
+La [quarta CI](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43467319898), sulla candidata 15,
+supera 14 Node, 19 browser/build, packaging e 20 unitari per famiglia: UI 6/6 iPhone e 4/6 iPad.
+Su iPad restano aperti background OS e orientamento effettivo. Il nuovo target universale della candidata 17
+attende la verifica nativa; prove fisiche e distribuzione restano da completare.
 
 Per lavorare sul progetto, leggere prima [AGENTS.md](AGENTS.md): contiene architettura, stato e regole di pubblicazione.
 Il piano mobile è in [MOBILE_PRODUCTION.md](MOBILE_PRODUCTION.md); pipeline nativa e passaggi ancora necessari

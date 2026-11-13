@@ -2,13 +2,15 @@
 
 Preparato il 13 novembre 2026. Questo documento contiene testi pronti da trasferire nei campi indicati,
 valori ancora da completare e il percorso per ottenere le immagini della build effettiva.
-La **candidata 15 supera le 33 prove locali**: 14 Node invariati e tutti i 19 browser/build; packaging 8/8 verde.
-La terza CI sul codice precedente supera web 14+19, 20 unitari per famiglia e UI 4/6 iPhone, 3/6 iPad.
-Switch e background iPhone sono risolti. Le correzioni web di audio, pausa touch e rotazione superano il collaudo locale;
-la loro verifica iOS e i nuovi test nativi di rotazione/background attendono una nuova esecuzione macOS.
+La **candidata 17 supera 33/33 prove locali attuali**: 14 Node e 19 browser/build, entrambi con esito 0.
+Packaging 8/8, sincronizzazione, progetto e asset sono verdi; log e checksum sono in `AGENTS.md`.
+La nuova CI nativa resta da eseguire. Il [run 43467319898](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43467319898),
+su `a67ee7071addbd39bf3672e565748f060baef677` (candidata 15), supera web 14+19, packaging 8/8,
+20 unitari per famiglia e UI 6/6 iPhone, 4/6 iPad. Pausa risolta su entrambe le famiglie;
+su iPad restano aperti background OS e orientamento effettivo, nella finestra iPhone di compatibilità.
+Il nuovo target universale iPhone/iPad della candidata 17 non è ancora verificato su macOS.
 Non esiste una build distribuibile o un invio App Store; la versione pubblicata resta 3.2.
-Esiti del [run 43452554318, head 4a7badac](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43452554318)
-e verifiche pendenti sono in [IOS.md](IOS.md).
+Esiti, checksum e verifiche pendenti sono in [IOS.md](IOS.md) e [AGENTS.md](AGENTS.md).
 Prima del caricamento, associare questi testi alla build nativa realmente verificata, senza usare la sola
 versione web come prova del funzionamento iOS.
 
@@ -136,9 +138,11 @@ Rivedere le note se cambiano testi, funzionalità, monetizzazione o salvataggio 
 
 ## Immagini dalla build reale
 
-Il secondo run contiene **9 PNG e 4 video per dispositivo**, con gameplay animato e schermate reali.
-Restano evidenze diagnostiche: **il set Store non è approvato finché il collaudo UI resta incompleto**.
-La selezione finale dovrà corrispondere alla build che completa il collaudo; una schermata Chromium non la sostituisce.
+La quarta CI contiene **13 PNG iPhone e 11 PNG più 2 video iPad**, esportati dagli XCTest reali.
+Restano evidenze diagnostiche della candidata 15: su iPad mostrano ancora la compatibilità iPhone.
+Il set `docs/qa/4.0` con PNG originali, manifest e TXT deve ancora essere creato.
+**Il set Store è da acquisire e approvare sulla build finale**, dopo il collaudo del nuovo target universale;
+le immagini della candidata 15 o di Chromium non ne dimostrano il funzionamento.
 Il workflow `.github/workflows/dite.yml` conserva `ios-iphone-evidence` e `ios-ipad-evidence`, con
 `SimulatorTests.xcresult`, log, `selected-simulator.json` e immagini; la conservazione attuale è di 14 giorni.
 La CI esporta gli allegati in `.build/xctest-attachments/`. Dopo il completamento del collaudo UI, selezionare
@@ -162,9 +166,9 @@ corrisponde a questa famiglia. Per il landscape iPhone,
 la tabella consultata comprende **2622×1206** e **2556×1179** per la famiglia Dynamic Island media.
 Confrontare i pixel esportati e il simulatore realmente scelto con i campi del Media Manager: lo script CI
 sceglie tra simulatori installati e non garantisce da solo una specifica dimensione commerciale.
-Il progetto attuale è iPhone (`TARGETED_DEVICE_FAMILY = 1`); la prova iPad riguarda anche la compatibilità,
-non annuncia un'interfaccia iPad nativa. Se il prodotto diventa un target iPad, acquisire anche il set richiesto
-da 13 pollici invece di ingrandire una foto iPhone. Fonte:
+Il progetto locale è ora universale (`TARGETED_DEVICE_FAMILY = 1,2`), ancora da verificare in CI.
+La quarta CI riguarda il precedente target iPhone in compatibilità iPad. Per la build universale acquisire
+anche il set iPad richiesto da 13 pollici sul target nativo verificato, senza ingrandire una foto iPhone. Fonte:
 [Screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/).
 
 ## Passaggio alla scheda effettiva
@@ -176,12 +180,12 @@ Il numero di build, il commit e il risultato della CI devono permettere di colle
 
 | Evidenza da collegare | Valore attuale |
 | --- | --- |
-| Esecuzione CI macOS e commit | [43452554318](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43452554318), `4a7badac`; UI ancora parziale |
-| XCTest | 20/20 unitari per famiglia; 4/6 UI iPhone e 3/6 UI iPad; Switch e background iPhone risolti |
-| Candidata 15 | 33/33 prove locali verdi (14 Node + 19 browser/build), packaging 8/8 verde; checksum completi in `AGENTS.md` |
-| Prossima CI nativa | Verificare nuove correzioni audio/pausa e i test di flip/background; traccia JS solo opt-in |
-| Rotazione e background iPad | Ripresa prima del flip; Home più eventuale swipe SpringBoard, stato OS background obbligatorio prima di activate |
-| Screenshot nativi selezionati | 9 PNG e 4 video per dispositivo controllati; set Store ancora da approvare dopo collaudo UI |
+| Esecuzione CI macOS e commit | [43467319898](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43467319898), `a67ee7071addbd39bf3672e565748f060baef677` (candidata 15) |
+| XCTest | 20/20 unitari per famiglia; 6/6 UI iPhone e 4/6 UI iPad; pausa risolta su entrambi |
+| Candidata 17 locale | 33/33 prove attuali verdi (14 Node + 19 browser/build), esito 0; packaging 8/8 e controlli bundle verdi; log/checksum in `AGENTS.md` |
+| Prossima CI nativa | Verificare target universale e tastiera, quattro orientamenti iPad dichiarati, entrambi i landscape effettivi e background OS |
+| Rotazione e background iPad | Nuova sonda `effectiveGeometry`; `Window Controls` → `Minimize` con etichette ancora da verificare, fallimento diagnostico se assenti |
+| Screenshot nativi | Originali quarta CI verificati; selezione `docs/qa/4.0` da creare, set Store finale ancora da acquisire |
 | Prove su hardware fisico | Da eseguire con hardware accessibile al collaudo |
 | Archivio firmato / build App Store Connect | Da preparare con account e firma autorizzati |
 | Supporto e policy pubblici | Da configurare con identità reale |

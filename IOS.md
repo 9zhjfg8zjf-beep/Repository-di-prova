@@ -6,29 +6,37 @@ Non chiamare questa preparazione “App Store ready”: firma, distribuzione, pr
 
 ## Stato delle verifiche
 
-- Terza CI [43452554318](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43452554318)
-  su `4a7badac`: **14 Node, 19 browser/build e packaging 8/8 verdi sul codice precedente**.
-  **20/20 unitari per famiglia, 4/6 UI iPhone e 3/6 UI iPad**. Preferenza Switch risolta; background iPhone verde.
-- Pausa e orientamento falliscono dopo pointer/touch trusted sul menu senza il successivo click.
-  La traccia non attribuisce la causa a un difetto specifico di WebKit. Su iPad Home lascia la finestra
-  visibile e non raggiunge lo stato OS background. Entrambi i versi di orientamento restano da completare.
-- Candidata 15: **33/33 prove locali verdi**, con 14 Node invariati e tutti i 19 browser/build completati
-  senza modifiche durante la sequenza (`/tmp/dite-final15-browser.log`, esito 0).
-  Regressioni audio, pausa touch/pen e rotazione riprodotte sui pacchetti precedenti e superate sulla candidata,
-  con foto controllate. Packaging 8/8, sync, progetto e asset verdi; checksum in `AGENTS.md`.
-- Il prossimo test background usa Home e, se necessario su iPad, uno swipe reale dal bordo SpringBoard;
-  richiede stato OS background prima di activate. Il test orientamento riprende la partita prima del flip.
-  **Nuovi test e correzioni native attendono esecuzione macOS**.
-- La traccia JS è opt-in `--ui-testing-event-trace`, assente dai test normali. Log nativo e sonda reale
-  `UIWindowScene.interfaceOrientation` restano DEBUG/`--ui-testing`; non pilotano il gioco.
-  Le immagini/video restano diagnostici, non il set Store. WPE Linux è complementare, non una verifica iOS.
-- La prima CI [43429444352](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43429444352)
-  aveva rivelato il filtro WebKit con disgiunzione non supportata e Cataclisma troncato: entrambi corretti e verificati nel secondo run.
+- Quarta CI [43467319898](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43467319898)
+  su `a67ee7071addbd39bf3672e565748f060baef677` (candidata 15): **14 Node, 19 browser/build e packaging 8/8 verdi**.
+  **20/20 unitari per famiglia, 6/6 UI iPhone e 4/6 UI iPad**. Pausa verde su entrambe le famiglie senza
+  diagnostica JS; su iPhone sono verdi anche entrambi i landscape effettivi e background OS con ripresa manuale.
+- I due fallimenti iPad sono background OS non raggiunto e scena ferma a landscapeRight mentre il sistema
+  passa a landscapeLeft. Gli allegati mostrano una finestra iPhone ingrandita in compatibilità.
+- Candidata 17: **33/33 prove locali verdi** sulla candidata attuale: 19 browser/build e poi 14 Node,
+  senza modifiche ai sorgenti o alle prove, entrambi con esito 0. Log: `/tmp/dite-final17-browser.log`
+  e `/tmp/dite-final17-node.log`. Packaging 8/8, sync, progetto e asset ripetuti con esito 0. Checksum in `AGENTS.md`.
+  Pointer ID pen obsoleto: regressione riprodotta sulla 15 e superata sulla 16. Guardia nelle finestre strette
+  e verticali: regressione riprodotta sulla 16 e superata sulla 17.
+  Il precedente timeout screenshot `DSL 19-b` sulla 16 resta di causa non dimostrata; il risultato attuale
+  viene dal gate completo della 17.
+- Il target locale ora è universale `1,2`, con telefono landscape e quattro orientamenti iPad. La guardia web
+  osserva il rapporto del canvas anche in una finestra stretta e richiede ripresa esplicita.
+  **Queste modifiche native, inclusa la tastiera sul target universale, attendono la CI macOS**.
+  La guardia usa le dimensioni del canvas; i resize di layout che restano landscape sono verificati nel browser.
+- Il nuovo test iPad usa i controlli reali `Window Controls` → `Minimize`: le etichette restano da verificare
+  sul simulatore. Se mancano, il test conserva diagnostica e fallisce. Rimangono obbligatori lo stato OS
+  background prima di activate e l'orientamento effettivo della scena nei due landscape.
+- La sonda DEBUG legge `effectiveGeometry` e i flag di geometria disponibili da iOS 26. Non pilota il gioco.
+  La traccia JS resta opt-in `--ui-testing-event-trace`, assente dai test normali; sonde e log nativi restano
+  DEBUG/`--ui-testing`. WPE Linux è una prova complementare, non iOS.
+- Gli originali della quarta CI contengono 13 PNG iPhone e 11 PNG più 2 video iPad, mappati nel workspace
+  in `ios-run43467319898/evidence-map.json` e verificati in `verified-evidence.json`. Il set finale
+  `docs/qa/4.0` (PNG originali, manifest e TXT) è da creare; non certifica la candidata 17 o il set Store.
 - iPhone/iPad fisici, prestazioni, temperatura, autonomia, audio e interruzioni reali: **non verificati**.
 - Nessun certificato, profilo, Team ID, account App Store Connect o invio predisposto automaticamente.
 
-Registrare separatamente il prossimo esito di avvio/UI, senza sostituire i risultati parziali con una dichiarazione
-generica di conformità. I percorsi UI incompleti richiedono nuove prove; il simulatore non certifica hardware reale.
+Registrare separatamente il prossimo esito nativo sul commit effettivo. I risultati della candidata 15
+non certificano il nuovo target iPad; il simulatore non certifica hardware reale.
 
 ## File e build
 
@@ -83,10 +91,11 @@ Per eseguire localmente su un Mac configurato: `bash scripts/ci_ios.sh iphone` e
 - Eventuali link esterni richiedono azione dell'utente, HTTPS e corrispondenza esatta con `DITEExternalURLs`
   in Info.plist; vengono aperti dal sistema. L'elenco attuale è vuoto, senza indirizzi o identità inventati.
 - Il sito dati WebKit è non persistente. I progressi iOS passano dal salvataggio nativo, non da cookie/localStorage.
-- Entrambi i landscape sono dichiarati. Il canvas occupa il contenitore; CSS gestisce safe area e margini.
-  Non sommare nuovamente inset UIKit: `contentInsetAdjustmentBehavior = .never`.
-- Il target è progettato per iPhone; su iPad va verificata anche la modalità compatibilità.
-  Non usa `UIRequiresFullScreen` per aggirare il ridimensionamento; un futuro target iPad nativo richiede lavoro dedicato.
+- Target universale iPhone/iPad (`TARGETED_DEVICE_FAMILY = 1,2`): telefono nei due landscape, iPad nei
+  quattro orientamenti. Il nuovo target attende verifica nativa; la quarta CI usava ancora la compatibilità iPhone.
+- Il canvas occupa il contenitore; CSS gestisce safe area e margini. Non sommare nuovamente inset UIKit:
+  `contentInsetAdjustmentBehavior = .never`. Non usa `UIRequiresFullScreen` per aggirare il ridimensionamento.
+  La finestra verticale mostra una guardia e sospende il gioco; tornando in orizzontale serve Riprendi.
 - Perdita attività, background e interruzione audio inviano sospensione al router JS. Il ritorno in primo piano
   consente una ripresa esplicita; non fa ripartire automaticamente la partita o l'audio.
 - Categoria audio `.ambient`: rispetta silenzioso/blocco schermo e convive con audio di altre app.
@@ -151,14 +160,16 @@ I test unitari coprono protocollo, payload errati/grandi, URL, round-trip, scrit
 migrazione e conservazione dei dati danneggiati/futuri. Non sostituiscono i test semantici del motore.
 Gli UI test sono predisposti per avviare il bundle vero e usare tap e controlli accessibili, senza JS per pilotare il gioco:
 ingresso, pausa, impostazioni/ritorno, rotazioni, background e persistenza di una preferenza dopo rilancio.
-La rotazione richiede l'orientamento effettivo della finestra, non soltanto quello richiesto al dispositivo;
-la sonda accessibile di prova è esclusa da Release e dagli avvii Debug senza `--ui-testing`.
+La rotazione richiede entrambi i landscape effettivi della finestra, non soltanto quelli richiesti al dispositivo.
+La sonda accessibile usa `effectiveGeometry` e i flag disponibili da iOS 26; è esclusa da Release e dagli avvii
+Debug senza `--ui-testing`. Il test background richiede lo stato OS reale prima di riattivare l'app.
 Una prova apre l'officina senza tastiera automatica, modifica Nome e Cerca con la tastiera reale, ruota
 il simulatore, chiude la tastiera tramite il comando dell'interfaccia e raggiunge il ritorno al rifugio.
 Una prova provoca un primo errore WebGL attraverso uno user script esclusivamente Debug, poi tocca il vero
 «Riprova» e raggiunge rifugio e partita. L'iniezione di guasto non è compilata nella build Release.
 Le schermate sono allegati XCTest reali; al fallimento viene conservato anche l'albero di accessibilità.
-Nel terzo run sono riusciti anche preferenza e background iPhone; pausa/orientamento e background iPad restano aperti.
+Nella quarta CI sono verdi tutti i sei test UI iPhone e quattro su iPad; su iPad restano aperti orientamento
+e background. La nuova configurazione universale e il percorso Minimize attendono esecuzione macOS.
 La traccia eventi JS richiede anche `--ui-testing-event-trace`; i normali UI test non la caricano.
 
 Prima della distribuzione occorrono prove su dispositivi accessibili: multi-touch simultaneo, notch e home indicator,
