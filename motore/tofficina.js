@@ -5,6 +5,8 @@ const path = require('node:path');
 const { chromium } = require('./pw.js');
 const Catalogue = require('./catalogo.js');
 const expectedInventory = { total: Catalogue.LIST.length, fresh: Catalogue.catalogueQuery({ mode: 'new' }).length };
+// Un salvataggio ha una chiave stabile; il kit equipaggiato contiene solo la ricetta.
+const recipe = (value) => ({ nome: value.nome || '', desc: value.desc || '', slots: value.slots });
 (async () => {
   fs.mkdirSync(path.join(__dirname, 'shots'), { recursive: true });
   const browser = await chromium.launch({ executablePath: process.env.CHROME || undefined, args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
@@ -19,7 +21,7 @@ const expectedInventory = { total: Catalogue.LIST.length, fresh: Catalogue.catal
     const open = async () => { await page.tap('#openForge'); await page.waitForSelector('#forge:not(.hidden)'); };
     const rows = () => page.locator('#fList [data-arch]').count();
     const store = () => page.evaluate(() => JSON.parse(JSON.stringify(window.__dite.store)));
-    await page.goto('file://' + path.join(__dirname, 'dist/index.html'));
+    await page.goto(process.env.DITE_TEST_URL || 'file://' + path.join(__dirname, 'dist/index.html'));
     await page.waitForFunction(() => !!window.__dite && window.__dite.Bricks.FAMILIES);
     const inventory = await page.evaluate(() => {
       const D = window.__dite, B = D.Bricks; D.lockQ = true;
@@ -71,19 +73,24 @@ const expectedInventory = { total: Catalogue.LIST.length, fresh: Catalogue.catal
       const B = window.__dite.Bricks, r = window.__dite.store.recipe;
       return B.catalogueQuery({ slot: 'S', mode: 'new' }).find((a) => a.cost[0] <= B.ARCH[r.slots[2].id].cost[0] && !r.slots.some((b) => b.id === a.id)).id;
     });
+    // Il kit iniziale economico può rendere idoneo un potere oltre la prima pagina.
+    // Lo si raggiunge attraverso la ricerca reale, senza presumere la sua posizione.
+    await page.locator('#fFind').fill(await page.evaluate((id) => window.__dite.Bricks.ARCH[id].nome, candidate));
     await page.tap('[data-arch="' + candidate + '"]');
     assert.equal(await page.locator('[data-arch="' + candidate + '"]').getAttribute('aria-pressed'), 'true');
     await page.locator('#fName').fill('Officina verifica');
     await page.tap('#fSave');
     let saved = (await store()).saved.find((r) => r.nome === 'Officina verifica');
     assert.ok(saved); assert.equal(saved.slots[2].id, candidate);
+    assert.match(saved.uid, /^[\w-]{1,80}$/, 'il kit salvato riceve un identificatore stabile');
     for (const i of [0, 1, 3, 4]) assert.deepEqual(saved.slots[i], original.slots[i], 'selezionare un potere conserva gli altri spazi');
     assert.deepEqual((await store()).recipe, original, 'Salva non sostituisce la ricetta attiva');
     await page.locator('#fFind').scrollIntoViewIfNeeded(); await snap('selezione');
     await page.tap('#fUse'); assert.ok(await page.locator('#forge').evaluate((n) => n.classList.contains('hidden')));
-    assert.deepEqual((await store()).recipe, saved);
+    assert.deepEqual((await store()).recipe, recipe(saved));
     await page.reload(); await page.waitForFunction(() => !!window.__dite);
-    assert.deepEqual((await store()).recipe, saved, 'la ricetta sopravvive al riavvio');
+    assert.deepEqual((await store()).recipe, recipe(saved), 'la ricetta sopravvive al riavvio');
+    assert.deepEqual((await store()).saved.find((r) => r.uid === saved.uid), saved, 'anche identità e contenuto del salvataggio sopravvivono al riavvio');
     assert.ok(await page.evaluate(() => window.__dite.Bricks.valid(window.__dite.store.recipe)));
     await open(); await page.tap('[data-slot="2"]');
     assert.equal(await page.locator('[data-arch="' + candidate + '"]').getAttribute('aria-pressed'), 'true');
@@ -93,8 +100,7 @@ const expectedInventory = { total: Catalogue.LIST.length, fresh: Catalogue.catal
         const a = window.__dite.Bricks.catalogueQuery({ family, mode: 'new' }).find((a) => a.controls && a.controls.length);
         return a ? { id: a.id, nome: a.nome, slot: a.slot } : null;
       }, family);
-      // Il test resta utilizzabile sui build intermedi che non caricano ancora mec13/14.
-      if (!example) continue;
+      assert.ok(example, family + ': istruzioni del controllo corporeo presenti nel catalogo completo');
       await page.tap('[data-slot="' + { P: 0, M: 1, S: 2, U: 4 }[example.slot] + '"]');
       await page.locator('#fFind').fill(example.nome);
       await page.tap('[data-mode="new"]');
@@ -118,20 +124,25 @@ const expectedInventory = { total: Catalogue.LIST.length, fresh: Catalogue.catal
       assert.equal(ready.desc, starter.desc);
       assert.deepEqual(ready.slots.map((s) => s.id), starter.ids, 'adattare i gradi al budget conserva i poteri');
       assert.ok(await page.evaluate((r) => { const D = window.__dite, B = D.Bricks; return B.valid(r) && B.cost(r) <= B.budgetFor(B.levelFor(D.store.fame)); }, ready));
-      assert.deepEqual((await store()).recipe, saved, 'provare una ricetta pronta conserva il personaggio attivo');
+      assert.deepEqual((await store()).recipe, recipe(saved), 'provare una ricetta pronta conserva il personaggio attivo');
     }
     // Una ricetta salvata deve sostituire anche il testo usato dal compositore.
-    const recalled = starters[0], recalledIndex = (await store()).saved.findIndex((r) => r.nome === recalled.nome);
-    await page.tap('[data-saved="' + recalledIndex + '"]');
+    const recalled = starters[0], recalledUid = (await store()).saved.find((r) => r.nome === recalled.nome).uid;
+    const recalledIndex = (await store()).saved.findIndex((r) => r.uid === recalledUid);
+    assert.ok(recalledIndex >= 0); assert.equal(await page.locator('#fSaved [data-saved="' + recalledIndex + '"]').textContent(), recalled.nome);
+    await page.tap('#fSaved [data-saved="' + recalledIndex + '"]');
     assert.equal(await page.locator('#fName').inputValue(), recalled.nome);
     assert.equal(await page.locator('#fDesc').inputValue(), recalled.desc, 'caricare un salvataggio aggiorna la descrizione visibile');
     await page.tap('#fCompose'); await page.tap('#fSave');
     const composed = (await store()).saved.find((r) => r.nome === recalled.nome);
     assert.equal(composed.desc, recalled.desc, 'il compositore usa la descrizione appena caricata, non quella della ricetta precedente');
-    assert.deepEqual((await store()).recipe, saved);
+    assert.equal(composed.uid, recalledUid, 'modificare il kit richiamato conserva la sua identità');
+    assert.deepEqual((await store()).recipe, recipe(saved));
+    const savedIds = (await store()).saved.map((r) => r.uid); assert.equal(new Set(savedIds).size, savedIds.length, 'nessuna identità duplicata');
     await page.locator('#fPresets').scrollIntoViewIfNeeded(); await snap('ricette');
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
     assert.equal(overflow, false, 'nessun overflow orizzontale sullo schermo touch');
+    assert.equal(bodyChecks, 4, 'tutte le famiglie corporee previste sono state lette');
     assert.deepEqual(errors, [], 'nessun errore pagina o console/WebGL');
     console.log('officina touch: ' + inventory.total + ' poteri, ' + inventory.fresh + ' nuovi; paginazione, ricerca, filtri, budget e salvataggio OK; istruzioni corpo ' + bodyChecks + '/4; ' + starters.length + ' ricette pronte; nessun errore');
   } finally { await browser.close(); }
