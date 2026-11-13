@@ -63,8 +63,9 @@ const DiteStorage = (() => {
     }
     const isNew = !rawPresent && !initialError && !recovered, data = normalize(raw, bricks, defaults), listeners = new Set();
     if (rawPresent && (!plain(raw) || !recipe(raw.recipe, bricks) || (raw.saved != null && !Array.isArray(raw.saved)))) recovered = true;
-    let state = { state: initialError === 'unavailable' ? 'temporary' : recovered || initialError === 'corrupt' ? 'recovered' : 'ready', error: initialError }, nextId = 0, pendingId = 0, timer = null, backedUp = false;
-    const status = () => ({ ...state, message: messages[state.state] });
+    const damaged = (recovered || initialError === 'corrupt') && !plain(raw);
+    let state = { state: initialError === 'unavailable' || damaged ? 'temporary' : recovered || initialError === 'corrupt' ? 'recovered' : 'ready', error: damaged ? 'corrupt' : initialError }, nextId = 0, pendingId = 0, timer = null, backedUp = false;
+    const status = () => ({ ...state, message: state.state === 'temporary' && state.error === 'corrupt' ? 'Salvataggio danneggiato: progressi temporanei' : messages[state.state] });
     function notify(name, error = null) { state = { state: name, error }; for (const fn of listeners) fn(status()); }
     function snapshot() { return normalize(data, bricks, defaults); }
     function sync(value) { for (const key of Object.keys(data)) delete data[key]; Object.assign(data, value); }
@@ -108,7 +109,7 @@ if (typeof G !== 'undefined') G.initStorage = function () {
   const send = (message) => { if (!handler || typeof handler.postMessage !== 'function') return false; handler.postMessage(message); return true; };
   G.native = { available: !!handler, active: !nativeHost || nativeHost.active !== false, capabilities: nativeHost && nativeHost.capabilities || {}, send, subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); } };
   let local = null; try { local = window.localStorage; } catch (error) { /* una webview puo vietare l'accesso */ }
-  const defaults = { reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches), normalizeOnboarding: G.Onboarding && G.Onboarding.normalize, normalizeJournal: G.Journal && G.Journal.normalize };
+  const defaults = { recipe: G.Onboarding && G.Onboarding.introRecipe(), reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches), normalizeOnboarding: G.Onboarding && G.Onboarding.normalize, normalizeJournal: G.Journal && G.Journal.normalize };
   G.storage = DiteStorage.create({ bricks: Bricks, storage: local, defaults, ...(handler ? { hostStorage: nativeHost.storage, hostError: nativeHost.storageError, postNative: send } : {}) });
   G.store = G.storage.data; G.save = () => G.storage.save();
   window.DiteNative = { receive(message) {

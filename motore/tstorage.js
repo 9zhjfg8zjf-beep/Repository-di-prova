@@ -70,11 +70,17 @@ async function check(name, fn) { try { await fn(); passed++; console.log('ok ' +
     assert.equal(a.save().ok, true); assert.equal(disk.values.get(Storage.BACKUP_KEY), previous); assert.equal(JSON.parse(disk.values.get(Storage.KEY)).fame, 55);
   });
   await check('dati corrotti senza backup restano recuperabili e conservati fino al salvataggio', () => {
-    for (const raw of ['{', 'null', '[]', 'false', '42', '{"saved":{}}']) {
+    for (const raw of ['{', 'null', '[]', 'false', '42']) {
       const disk = memory({ [Storage.KEY]: raw }), a = Storage.create({ bricks: B, storage: disk });
-      assert.equal(a.isNew, false); assert.equal(a.status().state, 'recovered'); assert.equal(B.valid(a.data.recipe), true); assert.equal(disk.values.get(Storage.KEY), raw);
+      assert.equal(a.isNew, false); assert.equal(a.status().state, 'temporary'); assert.equal(a.status().error, 'corrupt'); assert.match(a.status().message, /danneggiato.*temporanei/); assert.equal(B.valid(a.data.recipe), true); assert.equal(disk.values.get(Storage.KEY), raw);
       assert.equal(a.save().ok, true); assert.equal(disk.values.get(Storage.BACKUP_KEY), raw);
     }
+  });
+  await check('recuperato significa dati reali preservati, mentre native corrotto senza payload resta temporaneo', () => {
+    const prior = JSON.stringify({ recipe: kit(), fame: 55, saved: {} }), disk = memory({ [Storage.KEY]: prior }), partial = Storage.create({ bricks: B, storage: disk });
+    assert.equal(partial.status().state, 'recovered'); assert.equal(partial.data.fame, 55); assert.equal(B.valid(partial.data.recipe), true); assert.deepEqual(partial.data.saved, []); assert.equal(disk.writes.length, 0);
+    const sent = [], native = Storage.create({ bricks: B, hostStorage: null, hostError: 'corrupt', postNative: x => sent.push(x) });
+    assert.equal(native.isNew, false); assert.equal(native.status().state, 'temporary'); assert.equal(native.status().error, 'corrupt'); assert.match(native.status().message, /danneggiato.*temporanei/); assert.equal(sent.length, 0);
   });
   await check('quota piena conserva profilo precedente e kit in RAM, senza dichiarare salvato', () => {
     const prior = JSON.stringify(Storage.normalize({ recipe: kit(), fame: 16 }, B)), disk = memory({ [Storage.KEY]: prior }), a = Storage.create({ bricks: B, storage: disk });
