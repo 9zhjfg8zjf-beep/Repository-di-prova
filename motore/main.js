@@ -109,10 +109,12 @@ G.start = function () {
   const fresh = [false, false, false, false, false]; let useFresh = false;
   const press = (i) => { if (active() && Number.isInteger(i) && i >= 1 && i < 5) { buf[i] = performance.now(); fresh[i] = true; } }, pressUse = () => { if (active()) { useBuf = performance.now(); useFresh = true; } };
   const KEYMAP = { Space: 1, ShiftLeft: 1, KeyQ: 2, KeyE: 3, KeyR: 4 };
+  const menuBtn = $('menuBtn'); let menuGesture = null, menuClick = null;
   const active = () => app.snapshot().playing;
   const typing = (target) => !!(target && (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable));
   window.addEventListener('keydown', (e) => {
     if (typing(e.target) || e.repeat) return;
+    if (e.code === 'Space' && e.target === menuBtn) return; // Il button focalizzato conserva la sua attivazione nativa.
     if (e.code === 'Escape' || e.code === 'KeyP') { if (active()) openMenu(); else if (app.snapshot().screen === 'pause' && !app.snapshot().blockers.length) begin(); else if (!['lobby', 'boot', 'loading', 'error'].includes(app.snapshot().screen)) navigate('back'); e.preventDefault(); return; }
     if (!active()) return; keys.add(e.code);
     if (KEYMAP[e.code]) press(KEYMAP[e.code]); if (e.code === 'KeyF') pressUse();
@@ -156,8 +158,36 @@ G.start = function () {
   canvas.addEventListener('touchstart', (e) => { if (active()) e.preventDefault(); }, { passive: false });
   for (const ev of ['gesturestart', 'gesturechange', 'dblclick']) document.addEventListener(ev, (e) => { if (active()) e.preventDefault(); }, { passive: false });
 
+  // WKWebView puo consegnare il gesto touch senza sintetizzare click. Pausa usa il rilascio valido.
+  const insideMenu = (x, y) => { const r = menuBtn.getBoundingClientRect(); return r.width > 0 && r.height > 0 && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom; };
+  document.addEventListener('pointerdown', () => { menuClick = null; }, true); // Un nuovo gesto non e il click compatibile precedente.
+  menuBtn.addEventListener('pointerdown', event => {
+    if (!active() || menuBtn.disabled || event.button !== 0 || !['touch', 'pen'].includes(event.pointerType) || menuGesture && !menuGesture.cancelled) return;
+    menuGesture = { id: event.pointerId, type: event.pointerType, x: event.clientX, y: event.clientY, cancelled: false };
+  });
+  document.addEventListener('pointermove', event => {
+    if (menuGesture && event.pointerId === menuGesture.id && (Math.hypot(event.clientX - menuGesture.x, event.clientY - menuGesture.y) > 12 || !insideMenu(event.clientX, event.clientY))) menuGesture.cancelled = true;
+  }, { capture: true, passive: true });
+  const cancelMenu = event => { if (menuGesture && event.pointerId === menuGesture.id) menuGesture.cancelled = true; };
+  menuBtn.addEventListener('pointerleave', cancelMenu); menuBtn.addEventListener('lostpointercapture', cancelMenu);
+  const endMenu = event => {
+    if (!menuGesture || event.pointerId !== menuGesture.id) return;
+    const gesture = menuGesture; menuGesture = null;
+    menuClick = { id: gesture.id, type: gesture.type, x: event.clientX, y: event.clientY };
+    if (event.type === 'pointerup' && !gesture.cancelled && active() && !menuBtn.disabled && menuBtn.contains(event.target) && insideMenu(event.clientX, event.clientY)) openMenu();
+  };
+  document.addEventListener('pointerup', endMenu); document.addEventListener('pointercancel', endMenu);
+  document.addEventListener('click', event => {
+    if (!menuClick || event.detail === 0 || event.pointerType === 'mouse') return;
+    const samePointer = event.pointerId === menuClick.id, samePoint = Math.hypot(event.clientX - menuClick.x, event.clientY - menuClick.y) <= 12;
+    if ((!event.pointerType || event.pointerType === menuClick.type) && (samePointer || samePoint)) {
+      menuClick = null; event.preventDefault(); event.stopImmediatePropagation(); // Anche se il click ricade sul pannello appena apparso.
+    }
+  }, true);
+
   const inp = { mx: 0, my: 0, yaw: 0, pitch: 0, fire: false, b: [false, false, false, false, false], use: false };
   function resetInput() {
+    if (menuGesture) menuGesture.cancelled = true;
     const captures = [[canvas, joy.id], [canvas, look.id], [b0, zp.id]];
     joy.id = look.id = zp.id = null; joy.x = joy.y = 0; fireBtn = fireMouse = false; keys.clear();
     buf.fill(0); fresh.fill(false); useBuf = 0; useFresh = false; inp.mx = inp.my = 0; inp.fire = inp.use = false; inp.b.fill(false); acc = 0;

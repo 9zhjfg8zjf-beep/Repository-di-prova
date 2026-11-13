@@ -2,7 +2,7 @@
 'use strict';
 const assert = require('node:assert/strict'), fs = require('node:fs');
 const { chromium } = require('./pw.js'), B = require('./bricks.js'), Storage = require('./storage.js');
-const selected = (process.argv[2] || 'all').split(','), available = ['all', 'audio', 'bootstrap', 'coach', 'navigation', 'input', 'storage', 'loading', 'journal', 'bonuses', 'counter'];
+const selected = (process.argv[2] || 'all').split(','), available = ['all', 'audio', 'menu', 'bootstrap', 'coach', 'navigation', 'input', 'storage', 'loading', 'journal', 'bonuses', 'counter'];
 for (const name of selected) assert.ok(available.includes(name), 'scenario mobile sconosciuto: ' + name);
 const wants = name => selected.includes('all') || selected.includes(name);
 const profile = Storage.normalize({ recipe: { nome: 'Prova mobile', slots: ['dardo', 'scatto', 'nova', 'nova', 'ira'].map(id => ({ id, el: 'luce', t: 1 })) }, fame: 80, seed: 14, tips: true, onboarding: { version: 1, step: 5, skipped: false }, muted: true }, B);
@@ -257,6 +257,14 @@ const sevenPowerStates = () => {
     }
     const context = await browser.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true, deviceScaleFactor: 1 });
     await context.addInitScript(value => localStorage.setItem('dite2', JSON.stringify(value)), profile);
+    if (wants('menu')) await context.addInitScript(() => {
+      window.__menuEvents = []; window.__menuOmitClick = false; window.__menuOmittedClicks = 0;
+      for (const type of ['pointerdown', 'pointerup', 'pointercancel']) document.addEventListener(type, event => {
+        window.__menuEvents.push({ type, id: event.pointerId, pointerType: event.pointerType, primary: event.isPrimary, trusted: event.isTrusted, target: event.target.id, x: event.clientX, y: event.clientY, joyId: window.__dite ? window.__dite.inputSnapshot().joy.id : null });
+      }, true);
+      // Simula soltanto la mancata consegna del click compatibile: down/up restano eventi touch reali.
+      document.addEventListener('click', event => { if (window.__menuOmitClick && event.detail > 0) { window.__menuOmittedClicks++; event.preventDefault(); event.stopImmediatePropagation(); } }, true);
+    });
     const page = await context.newPage(), errors = [];
     page.on('pageerror', e => errors.push(e.message)); page.on('console', m => { if (m.type() === 'error' && !m.text().includes('CONTEXT_LOST_WEBGL')) errors.push(m.text()); });
     await page.goto(process.env.DITE_MOBILE_URL || 'file://' + __dirname + '/dist/index.html');
@@ -278,6 +286,63 @@ const sevenPowerStates = () => {
       await screen('playing');
       await page.evaluate(() => { const s = window.__dite.state(); s.player.invuln = 999; s.mobs = []; s.patrols = []; for (const turret of s.turrets) turret.stun = 999; });
     };
+    if (wants('menu')) {
+      const cdp = await context.newCDPSession(page), touch = (type, touchPoints) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints });
+      const center = async () => { const r = await page.locator('#menuBtn').boundingBox(); assert.ok(r && r.width >= 44 && r.height >= 44); return { x: r.x + r.width / 2, y: r.y + r.height / 2, id: 22 }; };
+      const omittedTap = async () => {
+        await page.evaluate(() => { window.__menuOmitClick = true; window.__menuEvents = []; });
+        await page.locator('#menuBtn').tap();
+        const evidence = await page.evaluate(() => { window.__menuOmitClick = false; return { screen: window.__dite.screen(), events: window.__menuEvents }; });
+        assert.ok(evidence.events.some(event => event.target === 'menuBtn' && event.type === 'pointerdown' && event.trusted));
+        assert.ok(evidence.events.some(event => event.target === 'menuBtn' && event.type === 'pointerup' && event.trusted));
+        assert.equal(evidence.screen.screen, 'pause', 'Pausa deve funzionare senza click compatibile: ' + JSON.stringify(evidence));
+        return evidence.events.findLast(event => event.target === 'menuBtn' && event.type === 'pointerup');
+      };
+      await start(); const ended = await omittedTap();
+      // Anche un click tardivo ritargettizzato su un controllo appena apparso appartiene al gesto gia consumato.
+      const late = await page.evaluate(event => {
+        const click = new PointerEvent('click', { bubbles: true, cancelable: true, detail: 1, pointerType: 'touch', pointerId: event.id, clientX: event.x, clientY: event.y });
+        document.getElementById('menuHome').dispatchEvent(click);
+        return { prevented: click.defaultPrevented, screen: window.__dite.screen().screen };
+      }, ended);
+      assert.equal(late.prevented, true); assert.equal(late.screen, 'pause', 'Nessun click-through verso il rifugio');
+      await page.locator('#resume').tap(); await screen('playing'); await omittedTap();
+      await page.locator('#resume').tap(); await screen('playing'); // Un secondo tap fisico non e il click compatibile precedente.
+      await omittedTap(); await page.evaluate(() => document.getElementById('menuHome').click()); await screen('lobby');
+      await start();
+      // Il dito su Pausa non e primario quando il joystick e gia tenuto.
+      const joyPoint = { x: 160, y: 240, id: 11 }, menuPoint = await center();
+      await page.evaluate(() => { window.__menuOmitClick = true; window.__menuEvents = []; });
+      // Chromium rilascia i punti elencati in touchEnd; gli eventi sotto verificano il dito realmente rilasciato.
+      await touch('touchStart', [joyPoint]); await touch('touchStart', [joyPoint, menuPoint]); await touch('touchEnd', [menuPoint]);
+      const second = await page.evaluate(() => { window.__menuOmitClick = false; return { events: window.__menuEvents, screen: window.__dite.screen(), input: window.__dite.inputSnapshot() }; });
+      assert.ok(second.events.some(event => event.type === 'pointerdown' && event.target === 'menuBtn' && event.trusted && event.primary === false), 'La prova deve usare un secondo contatto reale');
+      assert.ok(second.events.some(event => event.type === 'pointerup' && event.target === 'menuBtn' && event.trusted), 'Il rilascio deve riguardare il dito su Pausa: ' + JSON.stringify(second));
+      const joyDown = second.events.find(event => event.type === 'pointerdown' && event.target === 'c'), menuUp = second.events.find(event => event.type === 'pointerup' && event.target === 'menuBtn');
+      assert.ok(joyDown && menuUp.joyId === joyDown.id, 'Il joystick deve essere ancora tenuto prima del reset prodotto da Pausa: ' + JSON.stringify(second));
+      assert.equal(second.screen.screen, 'pause'); assert.equal(second.input.joy.id, null); await touch('touchEnd', []);
+      await page.locator('#resume').tap(); await screen('playing');
+      const drag = await center(); await touch('touchStart', [drag]); await touch('touchMove', [{ ...drag, x: drag.x - 80 }]); await touch('touchMove', [drag]); await touch('touchEnd', []);
+      assert.equal(await page.evaluate(() => window.__dite.screen().screen), 'playing', 'Uscire e rientrare nel pulsante non equivale a un tap');
+      const cancelled = await center(); await touch('touchStart', [cancelled]); await touch('touchCancel', []);
+      assert.equal(await page.evaluate(() => window.__dite.screen().screen), 'playing', 'pointercancel non attiva Pausa');
+      const blurred = await center(); await touch('touchStart', [blurred]);
+      await page.evaluate(() => window.dispatchEvent(new Event('blur'))); await screen('pause');
+      await page.keyboard.press('KeyP'); await screen('playing'); await touch('touchEnd', []);
+      assert.equal(await page.evaluate(() => window.__dite.screen().screen), 'playing', 'Un gesto interrotto da blur non si riattiva dopo Riprendi');
+      const mouse = await center(); await page.mouse.click(mouse.x, mouse.y); await screen('pause');
+      await page.locator('#resume').tap(); await screen('playing');
+      for (const key of ['Enter', 'Space']) {
+        const casts = await page.evaluate(() => window.__dite.state().stats.casts[1]);
+        await page.locator('#menuBtn').focus(); await page.keyboard.press(key); await screen('pause');
+        assert.equal(await page.evaluate(() => window.__dite.state().stats.casts[1]), casts, key + ' su Pausa non deve lanciare Scatto');
+        await page.locator('#resume').tap(); await screen('playing');
+      }
+      await page.evaluate(() => document.getElementById('menuBtn').click()); await screen('pause');
+      await frozen('pausa da click senza puntatore'); await page.screenshot({ path: __dirname + '/shots/mobile-menu-pointer.png' });
+      await page.locator('#menuHome').tap(); await screen('lobby');
+      console.log('menu: pointerup trusted senza click, nessun click-through, nuovo tap, joystick multitouch, drag/cancel/blur, mouse/Enter/Space e click accessibile verdi');
+    }
     if (wants('navigation')) {
       await frozen('lobby'); await page.locator('#play').tap(); await screen('playing');
       const t = await page.evaluate(() => window.__dite.state().t); await page.waitForFunction(t => window.__dite.state().t > t, t);
