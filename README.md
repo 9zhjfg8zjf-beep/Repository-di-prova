@@ -5,7 +5,9 @@ Il catalogo comprende 1343 meccaniche originali. Il gioco è pensato per il tele
 
 **[Gioca nel browser](https://9zhjfg8zjf-beep.github.io/Repository-di-prova/arena/)**
 
-Versione web pubblicata: **3.2**, main `5a50c8f70e2f214b0b6d3a704e24d39765262476`; la 4.0 verificata attende il deploy.
+Versione web pubblicata: **[4.0 pubblicata](https://9zhjfg8zjf-beep.github.io/Repository-di-prova/arena/)**.
+Deploy [Pages 43502528480](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43502528480) riuscito dal commit `fa40188750650989efa297216174234eb0425978`.
+Verifica del sito: [report](docs/qa/4.0/published-web/report.json) e [revisione visiva](docs/qa/4.0/published-web/root-review.json).
 DITE 4.0 introduce rifugio, kit e città, officina e HUD landscape, guida giocabile e registro locale.
 Comandi e guida si adattano ai mancini; effetti, stati e bonus restano leggibili, con dettagli in pausa.
 Dopo interruzioni o una finestra verticale il gioco richiede ripresa manuale.

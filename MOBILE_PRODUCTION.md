@@ -1,7 +1,9 @@
 # DITE — direzione mobile e preparazione iOS
 
 Stato 4.0: collaudo completo e revisione visiva verificati. Aggiornato il 13 novembre 2026.
-Pubblicazione web: **3.2**, main `5a50c8f70e2f214b0b6d3a704e24d39765262476`; la 4.0 verificata attende il deploy.
+Pubblicazione web: **[4.0 pubblicata](https://9zhjfg8zjf-beep.github.io/Repository-di-prova/arena/)**.
+Deploy [Pages 43502528480](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43502528480) riuscito dal commit `fa40188750650989efa297216174234eb0425978`.
+Verifica del sito: [report](docs/qa/4.0/published-web/report.json) e [revisione visiva](docs/qa/4.0/published-web/root-review.json).
 Baseline storica 3.2: `5a50c8f70e2f214b0b6d3a704e24d39765262476`.
 
 ## Obiettivo
@@ -35,7 +37,7 @@ La causa della precedente cattura uniforme resta non dimostrata. La nuova guardi
 nativi correnti; la revisione dei 15 PNG è superata e la CI è interamente verde.
 Restano prove su dispositivi fisici e prestazioni, account/Team e firma, TestFlight, privacy/supporto
 pubblici e metadati veri. Il simulatore non certifica hardware o distribuzione; Minimize in Windowed Apps
-non è stato verificato. La pubblicazione web richiede conferma della versione realmente servita.
+non è stato verificato. La web 4.0 servita è stata verificata dopo il deploy, con checksum e revisione visiva.
 
 ## Riferimenti e applicazione originale
 

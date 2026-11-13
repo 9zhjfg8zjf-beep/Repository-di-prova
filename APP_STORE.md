@@ -6,7 +6,9 @@ Il gate locale della web 17 è verde: 33/33 prove (14 Node e 19 browser/build), 
 controlli bundle. CI finale [43497161293](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43497161293), commit `3ba5abe95502fc00332b8fb50503bcde063317aa`:
 14/14 Node, 19/19 browser/build e packaging 8/8 verdi; 20/20 unitari e 6/6 UI per famiglia. Evidenze native e revisione visiva: Originali nativi disponibili; 26 PNG non uniformi e 24 osservazioni accettate al primo tentativo;
 revisione finale dei 15 PNG superata, con ricevuta [`docs/qa/4.0/root-review.json`](docs/qa/4.0/root-review.json) dello stesso run/head.
-Pubblicazione web: **3.2**, main `5a50c8f70e2f214b0b6d3a704e24d39765262476`; la 4.0 verificata attende il deploy.
+Pubblicazione web: **[4.0 pubblicata](https://9zhjfg8zjf-beep.github.io/Repository-di-prova/arena/)**.
+Deploy [Pages 43502528480](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43502528480) riuscito dal commit `fa40188750650989efa297216174234eb0425978`.
+Verifica del sito: [report](docs/qa/4.0/published-web/report.json) e [revisione visiva](docs/qa/4.0/published-web/root-review.json).
 
 **La preparazione non è pronta per App Store.** Mancano account/Team e firma autorizzati, prove fisiche,
 privacy e supporto pubblici, metadati e identità reali, archivio distribuibile e invio App Store Connect.
@@ -182,7 +184,7 @@ Il numero di build, il commit e il risultato della CI devono permettere di colle
 | Evidenza da collegare | Valore attuale |
 | --- | --- |
 | CI finale e commit | [43497161293](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43497161293), `3ba5abe95502fc00332b8fb50503bcde063317aa`; 14/14 Node, 19/19 browser/build e packaging 8/8 verdi; 20/20 unitari e 6/6 UI per famiglia |
-| XCTest e lifecycle finali | Entrambi i landscape effettivi, officina/tastiera e Home 4 → 3 → 4 con ripresa esplicita verificati su iPhone e iPad; 20/20 unitari e 6/6 UI verdi; 20/20 unitari e 6/6 UI verdi |
+| XCTest e lifecycle finali | Entrambi i landscape effettivi, officina/tastiera e Home 4 → 3 → 4 con ripresa esplicita verificati su iPhone e iPad; 20/20 unitari e 6/6 UI verdi per famiglia |
 | Gate locale web 17 | 33/33 ed esito 0; packaging 8/8 e controlli bundle verdi, checksum in `AGENTS.md` |
 | Evidenze native e revisione | Originali nativi disponibili; 26 PNG non uniformi e 24 osservazioni accettate al primo tentativo; revisione finale dei 15 PNG superata, con ricevuta [`docs/qa/4.0/root-review.json`](docs/qa/4.0/root-review.json) dello stesso run/head; set Store della build distribuibile separato |
 | Prove su hardware fisico | Da eseguire con hardware accessibile al collaudo |

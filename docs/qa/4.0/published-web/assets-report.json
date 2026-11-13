@@ -1,0 +1,23 @@
+[
+  {
+    "file": "manifest.webmanifest",
+    "url": "https://9zhjfg8zjf-beep.github.io/Repository-di-prova/arena/manifest.webmanifest",
+    "bytes": 389,
+    "sha256": "10f07081dae126b0ffafbdaf557e5a2760e636bf27d64d0fcaeda278489e9b8f",
+    "matchesVerifiedRelease": true
+  },
+  {
+    "file": "icon-180.png",
+    "url": "https://9zhjfg8zjf-beep.github.io/Repository-di-prova/arena/icon-180.png",
+    "bytes": 11559,
+    "sha256": "ac0d8cd3cd2698473edbac07282553b0cdd40d492afb4f5816e30933b671ff9c",
+    "matchesVerifiedRelease": true
+  },
+  {
+    "file": "icon-512.png",
+    "url": "https://9zhjfg8zjf-beep.github.io/Repository-di-prova/arena/icon-512.png",
+    "bytes": 35467,
+    "sha256": "799be843db22d3564e590805d512064606ae99746339a3f34b428c8a98b3dba0",
+    "matchesVerifiedRelease": true
+  }
+]

@@ -119,9 +119,13 @@ Ordine dei file nel build: bricks, mec*, catalogo, city, core, onboarding, journ
 world, fx, anim, poteri-fx, ui, main. Tutto in `'use strict'`. Gli export CommonJS devono restare su una riga
 con guardia indipendente `if (typeof module !== 'undefined') ...`, rimossa dal build per il browser.
 
-## Stato: 4.0 — collaudo completo e revisione visiva verificati
+## Stato: 4.0 pubblicata — collaudo e revisione visiva verificati
 
-Aggiornato il 13 novembre 2026. Pubblicazione web: **3.2**, main `5a50c8f70e2f214b0b6d3a704e24d39765262476`; la 4.0 verificata attende il deploy.
+Aggiornato il 13 novembre 2026. Pubblicazione web: **[4.0 pubblicata](https://9zhjfg8zjf-beep.github.io/Repository-di-prova/arena/)**.
+Deploy [Pages 43502528480](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43502528480) riuscito dal commit `fa40188750650989efa297216174234eb0425978`.
+Verifica del sito: [report](docs/qa/4.0/published-web/report.json) e [revisione visiva](docs/qa/4.0/published-web/root-review.json).
+Il sito risponde HTTP 200 con titolo DITE · 4.0 e SHA256 della variante web riportato sotto; manifest e icone coincidono.
+Rifugio, officina/annulla, ingresso in gioco, pausa/ripresa esplicita e tre PNG pubblici verificati, senza errori pagina.
 La versione iOS resta 4.0/build 1 unsigned, senza distribuzione App Store. Il catalogo comprende
 1343 meccaniche originali; il ciclo include una correzione di due righe per Sisma nel Core.
 Il checksum sotto identifica lo stato verificato.
@@ -195,16 +199,14 @@ Calibrazione del danno eseguita sui 336 nuovi programmi; fattori dei 1007 preced
 
 ## Cosa manca
 
-Prima di considerare la 4.0 distribuibile:
+Per distribuire la 4.0 nativa:
 
-1. **Verifica finale e pubblicazione web**: CI8 e revisione visiva concluse; deploy della web 4.0 ancora da verificare. Solo dopo
-   conferma del deploy e della versione realmente servita aggiornare il riferimento alla pubblicazione.
+1. **Firma e distribuzione**: identificatore definitivo, Apple Developer/Team, certificati e provisioning,
+   build distribuibile, TestFlight e revisione App Store. Una build unsigned non completa questi passaggi.
 2. **Prestazioni e comportamento fisico**: misurare frame time, memoria, calore, batteria, multi-touch,
    silenzioso/Bluetooth e interruzioni su dispositivi accessibili. Chromium software non certifica fluidita o audio iPhone;
    non chiedere all'utente di sostituirsi al collaudo.
-3. **Firma e distribuzione**: identificatore definitivo, Apple Developer/Team, certificati e provisioning,
-   build distribuibile, TestFlight e revisione App Store. Una build unsigned non completa questi passaggi.
-4. **Privacy e supporto**: pubblicare policy con titolare reale e copia consultabile nell'app, supporto funzionante,
+3. **Privacy e supporto**: pubblicare policy con titolare reale e copia consultabile nell'app, supporto funzionante,
    dichiarazioni App Store, eta, export e altri metadati effettivi. Manifest privacy, policy e dichiarazioni sono distinti;
    nessun contatto o dato personale inventato. I dettagli aperti sono in `IOS.md`.
 

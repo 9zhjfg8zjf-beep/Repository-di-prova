@@ -1,0 +1,26 @@
+{
+  "url": "https://9zhjfg8zjf-beep.github.io/Repository-di-prova/arena/",
+  "finalUrl": "https://9zhjfg8zjf-beep.github.io/Repository-di-prova/arena/",
+  "status": 200,
+  "sha256": "4fa61a6d2776915466de8b318cb1c589e6577cde048f5919436dfe4c53d6b03a",
+  "bytes": 1425210,
+  "title": "DITE · 4.0",
+  "checkedAt": "2026-11-13T20:33:49.914Z",
+  "viewport": {
+    "width": 874,
+    "height": 402
+  },
+  "flows": [
+    "lobby",
+    "forge and cancel",
+    "enter game",
+    "pause and explicit resume"
+  ],
+  "pageErrors": [],
+  "screenshotNames": [
+    "public-lobby.png",
+    "public-forge.png",
+    "public-game.png"
+  ],
+  "limitation": "Chromium software rendering; not physical-device performance."
+}

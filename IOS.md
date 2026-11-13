@@ -2,6 +2,9 @@
 
 Aggiornato il 13 novembre 2026. Target applicazione **4.0, build 1**, deployment target iOS 17.
 Il contenuto del gioco incluso segue la versione visibile 4.0 del bundle generato.
+Pubblicazione web: **[4.0 pubblicata](https://9zhjfg8zjf-beep.github.io/Repository-di-prova/arena/)**.
+Deploy [Pages 43502528480](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43502528480) riuscito dal commit `fa40188750650989efa297216174234eb0425978`.
+Verifica del sito: [report](docs/qa/4.0/published-web/report.json) e [revisione visiva](docs/qa/4.0/published-web/root-review.json).
 Non chiamare questa preparazione “App Store ready”: firma, distribuzione, prove fisiche e revisione sono fasi distinte.
 
 ## Stato delle verifiche

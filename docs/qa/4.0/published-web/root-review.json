@@ -1,0 +1,46 @@
+{
+  "status": "passed",
+  "reviewer": "Codex root",
+  "reviewedAt": "2026-11-13T20:34:47.922093+00:00",
+  "releaseCommit": "fa40188750650989efa297216174234eb0425978",
+  "sourceCommit": "3ba5abe95502fc00332b8fb50503bcde063317aa",
+  "pagesRun": {
+    "id": 43502528480,
+    "url": "https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43502528480",
+    "conclusion": "success"
+  },
+  "sourceChecksRun": 43497161293,
+  "files": [
+    {
+      "path": "report.json",
+      "bytes": 701,
+      "sha256": "5f13100baa8e95c3860388183e2c68c8d5d04d1aa8fda19f6078d283d06d4d4c"
+    },
+    {
+      "path": "assets-report.json",
+      "bytes": 800,
+      "sha256": "13dfb1ac63034868d2009c930b4da54f2254ac906dcabeb590015b96a2912f92"
+    },
+    {
+      "path": "public-lobby.png",
+      "bytes": 196098,
+      "sha256": "8fe2ed3b64ea77a62d408bf1049207ca0fbc27e44eed6d12fab6bcddc44653b3"
+    },
+    {
+      "path": "public-forge.png",
+      "bytes": 55297,
+      "sha256": "523dc310aeb5f8d429ae317473108bb2f58ddbaed415f4b09a010b0de5651964"
+    },
+    {
+      "path": "public-game.png",
+      "bytes": 251519,
+      "sha256": "6ef8ec9a6aeea7037d18070d8abe059488232e1fc106ac4a4ae8412a94cf0a07"
+    }
+  ],
+  "notes": [
+    "The three original browser images were opened and inspected. Lobby, forge and gameplay show visible content with readable primary controls.",
+    "Public HTML, manifest and both icons match the verified release bytes.",
+    "Real touch actions entered forge, cancelled, entered the game, paused and explicitly resumed. No JavaScript page errors observed.",
+    "Chromium software rendering in a fresh mobile context; no physical-device performance claim."
+  ]
+}
