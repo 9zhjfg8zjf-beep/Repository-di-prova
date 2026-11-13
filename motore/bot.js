@@ -5,8 +5,15 @@ const rng = City.rng;
 const mkInp = () => ({ mx: 0, my: 0, yaw: 0, pitch: 0, fire: false, b: [false, false, false, false, false], use: false });
 function check(s, where) {
   const p = s.player, bad = (v) => !Number.isFinite(v);
-  if (bad(p.x) || bad(p.z) || bad(p.hp) || bad(p.res) || bad(p.cam.y)) throw new Error('NaN giocatore ' + where);
-  if (!p.ride && !p.leap && Core.solidAt(s, p.x, p.z)) throw new Error('giocatore dentro un muro ' + where + ' ' + p.x.toFixed(1) + ',' + p.z.toFixed(1));
+  if (bad(p.x) || bad(p.z) || bad(p.hp) || bad(p.res) || bad(p.r) || bad(p.cam.x) || bad(p.cam.y) || bad(p.cam.z)) throw new Error('NaN giocatore o camera ' + where);
+  // La fase attraversa davvero i muri; appena termina torna obbligatorio un punto libero.
+  if (!p.ride && !p.leap && !p.phase && Core.solidAt(s, p.x, p.z)) throw new Error('giocatore dentro un muro ' + where + ' ' + p.x.toFixed(1) + ',' + p.z.toFixed(1));
+  const bodies = ['form', 'phase', 'flight', 'possession'].filter((key) => p[key]);
+  if (bodies.length > 1) throw new Error('stati del corpo incompatibili ' + where + ' ' + bodies.join(','));
+  for (const key of bodies) if (bad(p[key].t) || p[key].t <= 0) throw new Error('durata del corpo non valida ' + key + ' ' + where);
+  const size = p.form ? p.form.size : 1;
+  if (bad(size) || size < 0.4 || size > 2.2 || Math.abs(p.r - 0.6 * size) > 1e-8) throw new Error('taglia o raggio incoerenti ' + where);
+  if (p.flight && (bad(p.flight.y) || bad(p.flight.h) || p.flight.h < 2.5 || p.flight.h > 12 || p.flight.y < Core.EYE - 1e-8 || p.flight.y > p.flight.h + 1e-8)) throw new Error('quota di volo non valida ' + where);
   for (const e of s.mobs) if (bad(e.x) || bad(e.z) || bad(e.hp)) throw new Error('NaN mob ' + e.kind + ' ' + where);
   for (const c of s.npcs) if (bad(c.x) || bad(c.z)) throw new Error('NaN abitante ' + where);
   if (s.boss && (bad(s.boss.x) || bad(s.boss.hp))) throw new Error('NaN boss ' + where);
