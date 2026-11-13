@@ -7505,7 +7505,11 @@ G.start = function () {
 
   // WKWebView puo consegnare il gesto touch senza sintetizzare click. Pausa usa il rilascio valido.
   const insideMenu = (x, y) => { const r = menuBtn.getBoundingClientRect(); return r.width > 0 && r.height > 0 && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom; };
-  document.addEventListener('pointerdown', () => { menuClick = null; }, true); // Un nuovo gesto non e il click compatibile precedente.
+  document.addEventListener('pointerdown', event => {
+    menuClick = null; // Un nuovo gesto non e il click compatibile precedente.
+    // Un ID riusato apre una nuova sequenza; non cancellare il gesto di un altro dito ancora attivo.
+    if (menuGesture && menuGesture.id === event.pointerId) menuGesture = null;
+  }, true);
   menuBtn.addEventListener('pointerdown', event => {
     if (!active() || menuBtn.disabled || event.button !== 0 || !['touch', 'pen'].includes(event.pointerType) || menuGesture && !menuGesture.cancelled) return;
     menuGesture = { id: event.pointerId, type: event.pointerType, x: event.clientX, y: event.clientY, cancelled: false };
