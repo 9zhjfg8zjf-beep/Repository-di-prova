@@ -15,6 +15,8 @@ function main() {
   fs.mkdirSync(path.join(__dirname, 'shots'), { recursive: true });
   const checks = [];
   if (mode !== 'browser') checks.push(
+    { args: ['tstorage.js'] }, { args: ['tappstate.js'] },
+    { args: ['tonboarding.js'] }, { args: ['tjournal.js'] },
     { args: ['tprog.js'] }, { args: ['bot.js', 'fuzz', '300'] },
     { args: ['bot.js', 'missioni', '12'] }, { args: ['bot.js', 'boss', '3'] },
     { args: ['tmec.js'] },
@@ -27,7 +29,7 @@ function main() {
     for (const kind of ['forme', 'colpi', 'linee', 'zone']) checks.push({ args: ['tanim.js', kind], browser: true });
     for (const file of ['tend.js', 'tquest.js', 'ttips.js']) checks.push({ args: [file], browser: true });
     for (const kind of ['boss', 'temi', 'officina']) checks.push({ args: ['tour.js', kind], browser: true });
-    for (const file of ['tofficina.js', 'tvis.js', 'tcorpo_browser.js', 'tsensi_browser.js']) checks.push({ args: [file], browser: true });
+    for (const file of ['tofficina.js', 'tvis.js', 'tcorpo_browser.js', 'tsensi_browser.js', 'tmobile_browser.js', 'trendering.js']) checks.push({ args: [file], browser: true });
   }
   for (const check of checks) {
     const label = (check.env && check.env.X ? 'X=1 ' : '') + check.args.join(' ');
