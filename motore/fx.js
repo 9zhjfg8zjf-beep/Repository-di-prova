@@ -158,7 +158,7 @@ G.buildFx = function (s) {
   };
 
   // ---------- Committenti: figure alte con un segnale sopra la testa ----------
-  const markTex = (ch, col) => { const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); g.fillStyle = col; g.shadowColor = col; g.shadowBlur = 16; g.font = '900 100px Georgia, serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(ch, 64, 68); const t = new THREE.CanvasTexture(c); return t; };
+  const markTex = (ch, col) => { const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); g.fillStyle = col; g.shadowColor = col; g.shadowBlur = 16; g.font = '900 100px Georgia, serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(ch, 64, 68); return G.ownTexture(new THREE.CanvasTexture(c), scene); };
   const TEX_Q = markTex('!', '#ffd24a'), TEX_W = markTex('…', '#9aa0b0'), TEX_A = markTex('?', '#7dffb0');
   G.giverViews = s.givers.map((g) => {
     const root = new THREE.Group(); root.position.set(g.x, 0, g.z); scene.add(root);
@@ -274,8 +274,13 @@ G.buildFx = function (s) {
     for (let i = 0; i <= seg; i++) { const a = a0 + ((a1 - a0) * i) / seg, sx = Math.sin(a), cz = Math.cos(a); pos.push(sx * r0, 0, cz * r0, sx * r1, 0, cz * r1); if (i < seg) { const k = i * 2; idx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2); } }
     const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3)); g.setIndex(idx); return g;
   }
-  const lineGeo = (() => { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array([-0.5, 0, 0, 0.5, 0, 0, 0.5, 0, 1, -0.5, 0, 1]), 3)); g.setIndex([0, 1, 2, 0, 2, 3]); g.keep = true; return g; })();
-  const discGeo = fanGeo(0, Math.PI * 2, 0, 1, 40), rimGeo = fanGeo(0, Math.PI * 2, 0.95, 1, 40); discGeo.keep = rimGeo.keep = true;
+  const teleGeo = G.TELE_GEO = G.TELE_GEO || (() => {
+    const line = new THREE.BufferGeometry(); line.setAttribute('position', new THREE.BufferAttribute(new Float32Array([-0.5, 0, 0, 0.5, 0, 0, 0.5, 0, 1, -0.5, 0, 1]), 3)); line.setIndex([0, 1, 2, 0, 2, 3]);
+    const all = { line, disc: fanGeo(0, Math.PI * 2, 0, 1, 40), rim: fanGeo(0, Math.PI * 2, 0.95, 1, 40) };
+    for (const g of Object.values(all)) g.keep = true;
+    return all;
+  })();
+  const { line: lineGeo, disc: discGeo, rim: rimGeo } = teleGeo;
   const teleViews = new Map(), WARN = 0xff2a14;
   function teleView(tl) {
     const grp = new THREE.Group(); grp.position.set(tl.x, 0.07, tl.z); grp.rotation.y = tl.ang;

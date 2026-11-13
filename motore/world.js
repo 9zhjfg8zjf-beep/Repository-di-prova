@@ -13,14 +13,28 @@ G.PAL = {
     neon: { cy: '#9dff3a', mg: '#c05aff', am: '#e8ff5a', rd: '#ff6a2a', gr: '#5aff9a', wh: '#e6ffd0' }, bases: ['#24281f', '#1f2a22', '#2a2622', '#2b2a1c', '#141f14'], tower: 0xc05aff,
     lights: [['#9dff3a', '#d7ff7a', '#e8ff5a'], ['#5aff9a', '#d7ff7a', '#c05aff'], ['#9dff3a', '#c05aff', '#ffb23a', '#e8ff5a'], ['#ff6a2a', '#c05aff']], street: ['#12140f', 'rgba(157,255,58,.5)', 'rgba(192,90,255,.5)'], ash: ['#14160e', 'rgba(157,255,58,.7)'] },
 };
-G.disposeWorld = function () {
-  if (!G.scene) return;
-  G.scene.traverse((o) => {
-    if (o.geometry && !o.geometry.keep) o.geometry.dispose();
-    const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
-    for (const m of ms) { for (const k of ['map', 'emissiveMap', 'alphaMap']) if (m[k]) m[k].dispose(); m.dispose(); }
+// Le texture cambiate su uno sprite non sono piu' raggiungibili dal materiale.
+// La scena mantiene anche quelle scollegate, fino al cambio di citta'.
+G.ownTexture = function (texture, scene = G.scene) {
+  const owned = scene.userData.diteTextures || (scene.userData.diteTextures = new Set());
+  owned.add(texture); return texture;
+};
+G.disposeWorld = function (scene = G.scene) {
+  if (!scene) return;
+  const geometries = new Set(), materials = new Set(), textures = scene.userData.diteTextures || new Set();
+  scene.traverse((o) => {
+    if (o.geometry && !o.geometry.keep) geometries.add(o.geometry);
+    for (const m of o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : []) {
+      materials.add(m);
+      for (const value of Object.values(m)) if (value && value.isTexture) textures.add(value);
+      if (m.uniforms) for (const u of Object.values(m.uniforms)) if (u.value && u.value.isTexture) textures.add(u.value);
+    }
   });
-  G.scene = null;
+  for (const g of geometries) g.dispose();
+  for (const m of materials) m.dispose();
+  for (const t of textures) t.dispose();
+  textures.clear(); scene.clear();
+  if (G.scene === scene) G.scene = null;
 };
 G.buildWorld = function (city) {
   const C = Core, HALF = C.HALF, CELL = C.CELL, N = C.N, MAP = city.map, P = G.PAL[city.theme.id], liqSolid = city.theme.liquidSolid;
@@ -34,7 +48,7 @@ G.buildWorld = function (city) {
 
   // ---------- Texture da canvas ----------
   function canvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
-  function toTex(c, repeat) { const t = new THREE.CanvasTexture(c); if (repeat !== false) t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = G.aniso; return t; }
+  function toTex(c, repeat) { const t = G.ownTexture(new THREE.CanvasTexture(c), scene); if (repeat !== false) t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = G.aniso; return t; }
   function speckle(g, w, h, n, colors, s0, s1) { for (let i = 0; i < n; i++) { g.fillStyle = pick(colors); const s = s0 + rnd() * (s1 - s0); g.fillRect(rnd() * w, rnd() * h, s, s); } }
   // Facciata: 512px = 16 unita'. Mappa colore + mappa luminosa (finestre accese).
   function facade(o) {
@@ -67,7 +81,7 @@ G.buildWorld = function (city) {
     facade({ base: P.bases[3], cols: 6, rows: 4, mx: 0.38, my: 0.3, mb: 0.45, lit: 0.18, lights: P.lights[3], rough: 0.95 }),
     facade({ base: P.bases[4], cols: 8, rows: 16, mx: 0.05, my: 0.1, mb: 0.1, lit: 0.5, lights: [twd, twd, twd, shade(TW, 0.32), twd, shade(TW, 0.28), TW], strips: shade(TW, 0.75), metal: 0.7, rough: 0.35, glow: 1.2 }),
   ];
-  const FARMAT = (() => { const m = facade({ base: '#0a0608', cols: 10, rows: 14, mx: 0.25, my: 0.25, mb: 0.25, lit: 0.16, lights: P.farLights }); m.map.dispose(); const fm = new THREE.MeshBasicMaterial({ map: m.emissiveMap, color: P.far, fog: false }); m.dispose(); return fm; })();
+  const FARMAT = (() => { const m = facade({ base: '#0a0608', cols: 10, rows: 14, mx: 0.25, my: 0.25, mb: 0.25, lit: 0.16, lights: P.farLights }); scene.userData.diteTextures.delete(m.map); m.map.dispose(); const fm = new THREE.MeshBasicMaterial({ map: m.emissiveMap, color: P.far, fog: false }); m.dispose(); return fm; })();
 
   // Piano terra: vetrine, saracinesche, porte (512x128 = 16 x 3.4 unita')
   function shopfront(v) {
