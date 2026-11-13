@@ -2,7 +2,7 @@ import XCTest
 import UIKit
 
 /// These tests interact with the real bundled page through accessibility and touch.
-/// No JavaScript, DOM test API or direct game-state mutation is used.
+/// No DOM test API or direct game-state mutation is used. One Debug-only launch flag injects a graphics failure.
 final class DITEUITests: XCTestCase {
     private var app: XCUIApplication!
 
@@ -126,6 +126,20 @@ final class DITEUITests: XCTestCase {
         tap("Annulla")
         waitForButton("Entra nel gioco")
         waitForNoKeyboard()
+    }
+
+    func testWebGLFailureRetriesThroughAFreshNativeBootstrap() {
+        app.terminate()
+        app.launchArguments = ["--ui-testing", "--ui-testing-reset-store", "--ui-testing-fail-webgl-once"]
+        app.launch()
+        waitForButton("Riprova", timeout: 90)
+        XCTAssertTrue(app.staticTexts["La grafica non si avvia"].exists)
+        attachScreenshot("webgl-first-start-failure")
+        tap("Riprova")
+        waitForButton("Entra nel gioco", timeout: 90)
+        tap("Entra nel gioco")
+        waitForButton("Pausa")
+        attachScreenshot("webgl-retry-restored-game")
     }
 
     private func reducedMotionControl() -> XCUIElement {

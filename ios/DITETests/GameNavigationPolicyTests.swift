@@ -27,4 +27,13 @@ final class GameNavigationPolicyTests: XCTestCase {
         let unsafe = URL(string: "https://user:password@example.invalid/support")!
         XCTAssertFalse(GameNavigationPolicy(entryURL: entry, externalURLs: [unsafe]).canOpenExternally(unsafe, userActivated: true))
     }
+
+    func testOnlyMainDocumentReloadRefreshesTheNativeBootstrap() {
+        let policy = GameNavigationPolicy(entryURL: entry)
+        XCTAssertTrue(policy.needsFreshBootstrap(entry, isMainFrame: true, isReload: true))
+        XCTAssertFalse(policy.needsFreshBootstrap(entry, isMainFrame: true, isReload: false), "Initial load must not loop")
+        XCTAssertFalse(policy.needsFreshBootstrap(entry, isMainFrame: false, isReload: true))
+        XCTAssertFalse(policy.needsFreshBootstrap(URL(string: "https://example.invalid/"), isMainFrame: true, isReload: true))
+        XCTAssertFalse(policy.needsFreshBootstrap(URL(fileURLWithPath: "/private/app/secret.json"), isMainFrame: true, isReload: true))
+    }
 }

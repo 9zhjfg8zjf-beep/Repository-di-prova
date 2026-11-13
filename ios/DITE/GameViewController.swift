@@ -26,6 +26,9 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
     private let detailLabel = UILabel()
     private let retryButton = UIButton(type: .system)
     private let activity = UIActivityIndicatorView(style: .large)
+    #if DEBUG
+    private var failNextWebGLForUITest = false
+    #endif
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .landscape }
     override var preferredInterfaceOrientationForPresentation: UIInterfaceOrientation { .landscapeRight }
@@ -52,6 +55,7 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
             if ProcessInfo.processInfo.arguments.contains("--ui-testing-reset-store") {
                 try? FileManager.default.removeItem(at: directory)
             }
+            failNextWebGLForUITest = ProcessInfo.processInfo.arguments.contains("--ui-testing-fail-webgl-once")
         }
         #endif
         store = GameSaveStore(directory: directory)
@@ -206,6 +210,15 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
         controller.removeAllUserScripts()
         let script = "Object.defineProperty(window,'__DITE_HOST__',{value:Object.freeze(\(json)),writable:false,configurable:false});"
         controller.addUserScript(WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        #if DEBUG
+        if failNextWebGLForUITest {
+            failNextWebGLForUITest = false
+            // Failure injection only: XCTest still taps the real recovery button and waits for the real lobby.
+            // All WebGL fallbacks fail on this document; the next host load installs a fresh, normal document.
+            let failure = "(() => { const original = HTMLCanvasElement.prototype.getContext; HTMLCanvasElement.prototype.getContext = function(type, ...args) { return /webgl/i.test(String(type)) ? null : original.call(this, type, ...args); }; })();"
+            controller.addUserScript(WKUserScript(source: failure, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        }
+        #endif
         webView.loadFileURL(entry, allowingReadAccessTo: entry.deletingLastPathComponent())
         readyTimer = Timer.scheduledTimer(withTimeInterval: 45, repeats: false) { [weak self] _ in
             guard let self, self.awaitingReady else { return }
@@ -362,6 +375,15 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
 
     func webView(_ webView: WKWebView, decidePolicyFor action: WKNavigationAction,
                  decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        if navigationPolicy?.needsFreshBootstrap(action.request.url,
+                                                  isMainFrame: action.targetFrame?.isMainFrame == true,
+                                                  isReload: action.navigationType == .reload) == true {
+            // A JS retry must refresh storage, lifecycle, scripts and handshake together.
+            // loadFileURL starts a new navigation rather than replaying the stale reload bootstrap.
+            decisionHandler(.cancel)
+            DispatchQueue.main.async { [weak self] in self?.loadGame() }
+            return
+        }
         if action.targetFrame?.isMainFrame == true && navigationPolicy?.isGameDocument(action.request.url) == true {
             decisionHandler(.allow)
         } else {

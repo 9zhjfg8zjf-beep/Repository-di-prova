@@ -24,4 +24,8 @@ struct GameNavigationPolicy {
         guard userActivated, let url else { return false }
         return externalURLs.contains(url)
     }
+
+    func needsFreshBootstrap(_ url: URL?, isMainFrame: Bool, isReload: Bool) -> Bool {
+        isMainFrame && isReload && isGameDocument(url)
+    }
 }

@@ -77,6 +77,8 @@ Per eseguire localmente su un Mac configurato: `bash scripts/ci_ios.sh iphone` e
   Il simulatore può dichiarare la capacità non disponibile: l'interfaccia deve rispettarlo.
 - Avvio non completato, caricamento fallito o processo WebKit terminato mostrano un errore nativo con retry manuale.
   Non esistono cicli automatici di reload. Il combattimento interrotto non viene ricostruito: si torna al rifugio.
+- Una richiesta JS di reload del documento principale viene intercettata e riaperta dal contenitore:
+  bootstrap, salvataggio, lifecycle e handshake ripartono insieme, senza riutilizzare lo snapshot del primo avvio.
 
 ## Contratto bridge v1 e salvataggio schema 3
 
@@ -132,6 +134,8 @@ Gli UI test avviano il bundle vero e usano tap e controlli accessibili, senza es
 ingresso, pausa, impostazioni/ritorno, rotazioni, background e persistenza di una preferenza dopo rilancio.
 Una prova apre l'officina senza tastiera automatica, modifica Nome e Cerca con la tastiera reale, ruota
 il simulatore, chiude la tastiera tramite il comando dell'interfaccia e raggiunge il ritorno al rifugio.
+Una prova provoca un primo errore WebGL attraverso uno user script esclusivamente Debug, poi tocca il vero
+«Riprova» e raggiunge rifugio e partita. L'iniezione di guasto non è compilata nella build Release.
 Le schermate sono allegati XCTest reali; al fallimento viene conservato anche l'albero di accessibilità.
 
 Prima della distribuzione occorrono prove su dispositivi accessibili: multi-touch simultaneo, notch e home indicator,
