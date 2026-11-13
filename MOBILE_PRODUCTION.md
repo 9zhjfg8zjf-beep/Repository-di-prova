@@ -1,6 +1,6 @@
 # DITE — direzione mobile e preparazione iOS
 
-Stato: **4.0 candidata 17, 33/33 prove locali verdi e background iPad in attesa della settima CI**, non ancora pubblicata. Aggiornato il 13 novembre 2026.
+Stato: **4.0 candidata 17, collaudo funzionale verde e revisione visiva aperta**, non ancora pubblicata. Aggiornato il 13 novembre 2026.
 Base verificata: DITE 3.2, commit 5a50c8f70e2f214b0b6d3a704e24d39765262476.
 La versione pubblicata resta 3.2. Il lavoro è nel ramo `codex/dite-mobile`.
 
@@ -14,68 +14,32 @@ leggibilità, stabilità e prestazioni devono avere verifiche proprie.
 L'obiettivo qualitativo indicato dall'utente è ambizioso. Non dichiarare “livello SOTA”, “App Store ready” o
 “60 fps su iPhone” sulla base di un restyling, di una compilazione o di screenshot del browser.
 
-## Lavoro svolto in questo ciclo
+## Comportamento e verifiche attuali
 
-- Git pull eseguito prima dell'audit; checkout inizialmente pulito e aggiornato.
-- Lettura dei sorgenti 3.2 tramite GitHub, con audit indipendenti di navigazione, persistenza, input e rendering.
-- Ricerca in documentazione ufficiale Apple, Supercell, Riot e Activision.
-- Dopo la riconnessione, clone e pull aggiornati; tutte le 27 prove iniziali eseguite sullo stesso codice 3.2.
-  Il primo `tend` ha perso il banner transitorio pur avendo già verificato vittoria, premio e salvataggio;
-  la ripetizione identica è passata. Le nuove prove osservano il vero annuncio prima dell'azione e fissano
-  la camera per confrontare risorse realmente renderizzate.
-- Audit visivo della 3.2: 25 foto a 667×375, 844×390, 932×430 e 1024×768, compresi inset simulati.
-  Rilevati comandi tagliati, ricerca nascosta, sovrapposizione missione/suprema e saturazione durante i poteri.
-- Implementati router, pulizia input, storage schema 3, tutorial basato sulle azioni, registro dei risultati,
-  nuova shell orizzontale, impostazioni, risorse grafiche e progetto iOS. I gruppi vengono integrati e verificati
-  separatamente: non leggere questa lista come certificazione della release completa.
-- Prove mirate nuove: storage 19 casi, router 11 casi e 2.000 transizioni, tutorial 18 casi, registro 11 casi.
-  Le prove browser verificano input touch reali, sospensione, rendering fermo, quota storage, cambio città e retry.
-- Risorse: perdita di una texture del committente riprodotta sul codice precedente e risolta; plateau dopo
-  disegno delle quattro forme di preavviso, delle tre texture e degli impatti. Pool inattivi senza upload;
-  le zone mobili e crescenti ora seguono i dati del Core anche nel mondo disegnato.
-- Leggibilità degli effetti: Sisma mantiene il preavviso basso e non produce fulmini dal cielo all'impatto.
-  I corpi dei proiettili propri sfumano vicino alla camera, mentre quelli nemici conservano la loro visibilità.
-  I fasci hanno larghezza apparente limitata e nucleo colorato, evitando che la sovrapposizione sommi solo bianco;
-  l'attenuazione rispetta anche l'opzione Lampi ridotti.
-- Bonus: un solo potenziamento prioritario nel riepilogo HUD, seguito da `+N` quando ce ne sono altri.
-  Copre otto bonus: invulnerabilità, riflessione, Fenice, occultamento, cura nel tempo, furia, velocità e orbite.
-  Il pannello Potenziamenti in pausa mostra nomi completi e secondi residui dagli stessi timer della simulazione,
-  che in pausa non avanzano. Il riepilogo non cambia effetti o durata dei poteri.
-- Stati del potere: riepilogo limitato a tre righe, con corpo alternativo e stasi prioritari; oltre tre stati,
-  due righe e conteggio degli altri. Il dettaglio espandibile in pausa conserva tempi, risorse e istruzioni.
-  La modalità mancini rispecchia controlli e gruppi HUD; la guida adatta le istruzioni al lato scelto.
-- Coach: due ancoraggi scelti dagli ingombri reali, ResizeObserver e cache senza misure nei frame stabili.
-  La missione attiva resta visibile. Riavviare la guida conserva l'incarico reale e completa il percorso dopo
-  le quattro azioni di movimento, mira, primario e abilità, senza seconda missione o premio aggiuntivo.
-  QA verde su 112 snapshot: sei missioni, touch/tastiera, due lati, font, nome lungo, stati e boss.
-- Audio senza retry infinito, Pausa su pointerup touch/pen con deduplica e rispetto dei gesti cancellati,
-  attivazione con Spazio. Dalla candidata 16 il menu recupera un pointer ID pen obsoleto. La candidata 17
-  contiene i nomi lunghi dell'officina su una riga e protegge il gioco quando il canvas è verticale, anche senza rotazione fisica.
-  Il ritorno in orizzontale richiede ripresa manuale. La guardia usa le dimensioni del canvas, non quelle del
-  visual viewport; il percorso officina/tastiera è verde nella sesta CI su entrambe le famiglie.
-- Candidata 17: **33/33 prove locali attuali verdi**: 19 browser/build e poi 14 Node, senza modifiche ai
-  sorgenti o alle prove, entrambi con esito 0. Log: `/tmp/dite-final17-browser.log` e `/tmp/dite-final17-node.log`.
-  Packaging 8/8, sync, progetto e asset ripetuti con esito 0; checksum in `AGENTS.md`.
-  Pointer ID pen obsoleto: regressione riprodotta sulla 15 e superata sulla 16. Guardia nelle finestre strette
-  e verticali: regressione riprodotta sulla 16 e superata sulla 17.
-  Il precedente timeout screenshot `DSL 19-b` sulla 16 resta di causa non dimostrata; il risultato attuale
-  viene dal gate completo della 17.
-- Sesta CI [43482793151](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43482793151),
-  su `c906226`: Node 14, 19 browser/build e packaging 8/8 verdi; sul target universale, 20 unitari per famiglia,
-  UI 6/6 iPhone e 5/6 iPad. Risolte le conversioni Swift che bloccavano Debug nella quinta CI.
-  Entrambi i landscape effettivi, rotazione live, nuovo avvio e percorso officina/tastiera sono verdi.
-  Su iPhone è verde anche background OS con ripresa esplicita.
-- Unico fallimento iPad: `Window Controls` trovato zero volte prima di qualsiasi azione OS. Foto,
-  accessibilità e geometria mostrano fullscreen 1180×820 senza controlli finestra; Minimize non è eseguito.
-  La sola fixture XCTest ora usa Home su entrambe le famiglie e rimuove Minimize, mantenendo veri stati OS
-  background 2/3 → foreground 4, pausa al ritorno e ripresa esplicita. Attende la settima CI: background iPad
-  ancora da verificare, nessuna verifica di Minimize in Windowed Apps. Web, Core e bundle 17 invariati;
-  il gate locale 33/33 e packaging 8/8 resta valido.
-- Il target universale `1,2` dichiara due landscape per telefono e quattro orientamenti iPad; la sesta CI
-  verifica i due landscape effettivi. Sonda DEBUG `effectiveGeometry`, flag disponibili da iOS 26 e traccia
-  JS solo opt-in `--ui-testing-event-trace`. Evidenze originali in `ios-run43482793151/verified-evidence.json`.
-  Il set `docs/qa/4.0` con PNG originali, manifest e TXT è da creare dopo una CI completa verde e non è il
-  set Store finale. La versione pubblicata resta 3.2.
+- Rifugio, kit/città e officina con ritorno coerente; router unico, pulizia input e recupero manuale degli errori.
+  HUD landscape con comandi mancini, missione leggibile, bonus/stati compatti e dettagli completi in pausa.
+- Guida basata sulle azioni reali e riprendibile, registro locale e storage schema 3 con conferma del salvataggio.
+  Pausa touch/pen, rilascio dei poteri, audio coerente con l'attività e ripresa esplicita dopo interruzioni.
+- Guardia sul canvas verticale, rendering fermo nei menu e risorse verificate dopo cambi città ed effetti.
+  Il ciclo include una correzione di due righe per Sisma nel Core; il checksum in `AGENTS.md` identifica
+  lo stato verificato.
+- Gate locale della web 17: **14 Node + 19 browser/build, 33/33 verdi**, packaging 8/8, sync, progetto e asset verdi.
+  Log `/tmp/dite-final17-node.log` e `/tmp/dite-final17-browser.log`, esito 0.
+- Settima CI [43488987332](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43488987332), commit `066f8f7d3d851306ce44cf00b973952917dba1ab`: **14 Node, 19 browser/build e packaging 8/8 verdi**;
+  sul target universale **20 unitari e 6 UI verdi per famiglia**. Verificati entrambi i landscape effettivi,
+  officina/tastiera e Home con stati OS reali 4 → 3 → 4 su iPhone e iPad, pausa al ritorno e ripresa esplicita.
+- **La revisione visiva finale fallisce**: fra 26 PNG originali, la lobby iPad
+  `F1DF7132-A72D-4969-95B5-0B55040AAD3C.png` è interamente RGB (9, 8, 11). Causa non provata.
+  La guardia nativa in preparazione controlla centro 80%, campione 64×64 RGB e contrasto almeno 16,
+  attendendo fino a 20 secondi senza azioni e conservando snapshot falliti e metriche. Attende la CI8.
+- Provenienza originale: `ios-run43488987332`. Il set QA finale previsto di 15 PNG, manifest e TXT è ancora
+  da creare. Le 31 fixture verdi del selettore scratch verificano il rifiuto di catture uniformi/trasparenti
+  e gli altri controlli del selettore; non sono un gate della build né una revisione visiva positiva.
+
+Il gioco pubblico resta 3.2; il contenitore iOS 4.0/build 1 è unsigned. Restano hardware fisico e prestazioni,
+account/Team e firma, TestFlight, privacy/supporto pubblici e metadati veri. Il simulatore non certifica
+hardware o distribuzione; Minimize in Windowed Apps non è verificato. Prima della pubblicazione occorrono
+CI8 e revisione visiva riuscite, poi conferma della versione realmente servita.
 
 ## Riferimenti e applicazione originale
 
@@ -166,7 +130,7 @@ meno maiuscole decorative, gerarchia tipografica più chiara e superfici meno lu
 - Conservare le API di collaudo esistenti. Aggiungere snapshot di schermata/input e renderOnce:
   tvis modifica appositamente una scena in pausa e deve richiedere il nuovo disegno.
 - Un unico proprietario di main.js. Ownership separate per interfaccia, rendering, progetto iOS e prove.
-  Il nucleo dei 1343 poteri rimane stabile durante questo ciclo di esperienza mobile.
+  Le modifiche al Core vanno documentate; questo ciclo include la correzione di due righe per Sisma.
 
 ## Percorso iOS
 
@@ -180,8 +144,8 @@ Audio rispettoso del silenzioso e della musica dell'utente, da verificare su dis
 Preparare progetto Xcode, schema condiviso, risorse, licenze e procedura di sincronizzazione con checksum.
 Aggiungere CI macOS per build unsigned e test su simulatore; una workflow è verificata solo dopo esecuzione riuscita.
 Alla data dell'audit gli upload richiedono Xcode 26+ e SDK iOS 26+: il deployment target è una scelta distinta.
-La sesta CI prova il target universale e i due landscape effettivi sul simulatore iPad fullscreen;
-il background iPad con la nuova fixture Home richiede ancora la settima CI.
+La settima CI prova i due landscape effettivi, tastiera e Home su entrambe le famiglie. Rimane aperta
+la revisione visiva delle catture: la guardia nativa sui pixel deve ancora essere verificata nella CI8.
 
 Privacy policy, manifest privacy e dichiarazioni App Store Connect sono elementi distinti:
 compilarli dai comportamenti reali, senza dichiarare automaticamente assenza di raccolta o API usate.
