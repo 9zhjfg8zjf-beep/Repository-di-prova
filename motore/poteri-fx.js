@@ -1,5 +1,60 @@
 // Segni persistenti dei poteri: porte, legami e difese devono essere leggibili.
 // Materiali normali e geometrie condivise: niente pareti additive davanti alla camera.
+G.powerStatusSnapshot = function (s) {
+  if (!s || !s.player) return [];
+  const p = s.player, rows = [], mobs = s.mobs || [], seconds = (n) => Math.ceil(Math.max(0, n)) + ' s';
+  const number = (n) => String(Math.round(n * 10) / 10), active = (value) => value && Number.isFinite(value.t) && value.t > 0;
+  const add = (key, name, hud, value, resource, instruction, critical = false) => rows.push({ key, name, hud, left: value ? value.t : null, time: value ? seconds(value.t) : 'Senza scadenza', resource, instruction, critical });
+  // Il Core ammette un solo corpo alternativo, piu' una creatura in stasi.
+  // Questi sono i due stati che non devono mai sparire dietro il conteggio.
+  const bodyKey = ['possession', 'phase', 'flight', 'form'].find((key) => active(p[key]));
+  if (bodyKey) {
+    const value = p[bodyKey], manual = Number.isInteger(value.slot) && value.slot >= 1 && value.slot <= 4;
+    if (bodyKey === 'possession') add(bodyKey, 'Possessione', 'Corpo esposto · ' + seconds(value.t), value, 'Il tuo corpo è vulnerabile · vita ' + Math.ceil(p.hp) + '/' + p.maxHp,
+      'Muovi e attacca con l’ospite. ' + (manual ? 'Ripremi lo stesso potere per rientrare nel tuo corpo.' : 'Rientri nel tuo corpo alla scadenza.'), true);
+    else if (bodyKey === 'phase') add(bodyKey, 'Fase', 'Fase · ' + seconds(value.t), value, 'Attraversi i muri · nuovi attacchi spenti',
+      manual ? 'Ripremi lo stesso potere per tornare solido.' : 'Torni solido alla scadenza.', true);
+    else if (bodyKey === 'flight') { const height = Math.max(0, value.y - Core.EYE).toFixed(1); add(bodyKey, 'Volo', 'Volo · ' + height + ' m · ' + seconds(value.t), value, 'Quota ' + height + ' m sopra il terreno',
+      'Guarda in alto o in basso mentre ti muovi per cambiare quota. ' + (manual ? 'Ripremi lo stesso potere per atterrare.' : 'Atterri alla scadenza.'), true); }
+    else add(bodyKey, 'Taglia', 'Taglia ×' + value.size.toFixed(1) + ' · ' + seconds(value.t), value, 'Taglia ×' + value.size.toFixed(1),
+      manual ? 'Ripremi lo stesso potere per tornare normale.' : 'Torni alla taglia normale alla scadenza.', true);
+  }
+  if (active(p.captive)) {
+    const value = p.captive, target = mobs.find((e) => e.id === value.id && !e.dead), shared = bodyKey && p[bodyKey].slot === value.slot;
+    const bodyName = { form: 'la trasformazione', phase: 'la fase', flight: 'il volo', possession: 'la possessione' }[bodyKey];
+    let instruction = Number.isInteger(value.slot) && value.slot >= 1 && value.slot <= 4 ? (shared ? 'Prima termina ' + bodyName + ' con lo stesso potere; poi ripremilo per liberare la creatura.' : 'Ripremi lo stesso potere per liberare la creatura.') : 'La creatura viene liberata alla scadenza.';
+    if (value.fling) instruction += ' Il rilascio manuale la scaglia nella direzione dello sguardo.';
+    add('captive', 'Stasi', 'Stasi · ' + seconds(value.t), value, (target ? 'Creatura: ' + target.kind : 'Creatura catturata') + (value.d > 0 ? ' · rilascio ' + number(value.d) + ' danni' : ''), instruction, true);
+  }
+  if (active(p.mimic)) {
+    const attack = { tiro: 'Tiro', artiglio: 'Artiglio', pesante: 'Pesante', boss: 'Onda' }[p.mimic.attack] || 'Copiato';
+    add('mimic', 'Imitazione', 'Imitazione · ' + attack, p.mimic, 'Primario: ' + attack, 'Usa il primario copiato; il tuo ritorna alla scadenza.');
+  }
+  if (Number.isFinite(p.bank) && p.bank > 0) add('bank', 'Energia raccolta', 'Energia · ' + Math.round(p.bank), null, Math.round(p.bank) + ' energia', 'Si spende con un potere di rilascio. Si perde alla morte o cambiando kit.');
+  if (active(p.absorb)) add('absorb', 'Assorbimento', 'Assorbe · ' + seconds(p.absorb.t), p.absorb, 'Raggio ' + number(p.absorb.r) + ' m · limite ' + number(p.absorb.cap), 'Intercetta i proiettili nemici vicini e accumula energia.');
+  if (active(p.scan)) {
+    const alive = new Set(mobs.filter((e) => !e.dead && !e.captive).map((e) => e.id)); if (s.boss && !s.boss.dead) alive.add(s.boss.id);
+    const count = p.scan.ids.filter((id) => alive.has(id)).length;
+    add('scan', 'Rilevamento', 'Rilevamento · ' + count, p.scan, count + (count === 1 ? ' presenza' : ' presenze') + ' · raggio ' + number(p.scan.r) + ' m', 'Vedi le presenze rilevate anche dietro gli ostacoli. La scansione non mira e non colpisce.');
+  }
+  const clones = mobs.filter((e) => e.cloned && !e.dead && e.life > 0).sort((a, b) => a.cloneSlot - b.cloneSlot);
+  if (clones.length) {
+    const first = Math.min(...clones.map((e) => e.life)), last = Math.max(...clones.map((e) => e.life));
+    add('clones', 'Copie attive', 'Copie attive · ' + clones.length, { t: first }, clones.map((e, i) => 'Copia ' + (i + 1) + ': ' + Math.ceil(e.hp) + '/' + e.maxHp + ' vita, ' + seconds(e.life)).join(' · '), 'Ripetono gli attacchi diretti compatibili del primario. Possono essere colpite.');
+    if (Math.ceil(first) !== Math.ceil(last)) rows[rows.length - 1].time = Math.ceil(first) + '–' + Math.ceil(last) + ' s';
+  }
+  return rows;
+};
+G.renderPowerHud = function (snapshot) {
+  const hud = document.getElementById('powerHud'); if (!hud) return;
+  const shown = snapshot.length > 3 ? snapshot.slice(0, 2) : snapshot, extra = snapshot.length - shown.length;
+  const signature = shown.map((row) => row.key + ':' + row.hud).join('|') + '|' + extra;
+  hud.classList.toggle('hidden', !snapshot.length); hud.dataset.count = String(snapshot.length);
+  if (hud.dataset.signature === signature) return; hud.dataset.signature = signature;
+  const nodes = shown.map((row) => { const node = document.createElement('div'); node.className = 'power-status-row'; node.dataset.power = row.key; node.textContent = row.hud; return node; });
+  if (extra) { const node = document.createElement('div'); node.className = 'power-status-more'; node.textContent = '+' + extra + ' altri · pausa'; nodes.push(node); }
+  hud.replaceChildren(...nodes);
+};
 G.buildPowerFx = function (s) {
   const scene = G.scene, views = new Map(), p = s.player;
   const geo = G.POWER_GEO = G.POWER_GEO || (() => {
@@ -23,8 +78,8 @@ G.buildPowerFx = function (s) {
 
   G.syncPowerFx = function (t) {
     if (G.renderPrefs && G.renderPrefs.reducedMotion) t = 0;
-    entities.clear(); let clones = 0;
-    for (const e of s.mobs) if (!e.dead) { entities.set(e.id, e); if (e.cloned) clones++; }
+    entities.clear();
+    for (const e of s.mobs) if (!e.dead) entities.set(e.id, e);
     if (s.boss) entities.set(s.boss.id, s.boss);
     for (const v of views.values()) v.seen = false;
     const ps = s.powers;
@@ -97,20 +152,7 @@ G.buildPowerFx = function (s) {
     }
     for (const [key, v] of views) if (!v.seen) { remove(v); views.delete(key); }
     G.powerFxCount = views.size;
-    const hud = document.getElementById('powerHud'), lines = [];
-    if (p.bank > 0) lines.push('ENERGIA RACCOLTA · ' + Math.round(p.bank));
-    if (p.absorb) lines.push('ASSORBIMENTO · ' + Math.ceil(p.absorb.t) + 's');
-    if (p.mimic) lines.push('IMITAZIONE · ' + p.mimic.attack.toUpperCase() + ' · ' + Math.ceil(p.mimic.t) + 's');
-    if (p.form) lines.push('TAGLIA ×' + p.form.size.toFixed(1) + ' · ' + Math.ceil(p.form.t) + 's');
-    if (p.phase) lines.push('FASE · ' + Math.ceil(p.phase.t) + 's · RIPREMI PER USCIRE');
-    if (p.flight) lines.push('VOLO · ' + Math.max(0, p.flight.y - Core.EYE).toFixed(1) + ' m · ' + Math.ceil(p.flight.t) + 's');
-    if (p.possession) lines.push('POSSESSIONE · ' + Math.ceil(p.possession.t) + 's\nIL TUO CORPO È VULNERABILE');
-    if (p.captive) lines.push('STASI · ' + Math.ceil(p.captive.t) + 's · RIPREMI PER LIBERARE');
-    if (p.scan) lines.push('RILEVAMENTO · ' + G.scanFxCount + ' PRESENZE · ' + Math.ceil(p.scan.t) + 's');
-    if (clones) lines.push('COPIE ATTIVE · ' + clones);
-    const text = lines.join('\n');
-    if (hud.textContent !== text) hud.textContent = text;
-    hud.style.whiteSpace = 'pre-line'; hud.classList.toggle('hidden', !lines.length);
+    G.renderPowerHud(G.powerStatusSnapshot(s));
   };
   G.powerEvent = function (ev) {
     if (!Number.isFinite(ev.x) || !Number.isFinite(ev.z)) return;

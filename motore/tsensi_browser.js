@@ -77,7 +77,7 @@ assert.ok(['all', 'scan', 'clone', 'mimic'].includes(mode), 'Uso: node tsensi_br
         let blue = 0; for (let i = 0; i < pixels.length; i += 4) if (pixels[i + 2] > 190 && pixels[i + 1] > 130 && pixels[i + 1] > pixels[i] + 25) blue++;
         return { count: G.scanFxCount, hud: document.getElementById('powerHud').textContent, visible: outline.visible && outline.parent.visible, depthTest: outline.material.depthTest, depthWrite: outline.material.depthWrite, opacity: outline.material.opacity, finite: outline.matrixWorld.elements.every(Number.isFinite), projection: center.toArray(), blue, aim: s.aim.kind };
       }, target);
-      assert.ok(scan && scan.visible && scan.finite); assert.equal(scan.count, 1); assert.equal(scan.depthTest, false); assert.equal(scan.depthWrite, false); assert.ok(scan.opacity >= .8); assert.ok(scan.projection.every((n) => Number.isFinite(n) && Math.abs(n) < 1)); assert.ok(scan.hud.includes('RILEVAMENTO')); assert.ok(scan.blue > before.blue, 'la minimappa deve segnare il contatto rilevato'); assert.equal(scan.aim, '');
+      assert.ok(scan && scan.visible && scan.finite); assert.equal(scan.count, 1); assert.equal(scan.depthTest, false); assert.equal(scan.depthWrite, false); assert.ok(scan.opacity >= .8); assert.ok(scan.projection.every((n) => Number.isFinite(n) && Math.abs(n) < 1)); assert.ok(scan.hud.includes('Rilevamento · 1')); assert.ok(scan.blue > before.blue, 'la minimappa deve segnare il contatto rilevato'); assert.equal(scan.aim, '');
       await frames();
       assert.ok(await page.evaluate(() => { let n = 0; window.__dite.G.scene.traverse((o) => { if (o.isLineSegments && o.material.depthTest === false) n += o.userData.draws || 0; }); return n > 0; }), 'outline non disegnato');
       await page.screenshot({ path: __dirname + '/shots/sensi-muro-rilevato.png' });
@@ -108,7 +108,7 @@ assert.ok(['all', 'scan', 'clone', 'mimic'].includes(mode), 'Uso: node tsensi_br
         });
         return { copies, shots: window.__sensiTrace.shots.length, fires: window.__sensiTrace.events.filter((e) => e.type === 'cloneFire').length, hp: s.mobs.filter((e) => e.testLane !== undefined).map((e) => e.hp), hud: document.getElementById('powerHud').textContent };
       });
-      assert.equal(idle.copies.length, 2); assert.equal(idle.shots, 0); assert.equal(idle.fires, 0); assert.deepEqual(idle.hp, [800, 800, 800]); assert.ok(idle.hud.includes('COPIE ATTIVE · 2'));
+      assert.equal(idle.copies.length, 2); assert.equal(idle.shots, 0); assert.equal(idle.fires, 0); assert.deepEqual(idle.hp, [800, 800, 800]); assert.ok(idle.hud.includes('Copie attive · 2'));
       for (const c of idle.copies) { assert.equal(c.kind, 'clone'); assert.equal(c.visible, true); assert.deepEqual(c.bad, []); assert.ok(c.projection.every((n) => Number.isFinite(n) && Math.abs(n) < 1)); }
       await frames(); assert.ok(await page.evaluate(() => [...window.__dite.G.mobViews.values()].filter((v) => v.kind === 'clone').every((v) => v.root.userData.draws > 0)), 'copie non disegnate');
       await page.screenshot({ path: __dirname + '/shots/sensi-copie.png' });
@@ -135,12 +135,12 @@ assert.ok(['all', 'scan', 'clone', 'mimic'].includes(mode), 'Uso: node tsensi_br
         const D = window.__dite, s = D.state(), button = document.getElementById('b0'), expected = document.createElement('div'); expected.innerHTML = D.G.svg('claw');
         return { attack: s.player.mimic.attack, label: button.querySelector('.nm').textContent, claw: button.querySelector('.svg').innerHTML === expected.innerHTML, hud: document.getElementById('powerHud').textContent, changed: s.kit[0] !== window.__mimicOriginal, duration: s.player.mimic.t };
       });
-      assert.equal(copied.attack, 'artiglio'); assert.equal(copied.label, 'ARTIGLIO'); assert.equal(copied.claw, true); assert.equal(copied.changed, true); assert.ok(copied.duration > 7); assert.match(copied.hud, /IMITAZIONE.*ARTIGLIO/);
+      assert.equal(copied.attack, 'artiglio'); assert.equal(copied.label, 'ARTIGLIO'); assert.equal(copied.claw, true); assert.equal(copied.changed, true); assert.ok(copied.duration > 7); assert.match(copied.hud, /Imitazione.*Artiglio/);
       await frames(); await page.screenshot({ path: __dirname + '/shots/sensi-imitazione.png' });
       // Comprime soltanto l'attesa: scadenza, ripristino e aggiornamento DOM passano dal frame reale.
       await page.evaluate(() => { window.__dite.state().player.mimic.t = .05; }); await advance(.2); await pause();
       const restored = await page.evaluate(() => { const D = window.__dite, s = D.state(), button = document.getElementById('b0'); return { mimic: !!s.player.mimic, samePrimary: s.kit[0] === window.__mimicOriginal, label: button.querySelector('.nm').textContent, sameIcon: button.querySelector('.svg').innerHTML === window.__mimicButton, hud: document.getElementById('powerHud').textContent, ended: window.__sensiTrace.events.some((e) => e.type === 'mimicEnd') }; });
-      assert.equal(restored.mimic, false); assert.equal(restored.samePrimary, true); assert.match(restored.label, /^dardo$/i); assert.equal(restored.sameIcon, true); assert.equal(restored.ended, true); assert.doesNotMatch(restored.hud, /IMITAZIONE/);
+      assert.equal(restored.mimic, false); assert.equal(restored.samePrimary, true); assert.match(restored.label, /^dardo$/i); assert.equal(restored.sameIcon, true); assert.equal(restored.ended, true); assert.doesNotMatch(restored.hud, /imitazione/i);
       await cleanup(); console.log('mimic: input reale, ARTIGLIO/icona/HUD e ripristino Dardo alla scadenza verdi');
     }
     assert.deepEqual(errors, [], 'errori browser o shader'); console.log('nessun errore');

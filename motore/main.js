@@ -242,6 +242,60 @@ G.start = function () {
     document.documentElement.style.setProperty('--el', css(s.kit[0].el)); G.hands.col = ec(s.kit[0].el);
     $('resTxt').textContent = s.kit[4].nome.toUpperCase();
   }
+  // Un solo elenco dei timer reali alimenta il riepilogo HUD e il dettaglio in pausa.
+  const BONUS_LABELS = [
+    ['invuln', 'Invulnerabilità', 'Invulnerabile'],
+    ['reflect', 'Riflessione dei colpi', 'Riflessione'],
+    ['phoenix', 'Rinascita della Fenice', 'Fenice'],
+    ['veil', 'Occultamento', 'Occultato'],
+    ['hot', 'Cura nel tempo', 'Cura'],
+    ['fury', 'Furia', 'Furia'],
+    ['haste', 'Velocità aumentata', 'Velocità'],
+    ['orbit', 'Orbite offensive', 'Orbite'],
+  ];
+  function bonusSnapshot(player) {
+    if (!player) return [];
+    return BONUS_LABELS.filter(([key]) => Number.isFinite(player[key]) && player[key] > (key === 'invuln' ? 0.3 : 0))
+      .map(([key, name, short]) => ({ key, name, short, left: player[key] }));
+  }
+  function renderBonuses(player, detail = false) {
+    const bonuses = bonusSnapshot(player), count = bonuses.length;
+    setTxt('buffs', count ? bonuses[0].short + (count > 1 ? ' +' + (count - 1) : '') : '');
+    const description = count ? 'Potenziamenti: ' + bonuses.map((bonus) => bonus.name).join(', ') : '';
+    if (txtCache.bonusDescription !== description) {
+      txtCache.bonusDescription = description; $('buffs').title = description;
+      if (description) $('buffs').setAttribute('aria-label', description); else $('buffs').removeAttribute('aria-label');
+    }
+    if (!detail || !$('menuEffects') || !$('menuEffectList')) return;
+    $('menuEffects').classList.toggle('hidden', !count);
+    if ($('menuEffectCount')) $('menuEffectCount').textContent = String(count);
+    const signature = bonuses.map((bonus) => bonus.key + ':' + Math.ceil(bonus.left)).join('|');
+    if (txtCache.bonusList === signature) return;
+    txtCache.bonusList = signature;
+    const rows = bonuses.map((bonus) => {
+      const row = document.createElement('li'), name = document.createElement('span'), time = document.createElement('span');
+      row.dataset.effect = bonus.key; name.className = 'effect-name'; name.textContent = bonus.name;
+      time.className = 'effect-time'; time.textContent = Math.ceil(bonus.left) + ' s';
+      row.append(name, time); return row;
+    });
+    $('menuEffectList').replaceChildren(...rows);
+  }
+  function renderPowerDetails() {
+    if (!$('menuPowers') || !$('menuPowerList')) return;
+    const rows = G.powerStatusSnapshot(s);
+    $('menuPowers').classList.toggle('hidden', !rows.length);
+    if ($('menuPowerCount')) $('menuPowerCount').textContent = String(rows.length);
+    const signature = JSON.stringify(rows);
+    if (txtCache.powerDetails === signature) return; txtCache.powerDetails = signature;
+    const nodes = rows.map((row) => {
+      const item = document.createElement('li'); item.dataset.power = row.key;
+      for (const [tag, className, value] of [['span', 'effect-name', row.name], ['span', 'effect-time', row.time], ['small', 'effect-resource', row.resource], ['small', 'effect-detail', row.instruction]]) {
+        const node = document.createElement(tag); node.className = className; node.textContent = value; item.appendChild(node);
+      }
+      return item;
+    });
+    $('menuPowerList').replaceChildren(...nodes);
+  }
   function renderHome() {
     if (G.shell) G.shell.render({ screen: app.snapshot().screen, recipe: st.recipe, fame: st.fame, level: B.levelFor(st.fame), theme: st.theme, cityName: s ? s.city.nome : City.THEMES[st.theme].nome, session: app.snapshot().hasSession, muted, prefs: st, saveStatus: G.storage.status(), citySummary: s && s.quest ? s.quest.titolo : 'Missioni, abitanti e tre sigilli da esplorare', nativeHaptics: !!(G.native.available && G.native.capabilities.haptics), journal: journal && journal.view() });
   }
@@ -441,12 +495,12 @@ G.start = function () {
     for (let i = 0; i < 5; i++) {
       const K = s.kit[i], b = BT[i], body = ['form', 'phase', 'flight', 'possession', 'captive'].find((key) => p[key] && p[key].slot === i), act = s.act[i] > 0 && i > 0, tog = !!body || K.kind === 'charm' || K.kind === 'possess' || K.kind === 'grab' || K.kind === 'anchor';
       let ready = body ? true : i === 0 ? !riding && !p.phase && (!!p.possession || !!s.aim.kind || K.kind !== 'chain') : s.ready[i] && !act, lab = b.dataset.nm, cdh = 0;
-      if (K.kind === 'cable') { ready = riding || hnt.node >= 0; lab = riding ? 'SCENDI' : lab; cdh = riding ? 0 : Math.max(0, p.cd[1]) / K.cd; }
+      if (K.kind === 'cable') { ready = riding || hnt.node >= 0; lab = riding ? 'Scendi' : lab; cdh = riding ? 0 : Math.max(0, p.cd[1]) / K.cd; }
       else if (i === 4) cdh = act ? 0 : 1 - p.res / 100;
       else if (i > 0) cdh = act && tog ? 0 : Math.max(0, p.cd[i]) / K.cd;
       if (K.kind === 'possess' && !act) ready = ready && hnt.turret >= 0;
-      if (tog && act) lab = K.kind === 'grab' ? 'SCAGLIA' : K.kind === 'anchor' ? 'TORNA' : 'RILASCIA';
-      if (body) { lab = { form: 'NORMALE', phase: 'SOLIDO', flight: 'ATTERRA', possession: 'RIENTRA', captive: 'LIBERA' }[body]; cdh = 0; }
+      if (tog && act) lab = K.kind === 'grab' ? 'Scaglia' : K.kind === 'anchor' ? 'Torna' : 'Rilascia';
+      if (body) { lab = { form: 'Normale', phase: 'Solido', flight: 'Atterra', possession: 'Rientra', captive: 'Libera' }[body]; cdh = 0; }
       const cls = (ready ? 'r' : '') + (act ? 'a' : '') + (i === 0 && inp.fire && !riding ? 'h' : '') + (K.kind === 'charm' && ready && hnt.screen >= 0 ? 'x' : '');
       if (clsCache[i] !== cls) { clsCache[i] = cls; b.classList.toggle('ready', ready); b.classList.toggle('act', act); b.classList.toggle('held', cls.includes('h')); b.classList.toggle('hot', cls.includes('x')); }
       if (txtCache['l' + i] !== lab) { txtCache['l' + i] = lab; b.querySelector('.nm').textContent = lab; b.setAttribute('aria-label', lab); }
@@ -457,7 +511,7 @@ G.start = function () {
     if (hitMark > 0) { hitMark = Math.max(0, hitMark - dt); } const hm = hitMark > 0; if (clsCache.hm !== hm) { clsCache.hm = hm; xh.classList.toggle('hit', hm); }
     $('ride').style.opacity = rideK; $('ocfx').style.opacity = ocK; $('veilfx').style.opacity = veilK; $('timefx').style.opacity = timeK; $('shieldfx').style.opacity = p.shield > 0 ? 0.9 : 0; $('downfx').style.opacity = dead ? 1 : 0;
     xh.className = riding ? 'ride' : s.aim.kind ? 'lock' : '';
-    const bf = (p.fury > 0 ? 'FURIA ' : '') + (p.reflect > 0 ? 'SPECCHIO ' : '') + (p.phoenix > 0 ? 'FENICE ' : '') + (p.haste > 0 ? 'CORSA ' : '') + (p.veil > 0 ? 'VELO ' : '') + (p.orbit > 0 ? 'ORBITE ' : '') + (p.hot > 0 ? 'CURA ' : '') + (p.invuln > 0.3 ? 'INTOCCABILE' : ''); setTxt('buffs', bf);
+    renderBonuses(p);
     let txt = '';
     if (riding) txt = 'guarda dove andare · ripremi per scendere'; else if (hnt.node >= 0) txt = 'cavo a portata'; else if (hnt.screen >= 0 && s.kit.some((K, i) => K.kind === 'charm' && s.ready[i])) txt = 'schermo vicino: ipnosi in onda';
     else if (s.boss && s.boss.out > 0.5) txt = 'torna nell\'arena o il boss si riaddormenta'; else if (s.quest && s.quest.type === 'ripetitori' && s.quest.hold > 0) txt = 'resta nel cerchio';
@@ -570,6 +624,8 @@ G.start = function () {
     $('ui').classList.toggle('hidden', !value.playing);
     document.body.dataset.screen = value.screen;
     if (s && $('menuSub')) $('menuSub').textContent = (st.recipe.nome || 'Senza nome') + ' · ' + s.city.nome + ' · Fama ' + s.fame;
+    renderBonuses(s && s.player, value.screen === 'pause');
+    if (value.screen === 'pause') renderPowerDetails();
     renderHome(); renderCoach(); nativeState(value); last = performance.now(); invalidate();
     if (changed) {
       const remembered = focusMemory.get(value.screen), panel = $(panels[value.screen]);
@@ -682,7 +738,7 @@ G.start = function () {
   document.addEventListener('keydown', (event) => {
     if (event.key !== 'Tab' || active()) return;
     const panel = app.snapshot().blockers.includes('portrait') ? $('rotateGuard') : $(panels[app.snapshot().screen]); if (!panel) return;
-    const items = Array.from(panel.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),a[href],[tabindex="0"]')).filter((el) => el.getClientRects().length);
+    const items = Array.from(panel.querySelectorAll('summary,button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),a[href],[tabindex="0"]')).filter((el) => el.getClientRects().length);
     if (!items.length) { event.preventDefault(); return; }
     const index = items.indexOf(document.activeElement); if (event.shiftKey && index <= 0) { items[items.length - 1].focus(); event.preventDefault(); } else if (!event.shiftKey && (index < 0 || index === items.length - 1)) { items[0].focus(); event.preventDefault(); }
   });

@@ -3,12 +3,12 @@
 const assert = require('node:assert/strict'), fs = require('node:fs');
 const { chromium } = require('./pw.js');
 const scenarios = [
-  ['taglia', 'Spalle della montagna', 'form', 'NORMALE', 'TAGLIA'],
-  ['fase', 'Passo senza peso', 'phase', 'SOLIDO', 'FASE'],
-  ['volo', 'Ali del pellegrino', 'flight', 'ATTERRA', 'VOLO'],
-  ['possessione', 'Inquilino dello Stige', 'possession', 'RIENTRA', 'POSSESSIONE'],
+  ['taglia', 'Spalle della montagna', 'form', 'Normale', 'Taglia'],
+  ['fase', 'Passo senza peso', 'phase', 'Solido', 'Fase'],
+  ['volo', 'Ali del pellegrino', 'flight', 'Atterra', 'Volo'],
+  ['possessione', 'Inquilino dello Stige', 'possession', 'Rientra', 'Corpo esposto'],
   ['patto', 'Giuramento del passo', 'pact', null, null],
-  ['stasi', 'Ampolla dello Stige', 'captive', 'LIBERA', 'STASI'],
+  ['stasi', 'Ampolla dello Stige', 'captive', 'Libera', 'Stasi'],
 ];
 const selected = (process.argv[2] || process.env.DITE_CORPO_VIS || 'all').split(',');
 for (const name of selected) assert.ok(name === 'all' || scenarios.some(([n]) => n === name), 'scenario sconosciuto: ' + name);
@@ -62,7 +62,8 @@ for (const name of selected) assert.ok(name === 'all' || scenarios.some(([n]) =>
         G.scene.updateMatrixWorld(true);
         for (const v of G.mobViews.values()) v.root.traverse((o) => { if (!o.matrixWorld.elements.every(Number.isFinite)) bad.push(o.type + ':' + o.id); });
         const target = s.mobs.find((e) => e.id === id), view = G.mobViews.get(id);
-        return { state: key === 'pact' ? !!target.pact : !!p[key], label: button.querySelector('.nm').textContent, primaryLabel: document.getElementById('b0').querySelector('.nm').textContent, ready: button.classList.contains('ready'), cooldown: button.querySelector('.cd').style.height, hud: document.getElementById('powerHud').textContent, visible: view.root.visible, captive: !!target.captive, possessed: !!target.possessed, r: p.r, camera: [p.cam.x, p.cam.y, p.cam.z], bad, fx: G.powerFxCount };
+        const row = document.querySelector('#powerHud .power-status-row[data-power="' + key + '"]');
+        return { state: key === 'pact' ? !!target.pact : !!p[key], label: button.querySelector('.nm').textContent, primaryLabel: document.getElementById('b0').querySelector('.nm').textContent, ready: button.classList.contains('ready'), cooldown: button.querySelector('.cd').style.height, hud: row && row.textContent, visible: view.root.visible, captive: !!target.captive, possessed: !!target.possessed, r: p.r, camera: [p.cam.x, p.cam.y, p.cam.z], bad, fx: G.powerFxCount };
       }, [key, fixture.slot, fixture.target]);
       assert.equal(active.state, true, name + ': attivazione reale'); assert.deepEqual(active.bad, []);
       if (label) { assert.equal(active.label, label); assert.equal(active.ready, true, name + ': rilascio disponibile durante ricarica'); assert.equal(active.cooldown, '0%'); assert.ok(active.hud.includes(hud)); }
