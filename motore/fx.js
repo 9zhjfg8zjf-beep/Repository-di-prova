@@ -15,7 +15,7 @@ G.buildFx = function (s) {
   const elc = (el) => { if (el && el.indexOf('+') > 0) el = el.slice(0, el.indexOf('+')); return EL[el] ? EL[el].c : 0xff5a22; };
   const glowSprite = (c, o) => new THREE.Sprite(new THREE.SpriteMaterial({ map: G.glowTex, color: c, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: o === undefined ? 1 : o }));
   G.shadowMat = new THREE.MeshBasicMaterial({ map: G.glowTex, color: 0x000000, transparent: true, opacity: 0.55, depthWrite: false });
-  const HOVER = { muro: 1.35, sgherro: 1.35, tiratore: 2.7, bruto: 2.5, spirito: 1.3, colosso: 2.1, esca: 0.1, torretta: 0, anima: 0.15 };
+  const HOVER = { muro: 1.35, sgherro: 1.35, tiratore: 2.7, bruto: 2.5, spirito: 1.3, colosso: 2.1, esca: 0.1, torretta: 0, anima: 0.15, clone: 0.1 };
   const KCOL = { sgherro: 0xff5a22, tiratore: 0xffb23a, bruto: 0xff7a20 };
   const CHARM = 0xff3fd0;
 
@@ -67,7 +67,8 @@ G.buildFx = function (s) {
       v.parts.fl = mk(g, GEO.box, metal, -1.45, -0.2, 0.2, 0.75, 1.7, 0.75); v.parts.fr = mk(g, GEO.box, metal, 1.45, -0.2, 0.2, 0.75, 1.7, 0.75);
       for (const sd of [-1, 1]) { mk(g, GEO.box, metal, sd * 0.5, -1.5, 0, 0.7, 1.1, 0.8); mk(g, GEO.box, bone, sd * 1.0, 1.05, 0, 0.5, 0.3, 1.0); }
       v.h = 2.0;
-    } else if (kind === 'esca') { const holo = add(ec, 0.55); v.mats.push(holo); robe(g, holo, holo, 1.15); v.h = 1.8; }
+    } else if (kind === 'clone') { const cloth = std(0x42415a, 0.15, 0.8), face = bas(ec); v.mats.push(cloth, face); robe(g, cloth, face, 0.95); const band = mk(g, GEO.tor, face, 0, 0.75, 0, 0.4); band.rotation.x = Math.PI / 2; v.h = 1.7; }
+    else if (kind === 'esca') { const holo = add(ec, 0.55); v.mats.push(holo); robe(g, holo, holo, 1.15); v.h = 1.8; }
     else if (kind === 'muro') { mk(g, GEO.box, metal, 0, 0, 0, 2.2, 2.7, 0.8); mk(g, GEO.box, eye, 0, 0.9, 0, 2.25, 0.1, 0.84); mk(g, GEO.box, eye, 0, -0.9, 0, 2.25, 0.1, 0.84); for (const sd of [-1, 1]) mk(g, GEO.box, bone, sd * 0.7, 0, 0, 0.12, 2.5, 0.86); v.h = 1.5; }
     else if (kind === 'torretta') {
       for (let k = 0; k < 3; k++) { const a = (k / 3) * Math.PI * 2; mk(root, GEO.box, metal, Math.cos(a) * 0.5, 0.35, Math.sin(a) * 0.5, 0.12, 0.8, 0.12).rotation.set(Math.sin(a) * 0.5, 0, -Math.cos(a) * 0.5); }
@@ -100,7 +101,7 @@ G.buildFx = function (s) {
       v.t += dt;
       const k = v.kind, heavy = k === 'bruto' || k === 'colosso', hov = HOVER[k], sp = e.spawn > 0 ? Math.max(0, 1 - e.spawn / 0.5) : 1, frozen = e.stun > 0.6 && e.chill < 0;
       const bob = k === 'torretta' || k === 'muro' ? 0 : Math.sin(v.t * (heavy ? 1.6 : 3.2)) * (heavy ? 0.12 : k === 'esca' || k === 'anima' ? 0.06 : 0.18) * (frozen || s.freeze > 0 && e.team === 'e' ? 0 : 1);
-      v.root.position.set(e.x, 0, e.z); v.root.visible = Math.abs(e.x - s.player.x) < 95 && Math.abs(e.z - s.player.z) < 95;
+      v.root.position.set(e.x, 0, e.z); v.root.visible = !e.captive && !(s.player.possession && s.player.possession.id === e.id) && Math.abs(e.x - s.player.cam.x) < 95 && Math.abs(e.z - s.player.cam.z) < 95;
       if (k !== 'torretta') { v.lift = (v.lift || 0) + (((e.held || e.lift > 0 ? 1.6 : e.thrown ? 0.6 : 0) - (v.lift || 0)) * Math.min(1, dt * 8)); v.g.position.y = hov * sp + bob - (1 - sp) * 1.5 + v.lift; v.g.scale.setScalar((0.2 + 0.8 * sp) * (e.poly > 0 ? 0.42 : 1)); }
       const ty = Math.atan2(e.fx, e.fz); let dy = ty - v.g.rotation.y; while (dy > Math.PI) dy -= Math.PI * 2; while (dy < -Math.PI) dy += Math.PI * 2;
       v.g.rotation.y += dy * Math.min(1, dt * 10);
@@ -125,7 +126,7 @@ G.buildFx = function (s) {
       v.bar.visible = f < 1 && e.spawn <= 0 && k !== 'esca';
       if (v.bar.visible) { v.bar.position.y = top + 0.35; v.bar.quaternion.copy(G.camera.quaternion); v.fill.scale.x = Math.max(0.001, 1.2 * f); v.fill.position.x = -(1 - f) * 0.6; v.fill.material.color.setHex(e.team === 'a' ? 0x6fe07a : 0xff4028); }
       v.shadow.scale.setScalar(e.r * 3.2);
-      v.fxT -= dt; if (v.fxT <= 0) { v.fxT = 0.22; statusFx(e, v.g.position.y, v.h * 0.5); }
+      v.fxT -= dt; if (v.fxT <= 0) { v.fxT = 0.22; if (v.root.visible) statusFx(e, v.g.position.y, v.h * 0.5); }
     }
     for (const id of [...views.keys()]) if (!seen.has(id)) G.dropMob(id);
   };
@@ -310,7 +311,7 @@ G.buildFx = function (s) {
   const flashes = [];
   for (let i = 0; i < 56; i++) { const sp = glowSprite(0xffffff); sp.visible = false; scene.add(sp); flashes.push({ sp, life: 0, max: 1, s0: 1, s1: 1 }); }
   let fi = 0;
-  G.flash = function (x, y, z, color, s0, s1, life) { const f = flashes[fi]; fi = (fi + 1) % flashes.length; f.sp.position.set(x, y, z); f.sp.material.color.setHex(color); f.life = f.max = life; f.s0 = s0; f.s1 = s1; f.sp.visible = true; f.sp.material.opacity = 1; return f; };
+  G.flash = function (x, y, z, color, s0, s1, life) { const f = flashes[fi]; fi = (fi + 1) % flashes.length; f.sp.position.set(x, y, z); f.sp.material.color.setHex(color); f.life = f.max = life; f.s0 = s0; f.s1 = s1; f.sp.visible = true; f.sp.scale.setScalar(s0); f.sp.material.opacity = 0; return f; };
   const PN = 640, pm = new THREE.InstancedMesh(GEO.box, new THREE.MeshBasicMaterial({ color: 0xffffff }), PN), parts = [];
   pm.frustumCulled = false; scene.add(pm);
   for (let i = 0; i < PN; i++) { parts.push({ life: 0, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, s: 0.1, max: 1, g: 1 }); D.position.set(0, -99, 0); D.scale.set(0, 0, 0); D.updateMatrix(); pm.setMatrixAt(i, D.matrix); pm.setColorAt(i, TC.setHex(0xffffff)); }
@@ -344,7 +345,8 @@ G.buildFx = function (s) {
     let seen = new Set();
     for (const sh of s.shots) {
       seen.add(sh.id); let v = pools.shot.get(sh.id);
-      if (!v) { v = G.shotView(sh); scene.add(v.o); pools.shot.set(sh.id, v); }
+      if (v && v.team !== sh.team) { drop(pools.shot, sh.id); v = null; }
+      if (!v) { v = G.shotView(sh); v.team = sh.team; scene.add(v.o); pools.shot.set(sh.id, v); }
       v.upd(sh, dt);
     }
     for (const id of [...pools.shot.keys()]) if (!seen.has(id)) drop(pools.shot, id);
@@ -390,7 +392,17 @@ G.buildFx = function (s) {
   G.syncOrbs = function (s, t) { const p = s.player, on = p.orbit > 0 && !p.ride; orbs.forEach((o, i) => { o.visible = on; if (on) { const a = t * 3.2 + (i * 6.283) / 3; o.position.set(p.x + Math.sin(a) * p.orbitK.r, 1.1 + Math.sin(t * 5 + i) * 0.2, p.z + Math.cos(a) * p.orbitK.r); o.material.color.setHex(elc(p.orbitK.el)); if (Math.random() < 0.3) G.burst(o.position.x, o.position.y, o.position.z, 1, elc(p.orbitK.el), 0.5, 0, 0.3, 0.08, 0); } }); };
 
   G.updateFx = function (dt, t, cam) {
-    for (const f of flashes) { if (f.life <= 0) continue; f.life -= dt; const k = 1 - Math.max(0, f.life) / f.max; f.sp.scale.setScalar(f.s0 + (f.s1 - f.s0) * k); f.sp.material.opacity = 1 - k * k; if (f.life <= 0) f.sp.visible = false; }
+    let glare = 0;
+    for (const f of flashes) {
+      if (f.life <= 0) continue; f.life -= dt;
+      const k = 1 - Math.max(0, f.life) / f.max, size = f.s0 + (f.s1 - f.s0) * k, distance = f.sp.position.distanceTo(cam);
+      // Limita la superficie luminosa proiettata, senza cambiare segnali a terra.
+      const coverage = size / Math.max(0.2, distance * 1.45), near = Math.min(1, distance / 1.5);
+      f.sp.scale.setScalar(size); f.sp.material.opacity = (1 - k * k) * near * near * Math.min(1, 0.16 / Math.max(0.16, coverage * coverage));
+      if (f.life <= 0) f.sp.visible = false;
+      else if (coverage > 0.35) glare += f.sp.material.opacity * Math.min(1, coverage * coverage);
+    }
+    if (glare > 0.65) for (const f of flashes) if (f.life > 0) f.sp.material.opacity *= 0.65 / glare;
     for (let i = 0; i < PN; i++) { const p = parts[i]; if (p.life <= 0) continue; p.life -= dt; p.vy -= 18 * p.g * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt; if (p.y < p.s / 2) { p.y = p.s / 2; p.vy *= -0.4; p.vx *= 0.6; p.vz *= 0.6; } const sc = p.life > 0 ? p.s * Math.min(1, p.life / (p.max * 0.5)) : 0; D.position.set(p.x, p.life > 0 ? p.y : -99, p.z); D.scale.set(sc, sc, sc); D.rotation.set(p.x, p.y, p.z); D.updateMatrix(); pm.setMatrixAt(i, D.matrix); }
     pm.instanceMatrix.needsUpdate = true;
     for (const b of bolts) { if (b.life <= 0) continue; b.life -= dt; b.jit -= dt; if (b.life <= 0) { b.core.visible = b.halo.visible = false; continue; } if (b.jit <= 0) { b.jit = 0.035; rejag(b); } const k = b.life / b.max; ribbon(b.core, b.pts, b.w * 0.3, cam); ribbon(b.halo, b.pts, b.w, cam); b.core.material.opacity = Math.min(1, k * 2); b.halo.material.opacity = 0.55 * k; }

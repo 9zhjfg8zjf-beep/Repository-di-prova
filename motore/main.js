@@ -172,14 +172,23 @@ G.start = function () {
     for (const tu of s.turrets) { mg.fillStyle = tu.state === 'owned' ? '#3fe9ff' : tu.state === 'idle' ? '#77778a' : tu.state === 'reboot' ? '#ffb23a' : '#ff3018'; mg.fillRect(mm(tu.x) - 1.5, mm(tu.z) - 1.5, 3, 3); }
     for (const g of s.givers) { const on = g.offer && !s.quest; mg.fillStyle = on ? '#ffd24a' : s.quest && s.quest.giver === g.id ? '#7dffb0' : '#6a6470'; mg.beginPath(); mg.arc(mm(g.x), mm(g.z), on ? 3.2 : 2.2, 0, 7); mg.fill(); }
     for (const c of s.npcs) if (c.st === 'follow') { mg.fillStyle = '#7dffb0'; mg.fillRect(mm(c.x) - 1, mm(c.z) - 1, 2, 2); }
-    for (const e of s.mobs) { if (e.spawn > 0) continue; mg.fillStyle = e.team === 'a' ? (e.charm > 0 ? '#ff3fd0' : '#7dffb0') : '#ff4028'; mg.beginPath(); mg.arc(mm(e.x), mm(e.z), C.MOB[e.kind].heavy ? 2.6 : 1.6, 0, 7); mg.fill(); }
+    for (const e of s.mobs) { if (e.spawn > 0 || e.dead || e.captive) continue; mg.fillStyle = e.team === 'a' ? (e.charm > 0 ? '#ff3fd0' : '#7dffb0') : '#ff4028'; mg.beginPath(); mg.arc(mm(e.x), mm(e.z), C.MOB[e.kind].heavy ? 2.6 : 1.6, 0, 7); mg.fill(); }
     if (s.boss) { mg.fillStyle = '#ff2a14'; mg.beginPath(); mg.arc(mm(s.boss.x), mm(s.boss.z), 4, 0, 7); mg.fill(); }
     const q = s.quest; if (q && q.obj) { const r = 3 + (Math.sin(t * 6) + 1) * 1.5; mg.strokeStyle = '#ffd24a'; mg.lineWidth = 2; mg.beginPath(); mg.arc(mm(q.obj.x), mm(q.obj.z), r, 0, 7); mg.stroke(); if (q.pts) { mg.fillStyle = 'rgba(255,210,74,.6)'; for (let i = q.i + 1; i < q.pts.length; i++) mg.fillRect(mm(q.pts[i].x) - 1.5, mm(q.pts[i].z) - 1.5, 3, 3); } }
     const p = s.player, px = mm(p.x), pz = mm(p.z), fx = -Math.sin(yaw), fz = -Math.cos(yaw);
+    if (p.scan) {
+      mg.strokeStyle = '#90ecff'; mg.lineWidth = 1; mg.beginPath(); mg.arc(px, pz, p.scan.r / (C.HALF * 2) * MS, 0, Math.PI * 2); mg.stroke();
+      for (const id of p.scan.ids) { const e = s.boss && s.boss.id === id ? s.boss : s.mobs.find((m) => m.id === id && !m.dead); if (!e || e.captive) continue; mg.beginPath(); mg.arc(mm(e.x), mm(e.z), 3.4, 0, Math.PI * 2); mg.stroke(); }
+    }
+    if (p.possession) { mg.strokeStyle = '#90ecff'; mg.lineWidth = 2; mg.beginPath(); mg.arc(mm(p.cam.x), mm(p.cam.z), 4, 0, Math.PI * 2); mg.stroke(); }
     mg.fillStyle = '#fff'; mg.beginPath(); mg.moveTo(px + fx * 6, pz + fz * 6); mg.lineTo(px - fz * 3.2 - fx * 3, pz + fx * 3.2 - fz * 3); mg.lineTo(px + fz * 3.2 - fx * 3, pz - fx * 3.2 - fz * 3); mg.fill();
   }
+  let shownPrimary = null, shownControl = null;
+  const mimicked = { tiro: { nome: 'TIRO', ic: 'orb' }, artiglio: { nome: 'ARTIGLIO', ic: 'claw' }, pesante: { nome: 'PUGNO', ic: 'claw' }, boss: { nome: 'ONDA', ic: 'wave' } };
   function setupButtons() {
-    s.kit.forEach((K, i) => { const b = BT[i]; K.gnd = K.kind === 'x' && /@aim|leap|blink g/.test(B.ARCH[K.id].src); b.style.setProperty('--c', css(K.el)); b.querySelector('.svg').outerHTML = '<span class="svg" style="display:contents">' + G.svg(K.ic) + '</span>'; b.querySelector('.nm').textContent = K.nome.split(' ')[0]; b.dataset.nm = K.nome.split(' ')[0]; });
+    const host = s.player.possession && s.mobs.find((e) => e.id === s.player.possession.id), borrowed = host ? mimicked[host.kind === 'tiratore' || C.MOB[host.kind].shooter ? 'tiro' : 'artiglio'] : s.player.mimic && mimicked[s.player.mimic.attack];
+    s.kit.forEach((K, i) => { const b = BT[i], display = i === 0 && borrowed ? borrowed : K; K.gnd = K.kind === 'x' && /@aim|leap|blink g/.test(B.ARCH[K.id].src); b.style.setProperty('--c', css(K.el)); b.querySelector('.svg').outerHTML = '<span class="svg" style="display:contents">' + G.svg(display.ic) + '</span>'; b.querySelector('.nm').textContent = display.nome.split(' ')[0]; b.dataset.nm = display.nome.split(' ')[0]; });
+    shownPrimary = s.kit[0]; shownControl = s.player.possession;
     document.documentElement.style.setProperty('--el', css(s.kit[0].el)); G.hands.col = ec(s.kit[0].el);
     $('resTxt').textContent = s.kit[4].nome.toUpperCase();
   }
@@ -193,7 +202,7 @@ G.start = function () {
 
   // ---------- Eventi di gioco -> effetti ----------
   const hw = new THREE.Vector3(), ep = new THREE.Vector3();
-  const aimEnd = (d, out) => { const fx = -Math.sin(yaw) * Math.cos(pitch), fy = Math.sin(pitch), fz = -Math.cos(yaw) * Math.cos(pitch), p = s.player; let k = 2; while (k < d && !C.solidAt(s, p.x + fx * k, p.z + fz * k) && C.EYE + fy * k > 0.1) k += 1; return out.set(p.x + fx * k, C.EYE + fy * k, p.z + fz * k); };
+  const aimEnd = (d, out) => { const fx = -Math.sin(yaw) * Math.cos(pitch), fy = Math.sin(pitch), fz = -Math.cos(yaw) * Math.cos(pitch), c = s.player.cam; let k = 2; while (k < d && !C.solidAt(s, c.x + fx * k, c.z + fz * k) && c.y + fy * k > 0.1) k += 1; return out.set(c.x + fx * k, c.y + fy * k, c.z + fz * k); };
   const jagOf = (el) => { el = bel(el); return el === 'folgore' ? 1 : el === 'ombra' || el === 'sangue' ? 0.45 : 0.2; };
   function boomFx(ev) {
     const c = ec(ev.el), c2 = ec2(ev.el), R = ev.r, self = ev.self, soft = ev.soft;
@@ -209,6 +218,7 @@ G.start = function () {
   function handleEvents(t) {
     const p = s.player;
     for (const ev of s.events) {
+      G.powerEvent(ev);
       switch (ev.type) {
         case 'cast': {
           const h = G.hands;
@@ -337,9 +347,9 @@ G.start = function () {
   let beamT = 0, drainT = 0;
   function updateView(dt, t) {
     const p = s.player, riding = !!p.ride, dead = p.dead > 0;
-    rideK += ((riding ? 1 : 0) - rideK) * Math.min(1, dt * 9); ocK += (((p.oc > 0 || p.eclipse > 0) ? 1 : 0) - ocK) * Math.min(1, dt * 5); veilK += ((p.veil > 0 ? 1 : 0) - veilK) * Math.min(1, dt * 6); timeK += ((s.freeze > 0 ? 1 : 0) - timeK) * Math.min(1, dt * 6);
+    rideK += ((riding ? 1 : 0) - rideK) * Math.min(1, dt * 9); ocK += (((p.oc > 0 || p.eclipse > 0) ? 1 : 0) - ocK) * Math.min(1, dt * 5); veilK += (((p.veil > 0 || p.phase) ? 1 : 0) - veilK) * Math.min(1, dt * 6); timeK += ((s.freeze > 0 ? 1 : 0) - timeK) * Math.min(1, dt * 6);
     if (kick > 0) kick = Math.max(0, kick - dt * 4);
-    if (p.moving && !riding && !p.leap) bobT += dt * (p.haste > 0 ? 13 : 10);
+    if (p.moving && !riding && !p.leap && !p.flight) bobT += dt * (p.haste > 0 ? 13 : 10);
     const sx = (Math.random() - 0.5) * shake * 0.35, sy = (Math.random() - 0.5) * shake * 0.35;
     if (running) { cam.position.set(p.cam.x + sx, p.cam.y + (riding ? 0.35 : Math.sin(bobT) * 0.045) + sy - (dead ? Math.min(1.2, (3 - p.dead) * 1.5) : 0), p.cam.z); cam.rotation.y = yaw; cam.rotation.x = pitch; cam.rotation.z = (Math.random() - 0.5) * shake * 0.03 + (dead ? 0.5 : 0); }
     else { const a = t * 0.05; cam.position.set(Math.sin(a) * 30, 9, Math.cos(a) * 30 + 6); cam.rotation.y = a + 0.25; cam.rotation.x = 0.12; cam.rotation.z = 0; }
@@ -364,8 +374,8 @@ G.start = function () {
     if (running && p.grab) { drainT -= dt; if (drainT <= 0) { drainT = 0.05; const e = s.mobs.find((o) => o.id === p.grab.id); if (e) { G.handWorld(hw, cam); G.targetPos('e', e.id, e.x, e.z, ep); G.bolt(hw.x - 0.3, hw.y, hw.z, ep.x, ep.y, ep.z, 0.2, 0.09, ec(p.grab.k.el), 0.5); } } }
     let gk = null; for (let i = 0; i < 5; i++) if ((GROUND[s.kit[i].kind] || s.kit[i].gnd) && (i === 0 || s.ready[i])) { gk = s.kit[i]; break; }
     G.syncReticle(s, running && !!gk && !riding && !dead && !p.leap, gk ? ec(gk.el) : 0xffffff, gk && gk.r ? Math.min(3, gk.r * 0.5) : 1.2);
-    G.updateFx(dt, t, cam.position); G.animUpdate(dt); flushDmg(dt);
-    h.visible += ((riding || dead || !running || p.leap ? 0 : 1) - h.visible) * Math.min(1, dt * 12); h.glow = ocK;
+    G.updateFx(dt, t, cam.position); G.animUpdate(dt); G.syncPowerFx(t); flushDmg(dt);
+    h.visible += ((riding || dead || !running || p.leap || p.possession || p.phase ? 0 : 1) - h.visible) * Math.min(1, dt * 12); h.glow = ocK;
     G.updateHands(dt, t, p.moving && !riding, W / Hh);
 
     bloom.strength = 0.95 + rideK * 0.8 + ocK * 0.3;
@@ -376,17 +386,19 @@ G.start = function () {
     if (!running) return;
 
     // interfaccia
+    if (s.kit[0] !== shownPrimary || s.player.possession !== shownControl) setupButtons();
     setW('hpFill', (100 * p.hp) / p.maxHp); setTxt('hpTxt', String(Math.ceil(p.hp))); setW('shFill', Math.min(100, p.shield));
     setW('resFill', p.oc > 0 ? (100 * p.oc) / p.ocDur : p.res); $('res').classList.toggle('full', p.res >= 100);
     const hnt = s.hint;
     for (let i = 0; i < 5; i++) {
-      const K = s.kit[i], b = BT[i], act = s.act[i] > 0 && i > 0, tog = K.kind === 'charm' || K.kind === 'possess' || K.kind === 'grab' || K.kind === 'anchor';
-      let ready = i === 0 ? !riding && (!!s.aim.kind || K.kind !== 'chain') : s.ready[i] && !act, lab = b.dataset.nm, cdh = 0;
+      const K = s.kit[i], b = BT[i], body = ['form', 'phase', 'flight', 'possession', 'captive'].find((key) => p[key] && p[key].slot === i), act = s.act[i] > 0 && i > 0, tog = !!body || K.kind === 'charm' || K.kind === 'possess' || K.kind === 'grab' || K.kind === 'anchor';
+      let ready = body ? true : i === 0 ? !riding && !p.phase && (!!p.possession || !!s.aim.kind || K.kind !== 'chain') : s.ready[i] && !act, lab = b.dataset.nm, cdh = 0;
       if (K.kind === 'cable') { ready = riding || hnt.node >= 0; lab = riding ? 'SCENDI' : lab; cdh = riding ? 0 : Math.max(0, p.cd[1]) / K.cd; }
       else if (i === 4) cdh = act ? 0 : 1 - p.res / 100;
       else if (i > 0) cdh = act && tog ? 0 : Math.max(0, p.cd[i]) / K.cd;
       if (K.kind === 'possess' && !act) ready = ready && hnt.turret >= 0;
       if (tog && act) lab = K.kind === 'grab' ? 'SCAGLIA' : K.kind === 'anchor' ? 'TORNA' : 'RILASCIA';
+      if (body) { lab = { form: 'NORMALE', phase: 'SOLIDO', flight: 'ATTERRA', possession: 'RIENTRA', captive: 'LIBERA' }[body]; cdh = 0; }
       const cls = (ready ? 'r' : '') + (act ? 'a' : '') + (i === 0 && inp.fire && !riding ? 'h' : '') + (K.kind === 'charm' && ready && hnt.screen >= 0 ? 'x' : '');
       if (clsCache[i] !== cls) { clsCache[i] = cls; b.classList.toggle('ready', ready); b.classList.toggle('act', act); b.classList.toggle('held', cls.includes('h')); b.classList.toggle('hot', cls.includes('x')); }
       if (txtCache['l' + i] !== lab) { txtCache['l' + i] = lab; b.querySelector('.nm').textContent = lab; }
@@ -470,7 +482,7 @@ G.start = function () {
   function loadCity(theme, seed) {
     G.disposeWorld(); pend.clear();
     s = C.create({ seed, theme, recipe: st.recipe, fame: st.fame });
-    G.buildWorld(s.city); G.buildFx(s); G.buildAnim(s); renderPass.scene = G.scene;
+    G.buildWorld(s.city); G.buildFx(s); G.buildAnim(s); G.buildPowerFx(s); renderPass.scene = G.scene;
     drawBase(); setupButtons(); for (const k in txtCache) delete txtCache[k]; for (const k in clsCache) delete clsCache[k];
     yaw = Math.PI / 2; pitch = 0.04; acc = 0; shake = 0; hitStop = 0;
   }

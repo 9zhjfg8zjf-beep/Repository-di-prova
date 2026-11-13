@@ -9,7 +9,7 @@ import re
 def mod(f):
     t = open(f).read()
     return re.sub(r"\nif \(typeof module !== 'undefined'\) .*", '', t)
-game = "(() => {\n'use strict';\nconst G = {};\n" + '\n'.join(mod(f) for f in ['bricks.js'] + sorted(f for f in os.listdir('.') if re.match(r'^mec\d+\.js$', f)) + ['catalogo.js', 'city.js', 'core.js', 'world.js', 'fx.js', 'anim.js', 'ui.js', 'main.js']) + "\nif (!window.THREE) { document.getElementById('homeMsg').textContent = 'Motore 3D non caricato.'; } else G.start();\n})();"
+game = "(() => {\n'use strict';\nconst G = {};\n" + '\n'.join(mod(f) for f in ['bricks.js'] + sorted(f for f in os.listdir('.') if re.match(r'^mec\d+\.js$', f)) + ['catalogo.js', 'city.js', 'core.js', 'world.js', 'fx.js', 'anim.js', 'poteri-fx.js', 'ui.js', 'main.js']) + "\nif (!window.THREE) { document.getElementById('homeMsg').textContent = 'Motore 3D non caricato.'; } else G.start();\n})();"
 assert '</script' not in game.lower()
 src = open('index.src.html').read()
 app = '''<meta name="apple-mobile-web-app-capable" content="yes">

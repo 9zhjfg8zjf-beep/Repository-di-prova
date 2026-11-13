@@ -13,7 +13,20 @@ G.buildAnim = function (s) {
   const fxs = [];
   const kill = (e) => { scene.remove(e.o); for (const m of e.mats) m.dispose(); };
   function spawn(o, mats, life, f) { if (fxs.length > 120) kill(fxs.shift()); scene.add(o); const e = { o, mats, life, max: life, f }; f(0, o, mats); fxs.push(e); return e; }
-  const mesh = (geo, c, op) => { const m = add(c, op * 0.8); return [new THREE.Mesh(geo, m), m]; };
+  const mesh = (geo, c, op) => {
+    const m = add(c, op);
+    // Le superfici ampie conservano il proprio colore anche sovrapposte.
+    // Il bagliore additivo resta nei piccoli lampi e nelle particelle.
+    m.blending = THREE.NormalBlending;
+    // Sfumatura per frammento: conserva i bordi lontani anche nelle esplosioni
+    // centrate sul giocatore. Le callback possono cambiare opacity senza annullarla.
+    m.onBeforeCompile = (shader) => {
+      shader.vertexShader = 'varying float diteDepth;\n' + shader.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\nditeDepth = -mvPosition.z;');
+      shader.fragmentShader = 'varying float diteDepth;\n' + shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.a *= 0.8 * smoothstep(0.4, 2.2, diteDepth);');
+    };
+    m.customProgramCacheKey = () => 'dite-fx-near-fade-v2';
+    return [new THREE.Mesh(geo, m), m];
+  };
   const out = (k) => 1 - (1 - k) * (1 - k);
   G.animUpdate = function (dt) { for (let i = fxs.length - 1; i >= 0; i--) { const e = fxs[i]; e.life -= dt; if (e.life <= 0) { kill(e); fxs.splice(i, 1); } else e.f(1 - e.life / e.max, e.o, e.mats); } };
   const near = (x, z) => Math.abs(x - s.player.x) < 70 && Math.abs(z - s.player.z) < 70;
@@ -76,11 +89,12 @@ G.buildAnim = function (s) {
     else { put(A.ico, enemy ? c : c2, 0.95, 0, 0, 0, 0.26, 0.26, 0.26); spin = put(A.tor, c, 0.7, 0, 0, 0, 0.42, 0.42, 0.42); spin.rotation.x = 1.2; glow(enemy ? 1.4 : 0.9, 0.4); if (sh.hom) kind = 'hom'; }
     o.rotation.y = Math.atan2(sh.vx, sh.vz); let tt = R() * 6, pt = 0;
     return { o, mats, c, upd(sh2, dt) {
-      tt += dt; o.position.set(sh2.x, y + (kind === 'hom' ? Math.sin(tt * 14) * 0.18 : 0), sh2.z); o.rotation.y = Math.atan2(sh2.vx, sh2.vz);
+      tt += dt; const height = sh2.alt && Number.isFinite(sh2.y) ? sh2.y : y; o.position.set(sh2.x, height + (kind === 'hom' ? Math.sin(tt * 14) * 0.18 : 0), sh2.z); o.rotation.y = Math.atan2(sh2.vx, sh2.vz);
+      o.rotation.x = sh2.alt ? -Math.atan2(sh2.vy || 0, Math.hypot(sh2.vx, sh2.vz)) : 0;
       if (spin) spin.rotation.y += dt * 12; if (kind === 'wave') o.rotation.z = Math.sin(tt * 9) * 0.12;
       pt -= dt; if (pt <= 0 && near(sh2.x, sh2.z)) { pt = kind === 'aura' ? 0.1 : kind === 'wave' ? 0.12 : 0.06; const e = enemy ? '' : bel(sh2.el);
         if (kind === 'aura') { const a = R() * 6.283; G.burst(sh2.x + Math.sin(a) * sh2.aura * 0.8, 0.3 + R() * 1.6, sh2.z + Math.cos(a) * sh2.aura * 0.8, 1, c, 0.6, e === 'fuoco' ? 1.5 : 0.2, 0.5, 0.11, e === 'fuoco' ? -0.2 : 0.1); }
-        else G.burst(sh2.x, y, sh2.z, 1, R() < 0.5 ? c : c2, 0.5, e === 'fuoco' ? 0.9 : e === 'gelo' || e === 'sangue' ? -0.5 : 0.2, kind === 'rocket' ? 0.45 : 0.25, kind === 'rocket' ? 0.1 : 0.05, e === 'fuoco' || e === 'veleno' ? -0.15 : e === 'sangue' ? 1 : 0.15); }
+        else G.burst(sh2.x, height, sh2.z, 1, R() < 0.5 ? c : c2, 0.5, e === 'fuoco' ? 0.9 : e === 'gelo' || e === 'sangue' ? -0.5 : 0.2, kind === 'rocket' ? 0.45 : 0.25, kind === 'rocket' ? 0.1 : 0.05, e === 'fuoco' || e === 'veleno' ? -0.15 : e === 'sangue' ? 1 : 0.15); }
     } };
   };
 
