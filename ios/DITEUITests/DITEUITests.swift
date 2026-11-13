@@ -87,15 +87,10 @@ final class DITEUITests: XCTestCase {
         waitForButton("Pausa")
         var states = ["before system action: \(app.state.rawValue)"]
         attachWindowGeometry("before-background")
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            // Home can leave a window visible and active at the edge in Windowed Apps.
-            // Use the real system Minimize control while the game window is reachable.
-            guard minimizePadWindow() else { return }
-            states.append("after system Minimize: \(app.state.rawValue)")
-        } else {
-            XCUIDevice.shared.press(.home)
-            states.append("after Home: \(app.state.rawValue)")
-        }
+        // The native iPhone and iPad scenes observed in CI fill the screen.
+        // Home must cause a real OS background transition before we test resuming.
+        XCUIDevice.shared.press(.home)
+        states.append("after Home: \(app.state.rawValue)")
         let background = NSPredicate { _, _ in
             self.app.state == .runningBackground || self.app.state == .runningBackgroundSuspended
         }
@@ -215,36 +210,6 @@ final class DITEUITests: XCTestCase {
         XCTAssertEqual(result, .completed, "The actual UIWindowScene must reach \(expected)")
         XCTAssertGreaterThan(app.frame.width, app.frame.height, "The rendered app must remain landscape")
         return value
-    }
-
-    private func minimizePadWindow() -> Bool {
-        let system = XCUIApplication(bundleIdentifier: "com.apple.springboard")
-        let minimize = system.buttons.matching(NSPredicate(format: "label == %@", "Minimize"))
-        if minimize.count != 1 || !minimize.element(boundBy: 0).isHittable {
-            guard let controls = waitForSystemButton("Window Controls", in: system) else { return false }
-            controls.tap()
-        }
-        guard let control = waitForSystemButton("Minimize", in: system) else { return false }
-        attachScreenshot("system-minimize-control")
-        control.tap()
-        return true
-    }
-
-    private func waitForSystemButton(_ label: String, in system: XCUIApplication) -> XCUIElement? {
-        let matches = system.buttons.matching(NSPredicate(format: "label == %@", label))
-        let reachable = NSPredicate { _, _ in
-            matches.count == 1 && matches.element(boundBy: 0).isHittable
-        }
-        let result = XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: reachable, object: system)], timeout: 10)
-        guard result == .completed else {
-            // System control labels are platform-owned; preserve their real tree on failure.
-            attachText(system.debugDescription, named: "System accessibility tree for " + label)
-            attachWindowGeometry("missing-system-control")
-            attachScreenshot("missing-system-control")
-            XCTFail("Expected one reachable system control: \(label); found \(matches.count)")
-            return nil
-        }
-        return matches.element(boundBy: 0)
     }
 
     private func attachWindowGeometry(_ name: String) {
