@@ -259,17 +259,25 @@ const sevenPowerStates = () => {
     await context.addInitScript(value => localStorage.setItem('dite2', JSON.stringify(value)), profile);
     if (wants('menu')) await context.addInitScript(() => {
       window.__menuEvents = []; window.__menuOmitClick = false; window.__menuOmittedClicks = 0;
+      window.__menuLoseTerminal = false; window.__menuOriginalPen = null; window.__menuPenClicks = [];
       for (const type of ['pointerdown', 'pointerup', 'pointercancel']) document.addEventListener(type, event => {
-        window.__menuEvents.push({ type, id: event.pointerId, pointerType: event.pointerType, primary: event.isPrimary, trusted: event.isTrusted, target: event.target.id, x: event.clientX, y: event.clientY, joyId: window.__dite ? window.__dite.inputSnapshot().joy.id : null });
+        const record = { type, id: event.pointerId, pointerType: event.pointerType, primary: event.isPrimary, trusted: event.isTrusted, target: event.target.id, x: event.clientX, y: event.clientY, joyId: window.__dite ? window.__dite.inputSnapshot().joy.id : null };
+        window.__menuEvents.push(record);
+        // Perdita simulata del solo terminale originario: non e un comportamento iOS osservato.
+        if (window.__menuLoseTerminal && event.pointerId === window.__menuOriginalPen && ['pointerup', 'pointercancel'].includes(type)) { record.omittedByFixture = true; event.stopImmediatePropagation(); }
       }, true);
       // Simula soltanto la mancata consegna del click compatibile: down/up restano eventi touch reali.
-      document.addEventListener('click', event => { if (window.__menuOmitClick && event.detail > 0) { window.__menuOmittedClicks++; event.preventDefault(); event.stopImmediatePropagation(); } }, true);
+      document.addEventListener('click', event => {
+        if (event.pointerType === 'pen') { const record = { target: event.target.id, id: event.pointerId, trusted: event.isTrusted }; window.__menuPenClicks.push(record); setTimeout(() => { record.prevented = event.defaultPrevented; }, 0); }
+        if (window.__menuOmitClick && event.detail > 0) { window.__menuOmittedClicks++; event.preventDefault(); event.stopImmediatePropagation(); }
+      }, true);
     });
     const page = await context.newPage(), errors = [];
     page.on('pageerror', e => errors.push(e.message)); page.on('console', m => { if (m.type() === 'error' && !m.text().includes('CONTEXT_LOST_WEBGL')) errors.push(m.text()); });
     await page.goto(process.env.DITE_MOBILE_URL || 'file://' + __dirname + '/dist/index.html');
     await page.waitForFunction(() => window.__dite && window.__dite.screen && window.__dite.screen().screen === 'lobby');
-    await page.evaluate(() => { const D = window.__dite; D.lockQ = true; window.__mobileTrusted = []; document.addEventListener('pointerdown', e => window.__mobileTrusted.push({ trusted: e.isTrusted, target: e.target.id, id: e.pointerId }), true); });
+    const observePointers = () => { const D = window.__dite; D.lockQ = true; window.__mobileTrusted = []; document.addEventListener('pointerdown', e => window.__mobileTrusted.push({ trusted: e.isTrusted, target: e.target.id, id: e.pointerId }), true); };
+    await page.evaluate(observePointers);
     const screen = name => page.waitForFunction(name => window.__dite.screen().screen === name, name);
     const settle = () => page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
     const frozen = async (label) => {
@@ -289,6 +297,32 @@ const sevenPowerStates = () => {
     if (wants('menu')) {
       const cdp = await context.newCDPSession(page), touch = (type, touchPoints) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints });
       const center = async () => { const r = await page.locator('#menuBtn').boundingBox(); assert.ok(r && r.width >= 44 && r.height >= 44); return { x: r.x + r.width / 2, y: r.y + r.height / 2, id: 22 }; };
+      const pen = (type, point) => cdp.send('Input.dispatchMouseEvent', { type, x: point.x, y: point.y, button: 'left', buttons: type === 'mousePressed' ? 1 : 0, clickCount: 1, pointerType: 'pen' });
+      const nextTask = () => page.evaluate(() => new Promise(resolve => setTimeout(resolve, 0)));
+      for (const omit of [false, true]) {
+        if (omit) { await page.reload(); await page.waitForFunction(() => window.__dite && window.__dite.screen().screen === 'lobby'); await page.evaluate(observePointers); }
+        await start(); await page.evaluate(() => { window.__menuEvents = []; window.__menuPenClicks = []; });
+        const point = await center(); await pen('mousePressed', point);
+        const original = await page.evaluate(() => window.__menuEvents.findLast(event => event.type === 'pointerdown'));
+        assert.equal(original.target, 'menuBtn'); assert.equal(original.pointerType, 'pen'); assert.equal(original.trusted, true);
+        await page.evaluate(({ omit, id }) => { window.__menuLoseTerminal = omit; window.__menuOriginalPen = id; window.dispatchEvent(new Event('blur')); }, { omit, id: original.id });
+        await screen('pause'); await pen('mouseReleased', point); await nextTask();
+        await page.evaluate(() => { window.__menuLoseTerminal = false; });
+        const resume = await page.locator('#resume').boundingBox(); assert.ok(resume);
+        const destination = { x: resume.x + resume.width / 2, y: resume.y + resume.height / 2 };
+        await pen('mousePressed', destination); await pen('mouseReleased', destination); await nextTask();
+        const evidence = await page.evaluate(() => ({ screen: window.__dite.screen(), events: window.__menuEvents, clicks: window.__menuPenClicks }));
+        const downs = evidence.events.filter(event => event.type === 'pointerdown'), ups = evidence.events.filter(event => event.type === 'pointerup');
+        const diagnostic = JSON.stringify({ omitOriginalTerminal: omit, ...evidence }); console.log('menu pen:', diagnostic);
+        assert.equal(downs.length, 2); assert.equal(ups.length, 2);
+        assert.ok([...downs, ...ups].every(event => event.trusted && event.pointerType === 'pen' && event.id === original.id), 'Il browser deve riusare davvero lo stesso ID penna: ' + diagnostic);
+        assert.equal(downs[1].target, 'resume'); assert.equal(ups[1].target, 'resume');
+        const omitted = evidence.events.filter(event => event.omittedByFixture);
+        assert.equal(omitted.length, omit ? 1 : 0); if (omit) assert.equal(omitted[0], ups[0], 'La fixture omette solo il primo rilascio, mai il tap Riprendi');
+        assert.equal(evidence.screen.screen, 'playing', (omit ? 'ID riusato dopo terminale perso' : 'Controllo con terminale consegnato') + ': il primo tap Riprendi deve funzionare: ' + diagnostic);
+        const click = evidence.clicks.findLast(event => event.target === 'resume'); assert.ok(click && click.trusted); assert.equal(click.prevented, false);
+      }
+      await page.locator('#menuBtn').tap(); await screen('pause'); await page.locator('#menuHome').tap(); await screen('lobby');
       const omittedTap = async () => {
         await page.evaluate(() => { window.__menuOmitClick = true; window.__menuEvents = []; });
         await page.locator('#menuBtn').tap();
@@ -322,6 +356,15 @@ const sevenPowerStates = () => {
       assert.ok(joyDown && menuUp.joyId === joyDown.id, 'Il joystick deve essere ancora tenuto prima del reset prodotto da Pausa: ' + JSON.stringify(second));
       assert.equal(second.screen.screen, 'pause'); assert.equal(second.input.joy.id, null); await touch('touchEnd', []);
       await page.locator('#resume').tap(); await screen('playing');
+      // Ordine inverso: un nuovo dito diverso non deve cancellare il gesto Pausa gia iniziato.
+      const heldMenu = await center(), addedJoy = { x: 160, y: 240, id: 33 };
+      await page.evaluate(() => { window.__menuOmitClick = true; window.__menuEvents = []; });
+      await touch('touchStart', [heldMenu]); await touch('touchStart', [heldMenu, addedJoy]); await touch('touchEnd', [heldMenu]);
+      const otherFinger = await page.evaluate(() => { window.__menuOmitClick = false; return { screen: window.__dite.screen().screen, events: window.__menuEvents }; });
+      const heldDown = otherFinger.events.find(event => event.type === 'pointerdown' && event.target === 'menuBtn'), addedDown = otherFinger.events.find(event => event.type === 'pointerdown' && event.target === 'c'), heldUp = otherFinger.events.find(event => event.type === 'pointerup' && event.target === 'menuBtn');
+      assert.ok(heldDown && addedDown && heldUp && heldDown.trusted && addedDown.trusted && heldUp.trusted && heldDown.id !== addedDown.id && heldUp.id === heldDown.id && heldUp.joyId === addedDown.id, 'La prova richiede due puntatori distinti realmente attivi: ' + JSON.stringify(otherFinger));
+      assert.equal(otherFinger.screen, 'pause', 'Il down di un altro dito non cancella Pausa'); await touch('touchEnd', []);
+      await page.locator('#resume').tap(); await screen('playing');
       const drag = await center(); await touch('touchStart', [drag]); await touch('touchMove', [{ ...drag, x: drag.x - 80 }]); await touch('touchMove', [drag]); await touch('touchEnd', []);
       assert.equal(await page.evaluate(() => window.__dite.screen().screen), 'playing', 'Uscire e rientrare nel pulsante non equivale a un tap');
       const cancelled = await center(); await touch('touchStart', [cancelled]); await touch('touchCancel', []);
@@ -341,7 +384,7 @@ const sevenPowerStates = () => {
       await page.evaluate(() => document.getElementById('menuBtn').click()); await screen('pause');
       await frozen('pausa da click senza puntatore'); await page.screenshot({ path: __dirname + '/shots/mobile-menu-pointer.png' });
       await page.locator('#menuHome').tap(); await screen('lobby');
-      console.log('menu: pointerup trusted senza click, nessun click-through, nuovo tap, joystick multitouch, drag/cancel/blur, mouse/Enter/Space e click accessibile verdi');
+      console.log('menu: ID penna riusato con/senza perdita simulata, pointerup senza click, nessun click-through, nuovo tap, multitouch in entrambi gli ordini, drag/cancel/blur, mouse/Enter/Space e click accessibile verdi');
     }
     if (wants('navigation')) {
       await frozen('lobby'); await page.locator('#play').tap(); await screen('playing');
