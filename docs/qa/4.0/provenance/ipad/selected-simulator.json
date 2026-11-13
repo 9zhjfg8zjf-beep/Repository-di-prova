@@ -1,0 +1,11 @@
+{
+  "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-26-5",
+  "dataPath": "/Users/runner/Library/Developer/CoreSimulator/Devices/847050DA-C081-44A0-9CA7-60AB408469F9/data",
+  "dataPathSize": 18337792,
+  "logPath": "/Users/runner/Library/Logs/CoreSimulator/847050DA-C081-44A0-9CA7-60AB408469F9",
+  "udid": "847050DA-C081-44A0-9CA7-60AB408469F9",
+  "isAvailable": true,
+  "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-A16",
+  "state": "Shutdown",
+  "name": "iPad (A16)"
+}

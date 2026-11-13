@@ -1,0 +1,358 @@
+{
+  "run": 43497161293,
+  "head": "3ba5abe95502fc00332b8fb50503bcde063317aa",
+  "iphone": {
+    "run": 43497161293,
+    "head": "3ba5abe95502fc00332b8fb50503bcde063317aa",
+    "artifact": 14073003038,
+    "size": 31407111,
+    "sha256": "d5ecf75604e68841c7868e68bf9e6be400ad7d6276ea781b0eec2093e2416603",
+    "unitPassed": 20,
+    "unitFailed": 0,
+    "uiPassed": 6,
+    "uiFailed": 0,
+    "skipped": 0,
+    "png": 13,
+    "mp4": 0,
+    "statuses": {
+      "xcodebuildStatus": 0,
+      "testLogStatus": 0,
+      "attachmentExportStatus": 0
+    },
+    "testOutcomes": [
+      {
+        "suite": "DITETests",
+        "class": "BridgeMessageTests",
+        "name": "testHandshakeRequiresMatchingProtocolAndSchema",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "BridgeMessageTests",
+        "name": "testHapticsAreAnAllowlist",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "BridgeMessageTests",
+        "name": "testRejectsOversizedOrNonJSONSave",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "BridgeMessageTests",
+        "name": "testRejectsWrongTypesAndUnsafeRequestIdentifiers",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "BridgeMessageTests",
+        "name": "testSavePreservesSharedSnapshotWithoutInventingFields",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameNavigationPolicyTests",
+        "name": "testExternalURLsNeedBothExplicitConfigurationAndUserAction",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameNavigationPolicyTests",
+        "name": "testOfflineRulesCompileInWebKit",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameNavigationPolicyTests",
+        "name": "testOnlyBundledEntryCanNavigate",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameNavigationPolicyTests",
+        "name": "testOnlyMainDocumentReloadRefreshesTheNativeBootstrap",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameSaveStoreTests",
+        "name": "testFirstLaunchIsDistinctFromDamagedStorage",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameSaveStoreTests",
+        "name": "testFutureSchemaAndCorruptDataArePreservedBeforeReplacement",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameSaveStoreTests",
+        "name": "testInterleavedReadsNeverSeePartialJSON",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameSaveStoreTests",
+        "name": "testLegacyMigrationKeepsAnUnmodifiedRecoveryCopy",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameSaveStoreTests",
+        "name": "testMissingCurrentUsesReadablePreviousInsteadOfPretendingFirstLaunch",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameSaveStoreTests",
+        "name": "testRawBackupFailureCannotOverwriteCurrentOrPrevious",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameSaveStoreTests",
+        "name": "testRejectedSaveCannotDamagePreviousData",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameSaveStoreTests",
+        "name": "testSaveSurvivesANewStoreInstanceAndPreservesUnicode",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameSaveStoreTests",
+        "name": "testSemanticallyInvalidCurrentSchemaKeepsRawInputAndBoundedRecoverySlots",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameSaveStoreTests",
+        "name": "testUnreadableCurrentRestoresPreviousAndRetainsRecoveryOnFailedWrite",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameSaveStoreTests",
+        "name": "testWriteFailureIsReported",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITEUITests",
+        "class": "DITEUITests",
+        "name": "testBackgroundRequiresExplicitResume",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITEUITests",
+        "class": "DITEUITests",
+        "name": "testBothLandscapeOrientationsKeepControlsReachable",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITEUITests",
+        "class": "DITEUITests",
+        "name": "testBundledGameControlsPauseAndReturnFromSettings",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITEUITests",
+        "class": "DITEUITests",
+        "name": "testForgeKeyboardRequiresATapAndCanCloseAfterRotation",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITEUITests",
+        "class": "DITEUITests",
+        "name": "testPreferencePersistsAfterApplicationRelaunch",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITEUITests",
+        "class": "DITEUITests",
+        "name": "testWebGLFailureRetriesThroughAFreshNativeBootstrap",
+        "outcome": "passed"
+      }
+    ]
+  },
+  "ipad": {
+    "run": 43497161293,
+    "head": "3ba5abe95502fc00332b8fb50503bcde063317aa",
+    "artifact": 14072748222,
+    "size": 35482189,
+    "sha256": "adf579fbbb32eb4783a98e812468bd513d4b8a8ec25c3c426c4dc5b8193baaa3",
+    "unitPassed": 20,
+    "unitFailed": 0,
+    "uiPassed": 6,
+    "uiFailed": 0,
+    "skipped": 0,
+    "png": 13,
+    "mp4": 0,
+    "statuses": {
+      "xcodebuildStatus": 0,
+      "testLogStatus": 0,
+      "attachmentExportStatus": 0
+    },
+    "testOutcomes": [
+      {
+        "suite": "DITETests",
+        "class": "BridgeMessageTests",
+        "name": "testHandshakeRequiresMatchingProtocolAndSchema",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "BridgeMessageTests",
+        "name": "testHapticsAreAnAllowlist",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "BridgeMessageTests",
+        "name": "testRejectsOversizedOrNonJSONSave",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "BridgeMessageTests",
+        "name": "testRejectsWrongTypesAndUnsafeRequestIdentifiers",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "BridgeMessageTests",
+        "name": "testSavePreservesSharedSnapshotWithoutInventingFields",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameNavigationPolicyTests",
+        "name": "testExternalURLsNeedBothExplicitConfigurationAndUserAction",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameNavigationPolicyTests",
+        "name": "testOfflineRulesCompileInWebKit",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameNavigationPolicyTests",
+        "name": "testOnlyBundledEntryCanNavigate",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameNavigationPolicyTests",
+        "name": "testOnlyMainDocumentReloadRefreshesTheNativeBootstrap",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameSaveStoreTests",
+        "name": "testFirstLaunchIsDistinctFromDamagedStorage",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameSaveStoreTests",
+        "name": "testFutureSchemaAndCorruptDataArePreservedBeforeReplacement",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameSaveStoreTests",
+        "name": "testInterleavedReadsNeverSeePartialJSON",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameSaveStoreTests",
+        "name": "testLegacyMigrationKeepsAnUnmodifiedRecoveryCopy",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameSaveStoreTests",
+        "name": "testMissingCurrentUsesReadablePreviousInsteadOfPretendingFirstLaunch",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameSaveStoreTests",
+        "name": "testRawBackupFailureCannotOverwriteCurrentOrPrevious",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameSaveStoreTests",
+        "name": "testRejectedSaveCannotDamagePreviousData",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameSaveStoreTests",
+        "name": "testSaveSurvivesANewStoreInstanceAndPreservesUnicode",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameSaveStoreTests",
+        "name": "testSemanticallyInvalidCurrentSchemaKeepsRawInputAndBoundedRecoverySlots",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameSaveStoreTests",
+        "name": "testUnreadableCurrentRestoresPreviousAndRetainsRecoveryOnFailedWrite",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITETests",
+        "class": "GameSaveStoreTests",
+        "name": "testWriteFailureIsReported",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITEUITests",
+        "class": "DITEUITests",
+        "name": "testBackgroundRequiresExplicitResume",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITEUITests",
+        "class": "DITEUITests",
+        "name": "testBothLandscapeOrientationsKeepControlsReachable",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITEUITests",
+        "class": "DITEUITests",
+        "name": "testBundledGameControlsPauseAndReturnFromSettings",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITEUITests",
+        "class": "DITEUITests",
+        "name": "testForgeKeyboardRequiresATapAndCanCloseAfterRotation",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITEUITests",
+        "class": "DITEUITests",
+        "name": "testPreferencePersistsAfterApplicationRelaunch",
+        "outcome": "passed"
+      },
+      {
+        "suite": "DITEUITests",
+        "class": "DITEUITests",
+        "name": "testWebGLFailureRetriesThroughAFreshNativeBootstrap",
+        "outcome": "passed"
+      }
+    ]
+  }
+}

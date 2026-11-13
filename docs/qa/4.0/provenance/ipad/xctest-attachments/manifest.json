@@ -1,0 +1,407 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "B655EF05-8597-40F2-8AE9-98706E142F8B.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Passive native and web event trace_0_9B87C972-36E8-4709-9001-B85A49E44EDF.txt",
+        "timestamp" : 1794600335.631
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "715E2A6C-3849-4081-B838-31C1D8D04C24.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "paused-after-background_0_AA010C05-5393-4EC0-B97A-55A042134A87.png",
+        "timestamp" : 1794600325.942
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "4889566C-79BD-47BD-9CE6-3AA624326123.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screenshot content observations paused-after-background_0_035D0C53-3667-467B-92FD-2A37753269CB.txt",
+        "timestamp" : 1794600325.938
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "FFDB6FF8-9749-4775-B7ED-9689BAD17CB1.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Window geometry after-activation_0_0A3BE7F2-EDEB-42BD-8799-DD59DE80DD59.txt",
+        "timestamp" : 1794600322.259
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "F5FC6B71-AD1C-4D72-B8F4-9943AEEC5982.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Observed application lifecycle states after activation_0_D6049C50-6470-4DFB-86B2-451F97A99349.txt",
+        "timestamp" : 1794600320.838
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "D05BED2E-8FA6-40D9-AC03-C8F2CA969E5E.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "system-after-background-action_0_882DB1D1-28E9-4E0D-9CD6-85F1333651DC.png",
+        "timestamp" : 1794600318.513
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "AF85B32E-C04E-4EB8-A253-A2DB03D72C6C.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Observed application lifecycle states before activation_0_99097EE3-C266-4579-89D3-2E295FBBE53A.txt",
+        "timestamp" : 1794600317.87
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "DA62DC11-0BB6-43CD-BE31-D7FB5CFD495D.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Window geometry before-background_0_40A3BA53-22AF-4D3D-BC68-C7A8AA223DAA.txt",
+        "timestamp" : 1794600309.31
+      }
+    ],
+    "testIdentifier" : "DITEUITests/testBackgroundRequiresExplicitResume()",
+    "testIdentifierURL" : "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBackgroundRequiresExplicitResume"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "134CD6CC-F98A-4E3B-AB11-F46801FB9B96.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Passive native and web event trace_0_E43A3FBB-36A2-409F-98B4-9377481ABA1D.txt",
+        "timestamp" : 1794600442.303
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "EDC0CE1A-57AE-4351-984E-924A490A6734.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "cold-launch-pause-ui-landscapeLeft_0_A96144E6-54C8-4C49-8E02-9E5BF5CDA7F0.png",
+        "timestamp" : 1794600442.033
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "BF3E4E81-B1A9-42E6-8C0C-2064B6361CD2.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screenshot content observations cold-launch-pause-ui-landscapeLeft_0_1EB2F417-41A9-4B4F-AAAD-EB8C2645A6A2.txt",
+        "timestamp" : 1794600442.029
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "31256B2C-5B56-4F7E-A958-3F1426866D58.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Window geometry orientation-landscapeLeft_0_E59C1262-3D78-4F47-B07F-1DD2C0625C97.txt",
+        "timestamp" : 1794600429.123
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "61DD1C1F-C444-4D47-ABFF-DEF6760B9918.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Actual window orientation_0_BC67C7C5-A6FD-46EA-B39F-C1D3CEE9B1D9.txt",
+        "timestamp" : 1794600428.863
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "FAAA2D6A-BB66-4647-BF1D-9D8E932ED6CE.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "rotated-pause-ui-landscapeLeft_0_52B19653-E264-41E6-9B50-BD43C5ED3FD4.png",
+        "timestamp" : 1794600407.136
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "05236293-BEFF-42AD-AE09-B019CA885974.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screenshot content observations rotated-pause-ui-landscapeLeft_0_EB021A74-A4DD-41E8-9335-EDBE90A4BC81.txt",
+        "timestamp" : 1794600407.133
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "51F20393-1406-4095-88D1-CAE1AF225624.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Window geometry orientation-landscapeLeft_0_A2B729C9-81FE-4A84-8133-B8DEC5FACA68.txt",
+        "timestamp" : 1794600404.48
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "3A5079EE-300E-47DD-A9E9-F5C52F62FDA6.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Actual window orientation_0_5C02A9F1-FD09-4D29-829E-59C4FD993887.txt",
+        "timestamp" : 1794600404.233
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "CE5E476A-38F2-4F35-9BB1-806A9BE3A1C5.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "cold-launch-pause-ui-landscapeRight_0_E8A748B6-D53C-4FE3-BA4F-8AD26CF44D3D.png",
+        "timestamp" : 1794600387.342
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "77AFC9A0-E178-4B58-B980-96B29D6E48C8.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screenshot content observations cold-launch-pause-ui-landscapeRight_0_85201B70-96B2-4E9F-B2F7-116EDE1296A8.txt",
+        "timestamp" : 1794600387.34
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "43270708-79FA-4D35-99F6-634EED1AA6DF.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Window geometry orientation-landscapeRight_0_A1A938FF-E558-4B37-93EF-7AEF9366AC2D.txt",
+        "timestamp" : 1794600373.558
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "261BCC54-DD3B-4F1E-BE68-0EE9D4070C3E.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Actual window orientation_0_8C984141-0B14-4BB8-9D94-1B78D9994254.txt",
+        "timestamp" : 1794600373.188
+      }
+    ],
+    "testIdentifier" : "DITEUITests/testBothLandscapeOrientationsKeepControlsReachable()",
+    "testIdentifierURL" : "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBothLandscapeOrientationsKeepControlsReachable"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "6CD74916-2782-4E3E-B348-4B60113CB668.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Passive native and web event trace_0_DC13EBAB-6FBD-4E20-880F-9BBAC88650D8.txt",
+        "timestamp" : 1794600473.916
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "FE532FD7-9636-492B-9047-EC603ED0A21A.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "game_0_3F8685EC-FB61-4FCD-9326-047FCD342683.png",
+        "timestamp" : 1794600473.686
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "0D6936C9-DD13-4265-AE1C-A021031BB910.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screenshot content observations game_0_5BCB137E-74BD-4CCA-A2E6-41D1F41D378A.txt",
+        "timestamp" : 1794600473.68
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "D3DA1127-C7F8-4AEB-A1A1-B073407485A5.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "pause_0_A562FA1D-9BE1-4422-8094-D58F896B9E2D.png",
+        "timestamp" : 1794600468.573
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "5022D342-556A-4B06-8F4A-84C2832BBE39.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screenshot content observations pause_0_4D00FBE7-B585-4D2D-A09B-64F8F67B31FD.txt",
+        "timestamp" : 1794600468.572
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "6F06F331-3AD3-4B18-8ACA-E2C9A0DFBC87.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "lobby-landscape-left_0_27440087-E6A1-4867-82A0-10B07BE49D19.png",
+        "timestamp" : 1794600455.628
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "466E56B3-725E-43F9-9BF8-E60F752CCD79.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screenshot content observations lobby-landscape-left_0_FFA9E52E-0DAD-40A0-B749-097D3578D444.txt",
+        "timestamp" : 1794600455.627
+      }
+    ],
+    "testIdentifier" : "DITEUITests/testBundledGameControlsPauseAndReturnFromSettings()",
+    "testIdentifierURL" : "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBundledGameControlsPauseAndReturnFromSettings"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "81237787-8EBE-475A-AB19-4919071AF87C.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Passive native and web event trace_0_7DC1ED4B-7BC6-48AC-901C-B63DD82E4AAE.txt",
+        "timestamp" : 1794600529.435
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "42D9D43A-82F8-4CE8-A8ED-07A68266C161.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "forge-after-keyboard-and-rotation_0_47B2125F-50EF-4C17-B00B-4EA01D8196BC.png",
+        "timestamp" : 1794600524.664
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "514DCDC2-835B-4F5D-92FF-2BFE9F20B134.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screenshot content observations forge-after-keyboard-and-rotation_0_5EA73D3C-91B2-4B5C-BC0E-A3CDFFCE7D26.txt",
+        "timestamp" : 1794600524.662
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "FAE8126F-B1B4-480B-977A-1CE301D06D0A.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "forge-without-keyboard_0_FF52623D-8E31-45EE-987D-6A618AEFC093.png",
+        "timestamp" : 1794600500.477
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "33058E64-3DFF-4E31-8598-994C0116CAF6.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screenshot content observations forge-without-keyboard_0_5FA9CE9E-9331-4D3C-ABDE-38A16DD28AB5.txt",
+        "timestamp" : 1794600500.475
+      }
+    ],
+    "testIdentifier" : "DITEUITests/testForgeKeyboardRequiresATapAndCanCloseAfterRotation()",
+    "testIdentifierURL" : "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testForgeKeyboardRequiresATapAndCanCloseAfterRotation"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "6EE51C5F-A996-4758-8B1A-5A6358CF35CE.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Passive native and web event trace_0_BA536C22-5EF0-496A-8344-3F7F77C342F1.txt",
+        "timestamp" : 1794600573.981
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "DB021525-8549-43FD-9EBF-A16EC014E4B5.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "preference-restored_0_7EAA29EC-FB80-476D-AE60-A35EE0DB1763.png",
+        "timestamp" : 1794600573.93
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "704DAB91-7C61-4151-8759-4DCF038F299E.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screenshot content observations preference-restored_0_83425B71-4CFC-405E-9B6F-4979985B69C8.txt",
+        "timestamp" : 1794600573.925
+      }
+    ],
+    "testIdentifier" : "DITEUITests/testPreferencePersistsAfterApplicationRelaunch()",
+    "testIdentifierURL" : "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testPreferencePersistsAfterApplicationRelaunch"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "C2197375-3102-46B8-BA1E-F40468B507DC.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Passive native and web event trace_0_FDF4485A-D169-49A0-9E44-9E7CAC096F1E.txt",
+        "timestamp" : 1794600604.425
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "836188C2-90C0-47F3-A58E-6E7DDB8EE541.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "webgl-retry-restored-game_0_49F8A5DD-92BF-412C-B8FA-3A9F83904248.png",
+        "timestamp" : 1794600604.142
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "435882F2-6190-4EF9-A5C4-6C9949033EB5.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screenshot content observations webgl-retry-restored-game_0_3B4590B2-5823-4C0E-B70B-435D817EA03D.txt",
+        "timestamp" : 1794600604.137
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "4147FADA-F177-4F56-9EB1-CC4AD25F8C1C.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "webgl-first-start-failure_0_C68F9040-1918-4A72-A2F6-4DCFFAE23A4C.png",
+        "timestamp" : 1794600592.494
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName" : "iPad (A16)",
+        "exportedFileName" : "8739296A-A691-4A2C-8816-A5A6B64F0E58.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screenshot content observations webgl-first-start-failure_0_4D74A26E-C0D0-49B8-BCC4-BED706A2B383.txt",
+        "timestamp" : 1794600592.49
+      }
+    ],
+    "testIdentifier" : "DITEUITests/testWebGLFailureRetriesThroughAFreshNativeBootstrap()",
+    "testIdentifierURL" : "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testWebGLFailureRetriesThroughAFreshNativeBootstrap"
+  }
+]

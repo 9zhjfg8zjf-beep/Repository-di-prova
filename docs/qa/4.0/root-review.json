@@ -1,0 +1,121 @@
+{
+  "runId": 43497161293,
+  "sourceCommit": "3ba5abe95502fc00332b8fb50503bcde063317aa",
+  "reviewer": "Codex root",
+  "reviewedAt": "2026-11-13T20:16:57.560697+00:00",
+  "status": "passed",
+  "files": [
+    {
+      "family": "iphone",
+      "name": "game",
+      "original": "D988CDE8-9D69-4585-98CE-CF68E9D16FE1.png",
+      "sha256": "d0d907eb40fe9cf2465c06581c8d57773259bf64ecff725966fcc5af62163d04",
+      "result": "passed"
+    },
+    {
+      "family": "iphone",
+      "name": "forge-without-keyboard",
+      "original": "46C4AD42-21EA-4523-B160-9CAA33453D63.png",
+      "sha256": "528e0d4af77614c1fee1204cabbe88b45ef6086b46e0fdaebeb6d8c1a3e05ab7",
+      "result": "passed"
+    },
+    {
+      "family": "iphone",
+      "name": "forge-after-keyboard-and-rotation",
+      "original": "8A7CAB20-2858-43E5-A153-32923F3646FC.png",
+      "sha256": "54385904db24928d1edc5052a664f626857454ef3ad8084ed55bbfb3ff7c8af6",
+      "result": "passed"
+    },
+    {
+      "family": "iphone",
+      "name": "cold-launch-pause-ui-landscapeRight",
+      "original": "A6551430-3026-4FE8-A84C-4878D33F2C4C.png",
+      "sha256": "bce132eba3b06ed91866f09463502e2ef48ada839dc2eb825834c9076167d6e0",
+      "result": "passed"
+    },
+    {
+      "family": "iphone",
+      "name": "cold-launch-pause-ui-landscapeLeft",
+      "original": "7529002D-D125-445C-A37A-91A74350FFB9.png",
+      "sha256": "4b8cacdb553dedcf57cbd33b9885a64b258dd417a301c75a489395cc724929e8",
+      "result": "passed"
+    },
+    {
+      "family": "iphone",
+      "name": "rotated-pause-ui-landscapeLeft",
+      "original": "76168113-F092-4B91-B4C9-B2AC57B67C99.png",
+      "sha256": "4b8cacdb553dedcf57cbd33b9885a64b258dd417a301c75a489395cc724929e8",
+      "result": "passed"
+    },
+    {
+      "family": "iphone",
+      "name": "system-after-background-action",
+      "original": "D0D9C06C-DCBA-442A-BEC9-A38056B26FB4.png",
+      "sha256": "450f83545812ceff7fe3f1ea36596f0d21e6ccdae4c9be10853d493379d6dbfe",
+      "result": "passed"
+    },
+    {
+      "family": "ipad",
+      "name": "game",
+      "original": "FE532FD7-9636-492B-9047-EC603ED0A21A.png",
+      "sha256": "27700dbe4014aa202ce4e124db62ad8c07ad8ff6a77a60890846d65194572059",
+      "result": "passed"
+    },
+    {
+      "family": "ipad",
+      "name": "forge-without-keyboard",
+      "original": "FAE8126F-B1B4-480B-977A-1CE301D06D0A.png",
+      "sha256": "f02943e7b9341627ddc9e325bdfd6d7ab8220fd3a8762c9d7c9e22c67e630c50",
+      "result": "passed"
+    },
+    {
+      "family": "ipad",
+      "name": "forge-after-keyboard-and-rotation",
+      "original": "42D9D43A-82F8-4CE8-A8ED-07A68266C161.png",
+      "sha256": "e06088f85234421b8dc5aed55cb76f211f221f97fad4b2bde84dedf51949f085",
+      "result": "passed"
+    },
+    {
+      "family": "ipad",
+      "name": "cold-launch-pause-ui-landscapeRight",
+      "original": "CE5E476A-38F2-4F35-9BB1-806A9BE3A1C5.png",
+      "sha256": "ad4ea11bbe12416e58b3a43bcf73c51b433bc5ba11b706faff2df9808527e88f",
+      "result": "passed"
+    },
+    {
+      "family": "ipad",
+      "name": "cold-launch-pause-ui-landscapeLeft",
+      "original": "EDC0CE1A-57AE-4351-984E-924A490A6734.png",
+      "sha256": "ee403d90ef00968b0cdb8a9da641d3eb8033d3e071509da3df7199c37c2b62b7",
+      "result": "passed"
+    },
+    {
+      "family": "ipad",
+      "name": "paused-after-background",
+      "original": "715E2A6C-3849-4081-B838-31C1D8D04C24.png",
+      "sha256": "ad4ea11bbe12416e58b3a43bcf73c51b433bc5ba11b706faff2df9808527e88f",
+      "result": "passed"
+    },
+    {
+      "family": "ipad",
+      "name": "lobby-landscape-left",
+      "original": "6F06F331-3AD3-4B18-8ACA-E2C9A0DFBC87.png",
+      "sha256": "e0063f2050a123950c4b2081bec65adbb7f1f3948e8034ce6eab9348682b9ac4",
+      "result": "passed"
+    },
+    {
+      "family": "ipad",
+      "name": "system-after-background-action",
+      "original": "D05BED2E-8FA6-40D9-AC03-C8F2CA969E5E.png",
+      "sha256": "7894abbce4520d0cc520f5cc1009798482e0564df74aa2b08006a00e1bc49477",
+      "result": "passed"
+    }
+  ],
+  "notes": [
+    "All 15 originals opened and inspected; no uniform or missing app frame.",
+    "Gameplay HUD and coach, forge footer/actions, pause controls are readable and within visible area.",
+    "iPhone forge after keyboard keeps prior column scroll; long slot label truncation is intentional and details remain accessible.",
+    "System Home captures corroborate the OS lifecycle TXT; these are diagnostic, not game screenshots.",
+    "Visual review does not establish physical-device performance, battery or audio."
+  ]
+}

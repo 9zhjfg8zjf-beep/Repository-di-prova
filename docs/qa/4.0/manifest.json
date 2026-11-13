@@ -1,0 +1,1675 @@
+{
+  "build": 1,
+  "candidate": 17,
+  "checksums": {
+    "core": "503a2903f3f302782e35183e859679d530443c9c56f6adeafa990a5e4a766190",
+    "distNative": "95849cc1c7675cb0b4ac25133845bc17d40acd499023fd812c94183dd6c8fe34",
+    "siteArena": "4fa61a6d2776915466de8b318cb1c589e6577cde048f5919436dfe4c53d6b03a"
+  },
+  "ci": {
+    "conclusion": "success",
+    "jobs": {
+      "browser": "success",
+      "ipad": "success",
+      "iphone": "success",
+      "logic": "success"
+    },
+    "runId": 43497161293,
+    "url": "https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43497161293"
+  },
+  "files": [
+    {
+      "artifactId": 14073003038,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC",
+        "deviceName": "iPhone 17 Pro",
+        "exportedFileName": "D988CDE8-9D69-4585-98CE-CF68E9D16FE1.png",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "game_0_60B23713-2D7F-46F2-ADB9-7B93DBE830FA.png",
+        "timestamp": 1794600416.66
+      },
+      "bytes": 1466966,
+      "contentObservationsPath": "iphone/content-game.txt",
+      "displayHeight": 1206,
+      "displayWidth": 2622,
+      "exifOrientation": 8,
+      "exifOrientationPresent": true,
+      "family": "iphone",
+      "kind": "screenshot",
+      "path": "iphone/game.png",
+      "rawHeight": 2622,
+      "rawWidth": 1206,
+      "screenshotRole": "game",
+      "sha256": "d0d907eb40fe9cf2465c06581c8d57773259bf64ecff725966fcc5af62163d04",
+      "sourceMember": "xctest-attachments/D988CDE8-9D69-4585-98CE-CF68E9D16FE1.png",
+      "testIdentifier": "DITEUITests/testBundledGameControlsPauseAndReturnFromSettings()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBundledGameControlsPauseAndReturnFromSettings"
+    },
+    {
+      "artifactId": 14073003038,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC",
+        "deviceName": "iPhone 17 Pro",
+        "exportedFileName": "2042E6DE-6DF9-4D77-8367-6FE04DF126F3.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Screenshot content observations game_0_2791726F-0D3A-42F6-8059-DDE8E2AE7267.txt",
+        "timestamp": 1794600416.652
+      },
+      "attempts": [
+        {
+          "accepted": true,
+          "attempt": 1,
+          "available": true,
+          "content": true,
+          "contrastingCells": 16,
+          "contrastingPixels": 1942,
+          "elapsed": 1.6924117083333385,
+          "visiblePixels": 4096
+        }
+      ],
+      "bytes": 116,
+      "contentFor": "iphone/game.png",
+      "family": "iphone",
+      "kind": "screenshot-content",
+      "path": "iphone/content-game.txt",
+      "policy": {
+        "centralFraction": 0.8,
+        "minimumContrastingCells": 2,
+        "minimumContrastingPixels": 16,
+        "minimumVisiblePixels": 32,
+        "rgbContrastThreshold": 16,
+        "sampleSide": 64,
+        "source": "verified Swift screenshotContent sampler"
+      },
+      "sha256": "8760999d9739110e7e1f30d76ae816bfbc31a13cc5aab5bd99f2e2b462c084f2",
+      "sourceMember": "xctest-attachments/2042E6DE-6DF9-4D77-8367-6FE04DF126F3.txt",
+      "testIdentifier": "DITEUITests/testBundledGameControlsPauseAndReturnFromSettings()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBundledGameControlsPauseAndReturnFromSettings"
+    },
+    {
+      "artifactId": 14073003038,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC",
+        "deviceName": "iPhone 17 Pro",
+        "exportedFileName": "46C4AD42-21EA-4523-B160-9CAA33453D63.png",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "forge-without-keyboard_0_EF91CE08-3C03-4F5D-AC05-81DE613F257E.png",
+        "timestamp": 1794600451.739
+      },
+      "bytes": 315183,
+      "contentObservationsPath": "iphone/content-forge-without-keyboard.txt",
+      "displayHeight": 1206,
+      "displayWidth": 2622,
+      "exifOrientation": 8,
+      "exifOrientationPresent": true,
+      "family": "iphone",
+      "kind": "screenshot",
+      "path": "iphone/forge-without-keyboard.png",
+      "rawHeight": 2622,
+      "rawWidth": 1206,
+      "screenshotRole": "game",
+      "sha256": "528e0d4af77614c1fee1204cabbe88b45ef6086b46e0fdaebeb6d8c1a3e05ab7",
+      "sourceMember": "xctest-attachments/46C4AD42-21EA-4523-B160-9CAA33453D63.png",
+      "testIdentifier": "DITEUITests/testForgeKeyboardRequiresATapAndCanCloseAfterRotation()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testForgeKeyboardRequiresATapAndCanCloseAfterRotation"
+    },
+    {
+      "artifactId": 14073003038,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC",
+        "deviceName": "iPhone 17 Pro",
+        "exportedFileName": "33E9ADEE-2A1A-4B32-B5AB-DE4D1E967264.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Screenshot content observations forge-without-keyboard_0_390D62AD-B4CD-40F7-A823-A33D230047AF.txt",
+        "timestamp": 1794600451.737
+      },
+      "attempts": [
+        {
+          "accepted": true,
+          "attempt": 1,
+          "available": true,
+          "content": true,
+          "contrastingCells": 16,
+          "contrastingPixels": 608,
+          "elapsed": 1.2151814999999715,
+          "visiblePixels": 4096
+        }
+      ],
+      "bytes": 115,
+      "contentFor": "iphone/forge-without-keyboard.png",
+      "family": "iphone",
+      "kind": "screenshot-content",
+      "path": "iphone/content-forge-without-keyboard.txt",
+      "policy": {
+        "centralFraction": 0.8,
+        "minimumContrastingCells": 2,
+        "minimumContrastingPixels": 16,
+        "minimumVisiblePixels": 32,
+        "rgbContrastThreshold": 16,
+        "sampleSide": 64,
+        "source": "verified Swift screenshotContent sampler"
+      },
+      "sha256": "e5aff431c82203876af46c8c0080ac8d67a8c53f0264b704a28b69a48dd399a9",
+      "sourceMember": "xctest-attachments/33E9ADEE-2A1A-4B32-B5AB-DE4D1E967264.txt",
+      "testIdentifier": "DITEUITests/testForgeKeyboardRequiresATapAndCanCloseAfterRotation()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testForgeKeyboardRequiresATapAndCanCloseAfterRotation"
+    },
+    {
+      "artifactId": 14073003038,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC",
+        "deviceName": "iPhone 17 Pro",
+        "exportedFileName": "8A7CAB20-2858-43E5-A153-32923F3646FC.png",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "forge-after-keyboard-and-rotation_0_A0AF3349-3966-4EDF-8777-7487E4FA9C43.png",
+        "timestamp": 1794600468.89
+      },
+      "bytes": 324939,
+      "contentObservationsPath": "iphone/content-forge-after-keyboard-and-rotation.txt",
+      "displayHeight": 1206,
+      "displayWidth": 2622,
+      "exifOrientation": 6,
+      "exifOrientationPresent": true,
+      "family": "iphone",
+      "kind": "screenshot",
+      "path": "iphone/forge-after-keyboard-and-rotation.png",
+      "rawHeight": 2622,
+      "rawWidth": 1206,
+      "screenshotRole": "game",
+      "sha256": "54385904db24928d1edc5052a664f626857454ef3ad8084ed55bbfb3ff7c8af6",
+      "sourceMember": "xctest-attachments/8A7CAB20-2858-43E5-A153-32923F3646FC.png",
+      "testIdentifier": "DITEUITests/testForgeKeyboardRequiresATapAndCanCloseAfterRotation()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testForgeKeyboardRequiresATapAndCanCloseAfterRotation"
+    },
+    {
+      "artifactId": 14073003038,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC",
+        "deviceName": "iPhone 17 Pro",
+        "exportedFileName": "14A32D26-AB34-478D-94B6-55B9F3FAF4FF.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Screenshot content observations forge-after-keyboard-and-rotation_0_7F0FA234-668E-465A-A8D4-46AB204A54A3.txt",
+        "timestamp": 1794600468.889
+      },
+      "attempts": [
+        {
+          "accepted": true,
+          "attempt": 1,
+          "available": true,
+          "content": true,
+          "contrastingCells": 16,
+          "contrastingPixels": 512,
+          "elapsed": 1.2342661666666572,
+          "visiblePixels": 4096
+        }
+      ],
+      "bytes": 115,
+      "contentFor": "iphone/forge-after-keyboard-and-rotation.png",
+      "family": "iphone",
+      "kind": "screenshot-content",
+      "path": "iphone/content-forge-after-keyboard-and-rotation.txt",
+      "policy": {
+        "centralFraction": 0.8,
+        "minimumContrastingCells": 2,
+        "minimumContrastingPixels": 16,
+        "minimumVisiblePixels": 32,
+        "rgbContrastThreshold": 16,
+        "sampleSide": 64,
+        "source": "verified Swift screenshotContent sampler"
+      },
+      "sha256": "f7ab91862db9ddf243c3914567191e3bf299b7e047b1eefac07be443a90e1436",
+      "sourceMember": "xctest-attachments/14A32D26-AB34-478D-94B6-55B9F3FAF4FF.txt",
+      "testIdentifier": "DITEUITests/testForgeKeyboardRequiresATapAndCanCloseAfterRotation()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testForgeKeyboardRequiresATapAndCanCloseAfterRotation"
+    },
+    {
+      "artifactId": 14073003038,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC",
+        "deviceName": "iPhone 17 Pro",
+        "exportedFileName": "76168113-F092-4B91-B4C9-B2AC57B67C99.png",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "rotated-pause-ui-landscapeLeft_0_07D9F1DF-D5CF-4743-80F1-C20FF837B072.png",
+        "timestamp": 1794600348.975
+      },
+      "bytes": 700214,
+      "contentObservationsPath": "iphone/content-rotated-pause-ui-landscapeLeft.txt",
+      "displayHeight": 1206,
+      "displayWidth": 2622,
+      "exifOrientation": 6,
+      "exifOrientationPresent": true,
+      "family": "iphone",
+      "kind": "screenshot",
+      "path": "iphone/rotated-pause-ui-landscapeLeft.png",
+      "rawHeight": 2622,
+      "rawWidth": 1206,
+      "screenshotRole": "game",
+      "sha256": "4b8cacdb553dedcf57cbd33b9885a64b258dd417a301c75a489395cc724929e8",
+      "sourceMember": "xctest-attachments/76168113-F092-4B91-B4C9-B2AC57B67C99.png",
+      "testIdentifier": "DITEUITests/testBothLandscapeOrientationsKeepControlsReachable()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBothLandscapeOrientationsKeepControlsReachable"
+    },
+    {
+      "artifactId": 14073003038,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC",
+        "deviceName": "iPhone 17 Pro",
+        "exportedFileName": "DC6A9162-BBEF-4E88-AB08-1DE51E3C9F61.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Screenshot content observations rotated-pause-ui-landscapeLeft_0_4E01E131-6589-48ED-9DD9-2DBA5857E1BC.txt",
+        "timestamp": 1794600348.973
+      },
+      "attempts": [
+        {
+          "accepted": true,
+          "attempt": 1,
+          "available": true,
+          "content": true,
+          "contrastingCells": 11,
+          "contrastingPixels": 598,
+          "elapsed": 1.231566583333347,
+          "visiblePixels": 4096
+        }
+      ],
+      "bytes": 114,
+      "contentFor": "iphone/rotated-pause-ui-landscapeLeft.png",
+      "family": "iphone",
+      "kind": "screenshot-content",
+      "path": "iphone/content-rotated-pause-ui-landscapeLeft.txt",
+      "policy": {
+        "centralFraction": 0.8,
+        "minimumContrastingCells": 2,
+        "minimumContrastingPixels": 16,
+        "minimumVisiblePixels": 32,
+        "rgbContrastThreshold": 16,
+        "sampleSide": 64,
+        "source": "verified Swift screenshotContent sampler"
+      },
+      "sha256": "9771ec1a7360494a49302fdc48c7f9e0bd8cf49b51c6c70dad2412764b9bfb5f",
+      "sourceMember": "xctest-attachments/DC6A9162-BBEF-4E88-AB08-1DE51E3C9F61.txt",
+      "testIdentifier": "DITEUITests/testBothLandscapeOrientationsKeepControlsReachable()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBothLandscapeOrientationsKeepControlsReachable"
+    },
+    {
+      "artifactId": 14073003038,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC",
+        "deviceName": "iPhone 17 Pro",
+        "exportedFileName": "A6551430-3026-4FE8-A84C-4878D33F2C4C.png",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "cold-launch-pause-ui-landscapeRight_0_81142ADD-691C-4508-84F1-614FCD7A4B96.png",
+        "timestamp": 1794600331.195
+      },
+      "bytes": 704241,
+      "contentObservationsPath": "iphone/content-cold-launch-pause-ui-landscapeRight.txt",
+      "displayHeight": 1206,
+      "displayWidth": 2622,
+      "exifOrientation": 8,
+      "exifOrientationPresent": true,
+      "family": "iphone",
+      "kind": "screenshot",
+      "path": "iphone/cold-launch-pause-ui-landscapeRight.png",
+      "rawHeight": 2622,
+      "rawWidth": 1206,
+      "screenshotRole": "game",
+      "sha256": "bce132eba3b06ed91866f09463502e2ef48ada839dc2eb825834c9076167d6e0",
+      "sourceMember": "xctest-attachments/A6551430-3026-4FE8-A84C-4878D33F2C4C.png",
+      "testIdentifier": "DITEUITests/testBothLandscapeOrientationsKeepControlsReachable()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBothLandscapeOrientationsKeepControlsReachable"
+    },
+    {
+      "artifactId": 14073003038,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC",
+        "deviceName": "iPhone 17 Pro",
+        "exportedFileName": "075196EA-747E-4BFD-ADBE-DD14816AEAEC.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Screenshot content observations cold-launch-pause-ui-landscapeRight_0_FCD27679-A468-4214-895A-252A1FDD8F94.txt",
+        "timestamp": 1794600331.193
+      },
+      "attempts": [
+        {
+          "accepted": true,
+          "attempt": 1,
+          "available": true,
+          "content": true,
+          "contrastingCells": 11,
+          "contrastingPixels": 598,
+          "elapsed": 1.7668620000000033,
+          "visiblePixels": 4096
+        }
+      ],
+      "bytes": 115,
+      "contentFor": "iphone/cold-launch-pause-ui-landscapeRight.png",
+      "family": "iphone",
+      "kind": "screenshot-content",
+      "path": "iphone/content-cold-launch-pause-ui-landscapeRight.txt",
+      "policy": {
+        "centralFraction": 0.8,
+        "minimumContrastingCells": 2,
+        "minimumContrastingPixels": 16,
+        "minimumVisiblePixels": 32,
+        "rgbContrastThreshold": 16,
+        "sampleSide": 64,
+        "source": "verified Swift screenshotContent sampler"
+      },
+      "sha256": "ba387e7d47bab18856fed6e0fbf6ad7f57d07e8dc8269c92f247c82719bd8697",
+      "sourceMember": "xctest-attachments/075196EA-747E-4BFD-ADBE-DD14816AEAEC.txt",
+      "testIdentifier": "DITEUITests/testBothLandscapeOrientationsKeepControlsReachable()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBothLandscapeOrientationsKeepControlsReachable"
+    },
+    {
+      "artifactId": 14073003038,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC",
+        "deviceName": "iPhone 17 Pro",
+        "exportedFileName": "7529002D-D125-445C-A37A-91A74350FFB9.png",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "cold-launch-pause-ui-landscapeLeft_0_B2220FD5-53BA-43E2-8EDA-AC4D00863151.png",
+        "timestamp": 1794600384.94
+      },
+      "bytes": 700214,
+      "contentObservationsPath": "iphone/content-cold-launch-pause-ui-landscapeLeft.txt",
+      "displayHeight": 1206,
+      "displayWidth": 2622,
+      "exifOrientation": 6,
+      "exifOrientationPresent": true,
+      "family": "iphone",
+      "kind": "screenshot",
+      "path": "iphone/cold-launch-pause-ui-landscapeLeft.png",
+      "rawHeight": 2622,
+      "rawWidth": 1206,
+      "screenshotRole": "game",
+      "sha256": "4b8cacdb553dedcf57cbd33b9885a64b258dd417a301c75a489395cc724929e8",
+      "sourceMember": "xctest-attachments/7529002D-D125-445C-A37A-91A74350FFB9.png",
+      "testIdentifier": "DITEUITests/testBothLandscapeOrientationsKeepControlsReachable()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBothLandscapeOrientationsKeepControlsReachable"
+    },
+    {
+      "artifactId": 14073003038,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC",
+        "deviceName": "iPhone 17 Pro",
+        "exportedFileName": "B11A52BE-23A1-4AFD-B5F5-74621D0B2FB1.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Screenshot content observations cold-launch-pause-ui-landscapeLeft_0_C800D211-1A2D-42B4-8C4D-48F607146A66.txt",
+        "timestamp": 1794600384.939
+      },
+      "attempts": [
+        {
+          "accepted": true,
+          "attempt": 1,
+          "available": true,
+          "content": true,
+          "contrastingCells": 11,
+          "contrastingPixels": 598,
+          "elapsed": 1.2362514583332995,
+          "visiblePixels": 4096
+        }
+      ],
+      "bytes": 115,
+      "contentFor": "iphone/cold-launch-pause-ui-landscapeLeft.png",
+      "family": "iphone",
+      "kind": "screenshot-content",
+      "path": "iphone/content-cold-launch-pause-ui-landscapeLeft.txt",
+      "policy": {
+        "centralFraction": 0.8,
+        "minimumContrastingCells": 2,
+        "minimumContrastingPixels": 16,
+        "minimumVisiblePixels": 32,
+        "rgbContrastThreshold": 16,
+        "sampleSide": 64,
+        "source": "verified Swift screenshotContent sampler"
+      },
+      "sha256": "5b42d68b11a77392b6ecf844c50b16d743903662421647174cbd642e6e26bab4",
+      "sourceMember": "xctest-attachments/B11A52BE-23A1-4AFD-B5F5-74621D0B2FB1.txt",
+      "testIdentifier": "DITEUITests/testBothLandscapeOrientationsKeepControlsReachable()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBothLandscapeOrientationsKeepControlsReachable"
+    },
+    {
+      "artifactId": 14073003038,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC",
+        "deviceName": "iPhone 17 Pro",
+        "exportedFileName": "D0D9C06C-DCBA-442A-BEC9-A38056B26FB4.png",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "system-after-background-action_0_60039849-781A-4A01-9470-9CEB6D1F0450.png",
+        "timestamp": 1794600283.377
+      },
+      "bytes": 2795451,
+      "displayHeight": 2622,
+      "displayWidth": 1206,
+      "exifOrientation": 1,
+      "exifOrientationPresent": true,
+      "family": "iphone",
+      "kind": "screenshot",
+      "path": "iphone/system-after-background-action.png",
+      "rawHeight": 2622,
+      "rawWidth": 1206,
+      "screenshotRole": "system",
+      "sha256": "450f83545812ceff7fe3f1ea36596f0d21e6ccdae4c9be10853d493379d6dbfe",
+      "sourceMember": "xctest-attachments/D0D9C06C-DCBA-442A-BEC9-A38056B26FB4.png",
+      "testIdentifier": "DITEUITests/testBackgroundRequiresExplicitResume()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBackgroundRequiresExplicitResume"
+    },
+    {
+      "artifactId": 14073003038,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC",
+        "deviceName": "iPhone 17 Pro",
+        "exportedFileName": "75600BA4-77F7-4306-9ED2-D11D81347A2B.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Actual window orientation_0_80A977CD-8772-4A63-A6E6-7CFA1969C25D.txt",
+        "timestamp": 1794600310.718
+      },
+      "bytes": 48,
+      "family": "iphone",
+      "kind": "orientation",
+      "path": "iphone/orientation-1.txt",
+      "sha256": "52532e2d27d06319c468ec7ca4ea484b3061c007cc5a5443b48ed332dfc6f549",
+      "sourceMember": "xctest-attachments/75600BA4-77F7-4306-9ED2-D11D81347A2B.txt",
+      "testIdentifier": "DITEUITests/testBothLandscapeOrientationsKeepControlsReachable()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBothLandscapeOrientationsKeepControlsReachable"
+    },
+    {
+      "artifactId": 14073003038,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC",
+        "deviceName": "iPhone 17 Pro",
+        "exportedFileName": "4F41FD76-272B-4A1C-9CCC-5B9E458D39A8.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Actual window orientation_0_FC0BC8EB-6726-4A15-B4FB-11436254E68A.txt",
+        "timestamp": 1794600346.509
+      },
+      "bytes": 46,
+      "family": "iphone",
+      "kind": "orientation",
+      "path": "iphone/orientation-2.txt",
+      "sha256": "d9024e0b27bd747bdf04eb4fe9709abcfef3ab78d962a4d3cc00de4848d88c32",
+      "sourceMember": "xctest-attachments/4F41FD76-272B-4A1C-9CCC-5B9E458D39A8.txt",
+      "testIdentifier": "DITEUITests/testBothLandscapeOrientationsKeepControlsReachable()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBothLandscapeOrientationsKeepControlsReachable"
+    },
+    {
+      "artifactId": 14073003038,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC",
+        "deviceName": "iPhone 17 Pro",
+        "exportedFileName": "E39DE0EC-ED1F-47E3-80E3-1462CCC61F63.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Actual window orientation_0_D9DA474A-421E-42D4-A8F9-D76100511302.txt",
+        "timestamp": 1794600372.277
+      },
+      "bytes": 46,
+      "family": "iphone",
+      "kind": "orientation",
+      "path": "iphone/orientation-3.txt",
+      "sha256": "d9024e0b27bd747bdf04eb4fe9709abcfef3ab78d962a4d3cc00de4848d88c32",
+      "sourceMember": "xctest-attachments/E39DE0EC-ED1F-47E3-80E3-1462CCC61F63.txt",
+      "testIdentifier": "DITEUITests/testBothLandscapeOrientationsKeepControlsReachable()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBothLandscapeOrientationsKeepControlsReachable"
+    },
+    {
+      "artifactId": 14073003038,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC",
+        "deviceName": "iPhone 17 Pro",
+        "exportedFileName": "38F7B69A-AEBB-41D4-9F8A-45E7E816E842.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Observed application lifecycle states before activation_0_31F3A3BB-EC82-47AF-9A5A-4DF6D0DF428C.txt",
+        "timestamp": 1794600281.732
+      },
+      "bytes": 62,
+      "family": "iphone",
+      "kind": "lifecycle",
+      "path": "iphone/lifecycle-before-activation.txt",
+      "sha256": "b9ebb17cf6c89d86493354e7e7f5a3bd165f9ba8e5c92ecaf64b75354bef53b9",
+      "sourceMember": "xctest-attachments/38F7B69A-AEBB-41D4-9F8A-45E7E816E842.txt",
+      "testIdentifier": "DITEUITests/testBackgroundRequiresExplicitResume()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBackgroundRequiresExplicitResume"
+    },
+    {
+      "artifactId": 14073003038,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC",
+        "deviceName": "iPhone 17 Pro",
+        "exportedFileName": "11D4E7D4-9F5D-4CA1-BFCA-8D709B05C47C.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Observed application lifecycle states after activation_0_A41324AF-38FA-40AC-B57F-8F66B8E91F0B.txt",
+        "timestamp": 1794600284.547
+      },
+      "bytes": 82,
+      "family": "iphone",
+      "kind": "lifecycle",
+      "path": "iphone/lifecycle-after-activation.txt",
+      "sha256": "0136de2d177aae2da7253891dd19c16b41ea9b01ee7870da74c8d4c03ffc16c2",
+      "sourceMember": "xctest-attachments/11D4E7D4-9F5D-4CA1-BFCA-8D709B05C47C.txt",
+      "testIdentifier": "DITEUITests/testBackgroundRequiresExplicitResume()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBackgroundRequiresExplicitResume"
+    },
+    {
+      "artifactId": 14072748222,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName": "iPad (A16)",
+        "exportedFileName": "FE532FD7-9636-492B-9047-EC603ED0A21A.png",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "game_0_3F8685EC-FB61-4FCD-9326-047FCD342683.png",
+        "timestamp": 1794600473.686
+      },
+      "bytes": 1886214,
+      "contentObservationsPath": "ipad/content-game.txt",
+      "displayHeight": 1640,
+      "displayWidth": 2360,
+      "exifOrientation": 8,
+      "exifOrientationPresent": true,
+      "family": "ipad",
+      "kind": "screenshot",
+      "path": "ipad/game.png",
+      "rawHeight": 2360,
+      "rawWidth": 1640,
+      "screenshotRole": "game",
+      "sha256": "27700dbe4014aa202ce4e124db62ad8c07ad8ff6a77a60890846d65194572059",
+      "sourceMember": "xctest-attachments/FE532FD7-9636-492B-9047-EC603ED0A21A.png",
+      "testIdentifier": "DITEUITests/testBundledGameControlsPauseAndReturnFromSettings()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBundledGameControlsPauseAndReturnFromSettings"
+    },
+    {
+      "artifactId": 14072748222,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName": "iPad (A16)",
+        "exportedFileName": "0D6936C9-DD13-4265-AE1C-A021031BB910.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Screenshot content observations game_0_5BCB137E-74BD-4CCA-A2E6-41D1F41D378A.txt",
+        "timestamp": 1794600473.68
+      },
+      "attempts": [
+        {
+          "accepted": true,
+          "attempt": 1,
+          "available": true,
+          "content": true,
+          "contrastingCells": 16,
+          "contrastingPixels": 2203,
+          "elapsed": 1.9139251666666723,
+          "visiblePixels": 4096
+        }
+      ],
+      "bytes": 116,
+      "contentFor": "ipad/game.png",
+      "family": "ipad",
+      "kind": "screenshot-content",
+      "path": "ipad/content-game.txt",
+      "policy": {
+        "centralFraction": 0.8,
+        "minimumContrastingCells": 2,
+        "minimumContrastingPixels": 16,
+        "minimumVisiblePixels": 32,
+        "rgbContrastThreshold": 16,
+        "sampleSide": 64,
+        "source": "verified Swift screenshotContent sampler"
+      },
+      "sha256": "ced990d93a30023920db719269f706cf4de911d2c0c200ab0e26046ecb9bb681",
+      "sourceMember": "xctest-attachments/0D6936C9-DD13-4265-AE1C-A021031BB910.txt",
+      "testIdentifier": "DITEUITests/testBundledGameControlsPauseAndReturnFromSettings()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBundledGameControlsPauseAndReturnFromSettings"
+    },
+    {
+      "artifactId": 14072748222,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName": "iPad (A16)",
+        "exportedFileName": "FAE8126F-B1B4-480B-977A-1CE301D06D0A.png",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "forge-without-keyboard_0_FF52623D-8E31-45EE-987D-6A618AEFC093.png",
+        "timestamp": 1794600500.477
+      },
+      "bytes": 401671,
+      "contentObservationsPath": "ipad/content-forge-without-keyboard.txt",
+      "displayHeight": 1640,
+      "displayWidth": 2360,
+      "exifOrientation": 8,
+      "exifOrientationPresent": true,
+      "family": "ipad",
+      "kind": "screenshot",
+      "path": "ipad/forge-without-keyboard.png",
+      "rawHeight": 2360,
+      "rawWidth": 1640,
+      "screenshotRole": "game",
+      "sha256": "f02943e7b9341627ddc9e325bdfd6d7ab8220fd3a8762c9d7c9e22c67e630c50",
+      "sourceMember": "xctest-attachments/FAE8126F-B1B4-480B-977A-1CE301D06D0A.png",
+      "testIdentifier": "DITEUITests/testForgeKeyboardRequiresATapAndCanCloseAfterRotation()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testForgeKeyboardRequiresATapAndCanCloseAfterRotation"
+    },
+    {
+      "artifactId": 14072748222,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName": "iPad (A16)",
+        "exportedFileName": "33058E64-3DFF-4E31-8598-994C0116CAF6.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Screenshot content observations forge-without-keyboard_0_5FA9CE9E-9331-4D3C-ABDE-38A16DD28AB5.txt",
+        "timestamp": 1794600500.475
+      },
+      "attempts": [
+        {
+          "accepted": true,
+          "attempt": 1,
+          "available": true,
+          "content": true,
+          "contrastingCells": 16,
+          "contrastingPixels": 289,
+          "elapsed": 1.4026487916665928,
+          "visiblePixels": 4096
+        }
+      ],
+      "bytes": 115,
+      "contentFor": "ipad/forge-without-keyboard.png",
+      "family": "ipad",
+      "kind": "screenshot-content",
+      "path": "ipad/content-forge-without-keyboard.txt",
+      "policy": {
+        "centralFraction": 0.8,
+        "minimumContrastingCells": 2,
+        "minimumContrastingPixels": 16,
+        "minimumVisiblePixels": 32,
+        "rgbContrastThreshold": 16,
+        "sampleSide": 64,
+        "source": "verified Swift screenshotContent sampler"
+      },
+      "sha256": "114a920dabc68e14b4a289a760c673ae36774b69003b3a7f07e8f69604c0aa6c",
+      "sourceMember": "xctest-attachments/33058E64-3DFF-4E31-8598-994C0116CAF6.txt",
+      "testIdentifier": "DITEUITests/testForgeKeyboardRequiresATapAndCanCloseAfterRotation()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testForgeKeyboardRequiresATapAndCanCloseAfterRotation"
+    },
+    {
+      "artifactId": 14072748222,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName": "iPad (A16)",
+        "exportedFileName": "42D9D43A-82F8-4CE8-A8ED-07A68266C161.png",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "forge-after-keyboard-and-rotation_0_47B2125F-50EF-4C17-B00B-4EA01D8196BC.png",
+        "timestamp": 1794600524.664
+      },
+      "bytes": 353140,
+      "contentObservationsPath": "ipad/content-forge-after-keyboard-and-rotation.txt",
+      "displayHeight": 1640,
+      "displayWidth": 2360,
+      "exifOrientation": 6,
+      "exifOrientationPresent": true,
+      "family": "ipad",
+      "kind": "screenshot",
+      "path": "ipad/forge-after-keyboard-and-rotation.png",
+      "rawHeight": 2360,
+      "rawWidth": 1640,
+      "screenshotRole": "game",
+      "sha256": "e06088f85234421b8dc5aed55cb76f211f221f97fad4b2bde84dedf51949f085",
+      "sourceMember": "xctest-attachments/42D9D43A-82F8-4CE8-A8ED-07A68266C161.png",
+      "testIdentifier": "DITEUITests/testForgeKeyboardRequiresATapAndCanCloseAfterRotation()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testForgeKeyboardRequiresATapAndCanCloseAfterRotation"
+    },
+    {
+      "artifactId": 14072748222,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName": "iPad (A16)",
+        "exportedFileName": "514DCDC2-835B-4F5D-92FF-2BFE9F20B134.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Screenshot content observations forge-after-keyboard-and-rotation_0_5EA73D3C-91B2-4B5C-BC0E-A3CDFFCE7D26.txt",
+        "timestamp": 1794600524.662
+      },
+      "attempts": [
+        {
+          "accepted": true,
+          "attempt": 1,
+          "available": true,
+          "content": true,
+          "contrastingCells": 14,
+          "contrastingPixels": 341,
+          "elapsed": 1.3696672916665875,
+          "visiblePixels": 4096
+        }
+      ],
+      "bytes": 115,
+      "contentFor": "ipad/forge-after-keyboard-and-rotation.png",
+      "family": "ipad",
+      "kind": "screenshot-content",
+      "path": "ipad/content-forge-after-keyboard-and-rotation.txt",
+      "policy": {
+        "centralFraction": 0.8,
+        "minimumContrastingCells": 2,
+        "minimumContrastingPixels": 16,
+        "minimumVisiblePixels": 32,
+        "rgbContrastThreshold": 16,
+        "sampleSide": 64,
+        "source": "verified Swift screenshotContent sampler"
+      },
+      "sha256": "fd95d68cbe6a3155c3d591acec04692a5565d6830ead780f208c2f6d99e47b3f",
+      "sourceMember": "xctest-attachments/514DCDC2-835B-4F5D-92FF-2BFE9F20B134.txt",
+      "testIdentifier": "DITEUITests/testForgeKeyboardRequiresATapAndCanCloseAfterRotation()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testForgeKeyboardRequiresATapAndCanCloseAfterRotation"
+    },
+    {
+      "artifactId": 14072748222,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName": "iPad (A16)",
+        "exportedFileName": "715E2A6C-3849-4081-B838-31C1D8D04C24.png",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "paused-after-background_0_AA010C05-5393-4EC0-B97A-55A042134A87.png",
+        "timestamp": 1794600325.942
+      },
+      "bytes": 746081,
+      "contentObservationsPath": "ipad/content-paused-after-background.txt",
+      "displayHeight": 1640,
+      "displayWidth": 2360,
+      "exifOrientation": 8,
+      "exifOrientationPresent": true,
+      "family": "ipad",
+      "kind": "screenshot",
+      "path": "ipad/paused-after-background.png",
+      "rawHeight": 2360,
+      "rawWidth": 1640,
+      "screenshotRole": "game",
+      "sha256": "ad4ea11bbe12416e58b3a43bcf73c51b433bc5ba11b706faff2df9808527e88f",
+      "sourceMember": "xctest-attachments/715E2A6C-3849-4081-B838-31C1D8D04C24.png",
+      "testIdentifier": "DITEUITests/testBackgroundRequiresExplicitResume()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBackgroundRequiresExplicitResume"
+    },
+    {
+      "artifactId": 14072748222,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName": "iPad (A16)",
+        "exportedFileName": "4889566C-79BD-47BD-9CE6-3AA624326123.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Screenshot content observations paused-after-background_0_035D0C53-3667-467B-92FD-2A37753269CB.txt",
+        "timestamp": 1794600325.938
+      },
+      "attempts": [
+        {
+          "accepted": true,
+          "attempt": 1,
+          "available": true,
+          "content": true,
+          "contrastingCells": 9,
+          "contrastingPixels": 564,
+          "elapsed": 1.7190937083333324,
+          "visiblePixels": 4096
+        }
+      ],
+      "bytes": 114,
+      "contentFor": "ipad/paused-after-background.png",
+      "family": "ipad",
+      "kind": "screenshot-content",
+      "path": "ipad/content-paused-after-background.txt",
+      "policy": {
+        "centralFraction": 0.8,
+        "minimumContrastingCells": 2,
+        "minimumContrastingPixels": 16,
+        "minimumVisiblePixels": 32,
+        "rgbContrastThreshold": 16,
+        "sampleSide": 64,
+        "source": "verified Swift screenshotContent sampler"
+      },
+      "sha256": "6b312b3949a8080fd9bf81a0153b088d699f45d47344dd1f350d46bfd17147a5",
+      "sourceMember": "xctest-attachments/4889566C-79BD-47BD-9CE6-3AA624326123.txt",
+      "testIdentifier": "DITEUITests/testBackgroundRequiresExplicitResume()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBackgroundRequiresExplicitResume"
+    },
+    {
+      "artifactId": 14072748222,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName": "iPad (A16)",
+        "exportedFileName": "6F06F331-3AD3-4B18-8ACA-E2C9A0DFBC87.png",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "lobby-landscape-left_0_27440087-E6A1-4867-82A0-10B07BE49D19.png",
+        "timestamp": 1794600455.628
+      },
+      "bytes": 1326428,
+      "contentObservationsPath": "ipad/content-lobby-landscape-left.txt",
+      "displayHeight": 1640,
+      "displayWidth": 2360,
+      "exifOrientation": 8,
+      "exifOrientationPresent": true,
+      "family": "ipad",
+      "kind": "screenshot",
+      "path": "ipad/lobby-landscape-left.png",
+      "rawHeight": 2360,
+      "rawWidth": 1640,
+      "screenshotRole": "game",
+      "sha256": "e0063f2050a123950c4b2081bec65adbb7f1f3948e8034ce6eab9348682b9ac4",
+      "sourceMember": "xctest-attachments/6F06F331-3AD3-4B18-8ACA-E2C9A0DFBC87.png",
+      "testIdentifier": "DITEUITests/testBundledGameControlsPauseAndReturnFromSettings()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBundledGameControlsPauseAndReturnFromSettings"
+    },
+    {
+      "artifactId": 14072748222,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName": "iPad (A16)",
+        "exportedFileName": "466E56B3-725E-43F9-9BF8-E60F752CCD79.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Screenshot content observations lobby-landscape-left_0_FFA9E52E-0DAD-40A0-B749-097D3578D444.txt",
+        "timestamp": 1794600455.627
+      },
+      "attempts": [
+        {
+          "accepted": true,
+          "attempt": 1,
+          "available": true,
+          "content": true,
+          "contrastingCells": 10,
+          "contrastingPixels": 875,
+          "elapsed": 1.467388749999941,
+          "visiblePixels": 4096
+        }
+      ],
+      "bytes": 114,
+      "contentFor": "ipad/lobby-landscape-left.png",
+      "family": "ipad",
+      "kind": "screenshot-content",
+      "path": "ipad/content-lobby-landscape-left.txt",
+      "policy": {
+        "centralFraction": 0.8,
+        "minimumContrastingCells": 2,
+        "minimumContrastingPixels": 16,
+        "minimumVisiblePixels": 32,
+        "rgbContrastThreshold": 16,
+        "sampleSide": 64,
+        "source": "verified Swift screenshotContent sampler"
+      },
+      "sha256": "2c7323fa504189fa9f87b9b9a680710aac726390d55869887ddc9289cd16cdda",
+      "sourceMember": "xctest-attachments/466E56B3-725E-43F9-9BF8-E60F752CCD79.txt",
+      "testIdentifier": "DITEUITests/testBundledGameControlsPauseAndReturnFromSettings()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBundledGameControlsPauseAndReturnFromSettings"
+    },
+    {
+      "artifactId": 14072748222,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName": "iPad (A16)",
+        "exportedFileName": "CE5E476A-38F2-4F35-9BB1-806A9BE3A1C5.png",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "cold-launch-pause-ui-landscapeRight_0_E8A748B6-D53C-4FE3-BA4F-8AD26CF44D3D.png",
+        "timestamp": 1794600387.342
+      },
+      "bytes": 746081,
+      "contentObservationsPath": "ipad/content-cold-launch-pause-ui-landscapeRight.txt",
+      "displayHeight": 1640,
+      "displayWidth": 2360,
+      "exifOrientation": 8,
+      "exifOrientationPresent": true,
+      "family": "ipad",
+      "kind": "screenshot",
+      "path": "ipad/cold-launch-pause-ui-landscapeRight.png",
+      "rawHeight": 2360,
+      "rawWidth": 1640,
+      "screenshotRole": "game",
+      "sha256": "ad4ea11bbe12416e58b3a43bcf73c51b433bc5ba11b706faff2df9808527e88f",
+      "sourceMember": "xctest-attachments/CE5E476A-38F2-4F35-9BB1-806A9BE3A1C5.png",
+      "testIdentifier": "DITEUITests/testBothLandscapeOrientationsKeepControlsReachable()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBothLandscapeOrientationsKeepControlsReachable"
+    },
+    {
+      "artifactId": 14072748222,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName": "iPad (A16)",
+        "exportedFileName": "77AFC9A0-E178-4B58-B980-96B29D6E48C8.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Screenshot content observations cold-launch-pause-ui-landscapeRight_0_85201B70-96B2-4E9F-B2F7-116EDE1296A8.txt",
+        "timestamp": 1794600387.34
+      },
+      "attempts": [
+        {
+          "accepted": true,
+          "attempt": 1,
+          "available": true,
+          "content": true,
+          "contrastingCells": 9,
+          "contrastingPixels": 564,
+          "elapsed": 2.1516716666667435,
+          "visiblePixels": 4096
+        }
+      ],
+      "bytes": 114,
+      "contentFor": "ipad/cold-launch-pause-ui-landscapeRight.png",
+      "family": "ipad",
+      "kind": "screenshot-content",
+      "path": "ipad/content-cold-launch-pause-ui-landscapeRight.txt",
+      "policy": {
+        "centralFraction": 0.8,
+        "minimumContrastingCells": 2,
+        "minimumContrastingPixels": 16,
+        "minimumVisiblePixels": 32,
+        "rgbContrastThreshold": 16,
+        "sampleSide": 64,
+        "source": "verified Swift screenshotContent sampler"
+      },
+      "sha256": "949e4c7b59b3c8fce76084508d56b489bfabdf8e8358f39abab59efd00be15a9",
+      "sourceMember": "xctest-attachments/77AFC9A0-E178-4B58-B980-96B29D6E48C8.txt",
+      "testIdentifier": "DITEUITests/testBothLandscapeOrientationsKeepControlsReachable()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBothLandscapeOrientationsKeepControlsReachable"
+    },
+    {
+      "artifactId": 14072748222,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName": "iPad (A16)",
+        "exportedFileName": "EDC0CE1A-57AE-4351-984E-924A490A6734.png",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "cold-launch-pause-ui-landscapeLeft_0_A96144E6-54C8-4C49-8E02-9E5BF5CDA7F0.png",
+        "timestamp": 1794600442.033
+      },
+      "bytes": 739386,
+      "contentObservationsPath": "ipad/content-cold-launch-pause-ui-landscapeLeft.txt",
+      "displayHeight": 1640,
+      "displayWidth": 2360,
+      "exifOrientation": 6,
+      "exifOrientationPresent": true,
+      "family": "ipad",
+      "kind": "screenshot",
+      "path": "ipad/cold-launch-pause-ui-landscapeLeft.png",
+      "rawHeight": 2360,
+      "rawWidth": 1640,
+      "screenshotRole": "game",
+      "sha256": "ee403d90ef00968b0cdb8a9da641d3eb8033d3e071509da3df7199c37c2b62b7",
+      "sourceMember": "xctest-attachments/EDC0CE1A-57AE-4351-984E-924A490A6734.png",
+      "testIdentifier": "DITEUITests/testBothLandscapeOrientationsKeepControlsReachable()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBothLandscapeOrientationsKeepControlsReachable"
+    },
+    {
+      "artifactId": 14072748222,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName": "iPad (A16)",
+        "exportedFileName": "BF3E4E81-B1A9-42E6-8C0C-2064B6361CD2.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Screenshot content observations cold-launch-pause-ui-landscapeLeft_0_1EB2F417-41A9-4B4F-AAAD-EB8C2645A6A2.txt",
+        "timestamp": 1794600442.029
+      },
+      "attempts": [
+        {
+          "accepted": true,
+          "attempt": 1,
+          "available": true,
+          "content": true,
+          "contrastingCells": 9,
+          "contrastingPixels": 564,
+          "elapsed": 2.3104103333333796,
+          "visiblePixels": 4096
+        }
+      ],
+      "bytes": 114,
+      "contentFor": "ipad/cold-launch-pause-ui-landscapeLeft.png",
+      "family": "ipad",
+      "kind": "screenshot-content",
+      "path": "ipad/content-cold-launch-pause-ui-landscapeLeft.txt",
+      "policy": {
+        "centralFraction": 0.8,
+        "minimumContrastingCells": 2,
+        "minimumContrastingPixels": 16,
+        "minimumVisiblePixels": 32,
+        "rgbContrastThreshold": 16,
+        "sampleSide": 64,
+        "source": "verified Swift screenshotContent sampler"
+      },
+      "sha256": "f4fa159bcc72ab7bdffdaf3f210143b60cbeed4b7fb85d98553c0e4e4add9160",
+      "sourceMember": "xctest-attachments/BF3E4E81-B1A9-42E6-8C0C-2064B6361CD2.txt",
+      "testIdentifier": "DITEUITests/testBothLandscapeOrientationsKeepControlsReachable()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBothLandscapeOrientationsKeepControlsReachable"
+    },
+    {
+      "artifactId": 14072748222,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName": "iPad (A16)",
+        "exportedFileName": "D05BED2E-8FA6-40D9-AC03-C8F2CA969E5E.png",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "system-after-background-action_0_882DB1D1-28E9-4E0D-9CD6-85F1333651DC.png",
+        "timestamp": 1794600318.513
+      },
+      "bytes": 4036596,
+      "displayHeight": 1640,
+      "displayWidth": 2360,
+      "exifOrientation": 8,
+      "exifOrientationPresent": true,
+      "family": "ipad",
+      "kind": "screenshot",
+      "path": "ipad/system-after-background-action.png",
+      "rawHeight": 2360,
+      "rawWidth": 1640,
+      "screenshotRole": "system",
+      "sha256": "7894abbce4520d0cc520f5cc1009798482e0564df74aa2b08006a00e1bc49477",
+      "sourceMember": "xctest-attachments/D05BED2E-8FA6-40D9-AC03-C8F2CA969E5E.png",
+      "testIdentifier": "DITEUITests/testBackgroundRequiresExplicitResume()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBackgroundRequiresExplicitResume"
+    },
+    {
+      "artifactId": 14072748222,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName": "iPad (A16)",
+        "exportedFileName": "261BCC54-DD3B-4F1E-BE68-0EE9D4070C3E.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Actual window orientation_0_8C984141-0B14-4BB8-9D94-1B78D9994254.txt",
+        "timestamp": 1794600373.188
+      },
+      "bytes": 48,
+      "family": "ipad",
+      "kind": "orientation",
+      "path": "ipad/orientation-1.txt",
+      "sha256": "52532e2d27d06319c468ec7ca4ea484b3061c007cc5a5443b48ed332dfc6f549",
+      "sourceMember": "xctest-attachments/261BCC54-DD3B-4F1E-BE68-0EE9D4070C3E.txt",
+      "testIdentifier": "DITEUITests/testBothLandscapeOrientationsKeepControlsReachable()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBothLandscapeOrientationsKeepControlsReachable"
+    },
+    {
+      "artifactId": 14072748222,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName": "iPad (A16)",
+        "exportedFileName": "3A5079EE-300E-47DD-A9E9-F5C52F62FDA6.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Actual window orientation_0_5C02A9F1-FD09-4D29-829E-59C4FD993887.txt",
+        "timestamp": 1794600404.233
+      },
+      "bytes": 46,
+      "family": "ipad",
+      "kind": "orientation",
+      "path": "ipad/orientation-2.txt",
+      "sha256": "d9024e0b27bd747bdf04eb4fe9709abcfef3ab78d962a4d3cc00de4848d88c32",
+      "sourceMember": "xctest-attachments/3A5079EE-300E-47DD-A9E9-F5C52F62FDA6.txt",
+      "testIdentifier": "DITEUITests/testBothLandscapeOrientationsKeepControlsReachable()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBothLandscapeOrientationsKeepControlsReachable"
+    },
+    {
+      "artifactId": 14072748222,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName": "iPad (A16)",
+        "exportedFileName": "61DD1C1F-C444-4D47-ABFF-DEF6760B9918.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Actual window orientation_0_BC67C7C5-A6FD-46EA-B39F-C1D3CEE9B1D9.txt",
+        "timestamp": 1794600428.863
+      },
+      "bytes": 46,
+      "family": "ipad",
+      "kind": "orientation",
+      "path": "ipad/orientation-3.txt",
+      "sha256": "d9024e0b27bd747bdf04eb4fe9709abcfef3ab78d962a4d3cc00de4848d88c32",
+      "sourceMember": "xctest-attachments/61DD1C1F-C444-4D47-ABFF-DEF6760B9918.txt",
+      "testIdentifier": "DITEUITests/testBothLandscapeOrientationsKeepControlsReachable()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBothLandscapeOrientationsKeepControlsReachable"
+    },
+    {
+      "artifactId": 14072748222,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName": "iPad (A16)",
+        "exportedFileName": "AF85B32E-C04E-4EB8-A253-A2DB03D72C6C.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Observed application lifecycle states before activation_0_99097EE3-C266-4579-89D3-2E295FBBE53A.txt",
+        "timestamp": 1794600317.87
+      },
+      "bytes": 62,
+      "family": "ipad",
+      "kind": "lifecycle",
+      "path": "ipad/lifecycle-before-activation.txt",
+      "sha256": "b9ebb17cf6c89d86493354e7e7f5a3bd165f9ba8e5c92ecaf64b75354bef53b9",
+      "sourceMember": "xctest-attachments/AF85B32E-C04E-4EB8-A253-A2DB03D72C6C.txt",
+      "testIdentifier": "DITEUITests/testBackgroundRequiresExplicitResume()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBackgroundRequiresExplicitResume"
+    },
+    {
+      "artifactId": 14072748222,
+      "attachment": {
+        "configurationName": "Test Scheme Action",
+        "deviceId": "847050DA-C081-44A0-9CA7-60AB408469F9",
+        "deviceName": "iPad (A16)",
+        "exportedFileName": "F5FC6B71-AD1C-4D72-B8F4-9943AEEC5982.txt",
+        "isAssociatedWithFailure": false,
+        "suggestedHumanReadableName": "Observed application lifecycle states after activation_0_D6049C50-6470-4DFB-86B2-451F97A99349.txt",
+        "timestamp": 1794600320.838
+      },
+      "bytes": 82,
+      "family": "ipad",
+      "kind": "lifecycle",
+      "path": "ipad/lifecycle-after-activation.txt",
+      "sha256": "0136de2d177aae2da7253891dd19c16b41ea9b01ee7870da74c8d4c03ffc16c2",
+      "sourceMember": "xctest-attachments/F5FC6B71-AD1C-4D72-B8F4-9943AEEC5982.txt",
+      "testIdentifier": "DITEUITests/testBackgroundRequiresExplicitResume()",
+      "testIdentifierURL": "test://com.apple.xcode/DITE/DITEUITests/DITEUITests/testBackgroundRequiresExplicitResume"
+    },
+    {
+      "bytes": 10503,
+      "kind": "provenance",
+      "path": "provenance/verified-evidence.json",
+      "sha256": "99e9b4f36bdc810854b883d044748c6094ad857516ab6f426d748a78a65b0280"
+    },
+    {
+      "bytes": 1137,
+      "kind": "provenance",
+      "path": "provenance/final-gate.json",
+      "sha256": "8c915dc2e26ac0b5fb80fed7d471e94d63aff727bcda24599a133e9a7618b97d"
+    },
+    {
+      "bytes": 502,
+      "kind": "provenance",
+      "path": "provenance/iphone/selected-simulator.json",
+      "sha256": "11fbeb8720a3176085a47b6425af159d06b158d03933847bce67531afca1e076"
+    },
+    {
+      "bytes": 81,
+      "kind": "provenance",
+      "path": "provenance/iphone/xctest-status.json",
+      "sha256": "aef6462356176661b43397fb896d560e4e9c76ecf3863623be10ff8719f67a93"
+    },
+    {
+      "bytes": 19829,
+      "kind": "provenance",
+      "path": "provenance/iphone/xctest-attachments/manifest.json",
+      "sha256": "273afc91c99da46f9b97cd294b2f58286159a7c8a9821ac0f372c0fc053ca361"
+    },
+    {
+      "bytes": 699,
+      "kind": "provenance",
+      "path": "provenance/iphone/xctest-attachments/export-check.json",
+      "sha256": "a9306e9734646c492ff64aac84aadc8de2b28a6dc5c15578bc1c064597a33aba"
+    },
+    {
+      "bytes": 32,
+      "kind": "provenance",
+      "path": "provenance/iphone/logs/xcode-version.txt",
+      "sha256": "18730ed2ae28a2c9cf0c2d5db549033a4f07089331391a7133b7b32187454fa9"
+    },
+    {
+      "bytes": 494,
+      "kind": "provenance",
+      "path": "provenance/ipad/selected-simulator.json",
+      "sha256": "c4b8e7e73c2bf11ffde140482b05f92ce572ac38fce190bd33d1dd41b9050f7c"
+    },
+    {
+      "bytes": 81,
+      "kind": "provenance",
+      "path": "provenance/ipad/xctest-status.json",
+      "sha256": "aef6462356176661b43397fb896d560e4e9c76ecf3863623be10ff8719f67a93"
+    },
+    {
+      "bytes": 19706,
+      "kind": "provenance",
+      "path": "provenance/ipad/xctest-attachments/manifest.json",
+      "sha256": "d375ad0ca3d0413ba05bb8a35b5a3f2c3fd7a9774a4396c663c4bd9c7143b577"
+    },
+    {
+      "bytes": 699,
+      "kind": "provenance",
+      "path": "provenance/ipad/xctest-attachments/export-check.json",
+      "sha256": "d7e69f98bda9808bed4a26f8f385ba32ec4bce66e65b82c1c7eb9734b5914868"
+    },
+    {
+      "bytes": 32,
+      "kind": "provenance",
+      "path": "provenance/ipad/logs/xcode-version.txt",
+      "sha256": "18730ed2ae28a2c9cf0c2d5db549033a4f07089331391a7133b7b32187454fa9"
+    }
+  ],
+  "gameVersion": "4.0",
+  "limits": [
+    "Unsigned simulator evidence; not a signed Store archive.",
+    "Physical device performance/audio and final Store materials require separate verification."
+  ],
+  "local": {
+    "assets": "success",
+    "browser": {
+      "exitStatus": 0,
+      "log": "/tmp/dite-final17-browser.log",
+      "passed": 19,
+      "total": 19
+    },
+    "node": {
+      "exitStatus": 0,
+      "log": "/tmp/dite-final17-node.log",
+      "passed": 14,
+      "total": 14
+    },
+    "packaging": {
+      "exitStatus": 0,
+      "passed": 8,
+      "total": 8
+    },
+    "project": "success",
+    "sync": "success"
+  },
+  "native": {
+    "ipad": {
+      "artifact": 14072748222,
+      "head": "3ba5abe95502fc00332b8fb50503bcde063317aa",
+      "mp4": 0,
+      "png": 13,
+      "run": 43497161293,
+      "sha256": "adf579fbbb32eb4783a98e812468bd513d4b8a8ec25c3c426c4dc5b8193baaa3",
+      "simulator": {
+        "dataPath": "/Users/runner/Library/Developer/CoreSimulator/Devices/847050DA-C081-44A0-9CA7-60AB408469F9/data",
+        "dataPathSize": 18337792,
+        "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-A16",
+        "isAvailable": true,
+        "logPath": "/Users/runner/Library/Logs/CoreSimulator/847050DA-C081-44A0-9CA7-60AB408469F9",
+        "name": "iPad (A16)",
+        "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-26-5",
+        "state": "Shutdown",
+        "udid": "847050DA-C081-44A0-9CA7-60AB408469F9"
+      },
+      "size": 35482189,
+      "skipped": 0,
+      "statuses": {
+        "attachmentExportStatus": 0,
+        "testLogStatus": 0,
+        "xcodebuildStatus": 0
+      },
+      "testOutcomes": [
+        {
+          "class": "BridgeMessageTests",
+          "name": "testHandshakeRequiresMatchingProtocolAndSchema",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "BridgeMessageTests",
+          "name": "testHapticsAreAnAllowlist",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "BridgeMessageTests",
+          "name": "testRejectsOversizedOrNonJSONSave",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "BridgeMessageTests",
+          "name": "testRejectsWrongTypesAndUnsafeRequestIdentifiers",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "BridgeMessageTests",
+          "name": "testSavePreservesSharedSnapshotWithoutInventingFields",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameNavigationPolicyTests",
+          "name": "testExternalURLsNeedBothExplicitConfigurationAndUserAction",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameNavigationPolicyTests",
+          "name": "testOfflineRulesCompileInWebKit",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameNavigationPolicyTests",
+          "name": "testOnlyBundledEntryCanNavigate",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameNavigationPolicyTests",
+          "name": "testOnlyMainDocumentReloadRefreshesTheNativeBootstrap",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameSaveStoreTests",
+          "name": "testFirstLaunchIsDistinctFromDamagedStorage",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameSaveStoreTests",
+          "name": "testFutureSchemaAndCorruptDataArePreservedBeforeReplacement",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameSaveStoreTests",
+          "name": "testInterleavedReadsNeverSeePartialJSON",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameSaveStoreTests",
+          "name": "testLegacyMigrationKeepsAnUnmodifiedRecoveryCopy",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameSaveStoreTests",
+          "name": "testMissingCurrentUsesReadablePreviousInsteadOfPretendingFirstLaunch",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameSaveStoreTests",
+          "name": "testRawBackupFailureCannotOverwriteCurrentOrPrevious",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameSaveStoreTests",
+          "name": "testRejectedSaveCannotDamagePreviousData",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameSaveStoreTests",
+          "name": "testSaveSurvivesANewStoreInstanceAndPreservesUnicode",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameSaveStoreTests",
+          "name": "testSemanticallyInvalidCurrentSchemaKeepsRawInputAndBoundedRecoverySlots",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameSaveStoreTests",
+          "name": "testUnreadableCurrentRestoresPreviousAndRetainsRecoveryOnFailedWrite",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameSaveStoreTests",
+          "name": "testWriteFailureIsReported",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "DITEUITests",
+          "name": "testBackgroundRequiresExplicitResume",
+          "outcome": "passed",
+          "suite": "DITEUITests"
+        },
+        {
+          "class": "DITEUITests",
+          "name": "testBothLandscapeOrientationsKeepControlsReachable",
+          "outcome": "passed",
+          "suite": "DITEUITests"
+        },
+        {
+          "class": "DITEUITests",
+          "name": "testBundledGameControlsPauseAndReturnFromSettings",
+          "outcome": "passed",
+          "suite": "DITEUITests"
+        },
+        {
+          "class": "DITEUITests",
+          "name": "testForgeKeyboardRequiresATapAndCanCloseAfterRotation",
+          "outcome": "passed",
+          "suite": "DITEUITests"
+        },
+        {
+          "class": "DITEUITests",
+          "name": "testPreferencePersistsAfterApplicationRelaunch",
+          "outcome": "passed",
+          "suite": "DITEUITests"
+        },
+        {
+          "class": "DITEUITests",
+          "name": "testWebGLFailureRetriesThroughAFreshNativeBootstrap",
+          "outcome": "passed",
+          "suite": "DITEUITests"
+        }
+      ],
+      "uiFailed": 0,
+      "uiPassed": 6,
+      "unitFailed": 0,
+      "unitPassed": 20,
+      "xcode": "Xcode 26.6\nBuild version 17F113"
+    },
+    "iphone": {
+      "artifact": 14073003038,
+      "head": "3ba5abe95502fc00332b8fb50503bcde063317aa",
+      "mp4": 0,
+      "png": 13,
+      "run": 43497161293,
+      "sha256": "d5ecf75604e68841c7868e68bf9e6be400ad7d6276ea781b0eec2093e2416603",
+      "simulator": {
+        "dataPath": "/Users/runner/Library/Developer/CoreSimulator/Devices/FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC/data",
+        "dataPathSize": 18337792,
+        "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro",
+        "isAvailable": true,
+        "logPath": "/Users/runner/Library/Logs/CoreSimulator/FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC",
+        "name": "iPhone 17 Pro",
+        "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-26-5",
+        "state": "Shutdown",
+        "udid": "FCC5F673-7BEC-4A7D-8F2A-4DC35E2668EC"
+      },
+      "size": 31407111,
+      "skipped": 0,
+      "statuses": {
+        "attachmentExportStatus": 0,
+        "testLogStatus": 0,
+        "xcodebuildStatus": 0
+      },
+      "testOutcomes": [
+        {
+          "class": "BridgeMessageTests",
+          "name": "testHandshakeRequiresMatchingProtocolAndSchema",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "BridgeMessageTests",
+          "name": "testHapticsAreAnAllowlist",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "BridgeMessageTests",
+          "name": "testRejectsOversizedOrNonJSONSave",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "BridgeMessageTests",
+          "name": "testRejectsWrongTypesAndUnsafeRequestIdentifiers",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "BridgeMessageTests",
+          "name": "testSavePreservesSharedSnapshotWithoutInventingFields",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameNavigationPolicyTests",
+          "name": "testExternalURLsNeedBothExplicitConfigurationAndUserAction",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameNavigationPolicyTests",
+          "name": "testOfflineRulesCompileInWebKit",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameNavigationPolicyTests",
+          "name": "testOnlyBundledEntryCanNavigate",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameNavigationPolicyTests",
+          "name": "testOnlyMainDocumentReloadRefreshesTheNativeBootstrap",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameSaveStoreTests",
+          "name": "testFirstLaunchIsDistinctFromDamagedStorage",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameSaveStoreTests",
+          "name": "testFutureSchemaAndCorruptDataArePreservedBeforeReplacement",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameSaveStoreTests",
+          "name": "testInterleavedReadsNeverSeePartialJSON",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameSaveStoreTests",
+          "name": "testLegacyMigrationKeepsAnUnmodifiedRecoveryCopy",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameSaveStoreTests",
+          "name": "testMissingCurrentUsesReadablePreviousInsteadOfPretendingFirstLaunch",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameSaveStoreTests",
+          "name": "testRawBackupFailureCannotOverwriteCurrentOrPrevious",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameSaveStoreTests",
+          "name": "testRejectedSaveCannotDamagePreviousData",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameSaveStoreTests",
+          "name": "testSaveSurvivesANewStoreInstanceAndPreservesUnicode",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameSaveStoreTests",
+          "name": "testSemanticallyInvalidCurrentSchemaKeepsRawInputAndBoundedRecoverySlots",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameSaveStoreTests",
+          "name": "testUnreadableCurrentRestoresPreviousAndRetainsRecoveryOnFailedWrite",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "GameSaveStoreTests",
+          "name": "testWriteFailureIsReported",
+          "outcome": "passed",
+          "suite": "DITETests"
+        },
+        {
+          "class": "DITEUITests",
+          "name": "testBackgroundRequiresExplicitResume",
+          "outcome": "passed",
+          "suite": "DITEUITests"
+        },
+        {
+          "class": "DITEUITests",
+          "name": "testBothLandscapeOrientationsKeepControlsReachable",
+          "outcome": "passed",
+          "suite": "DITEUITests"
+        },
+        {
+          "class": "DITEUITests",
+          "name": "testBundledGameControlsPauseAndReturnFromSettings",
+          "outcome": "passed",
+          "suite": "DITEUITests"
+        },
+        {
+          "class": "DITEUITests",
+          "name": "testForgeKeyboardRequiresATapAndCanCloseAfterRotation",
+          "outcome": "passed",
+          "suite": "DITEUITests"
+        },
+        {
+          "class": "DITEUITests",
+          "name": "testPreferencePersistsAfterApplicationRelaunch",
+          "outcome": "passed",
+          "suite": "DITEUITests"
+        },
+        {
+          "class": "DITEUITests",
+          "name": "testWebGLFailureRetriesThroughAFreshNativeBootstrap",
+          "outcome": "passed",
+          "suite": "DITEUITests"
+        }
+      ],
+      "uiFailed": 0,
+      "uiPassed": 6,
+      "unitFailed": 0,
+      "unitPassed": 20,
+      "xcode": "Xcode 26.6\nBuild version 17F113"
+    }
+  },
+  "schemaVersion": 1,
+  "sourceCommit": "3ba5abe95502fc00332b8fb50503bcde063317aa",
+  "visualReview": {
+    "status": "passed",
+    "reviewer": "Codex root",
+    "receipt": "root-review.json",
+    "reviewedAt": "2026-11-13T20:16:57.560697+00:00",
+    "originalsReviewed": 15,
+    "note": "Original PNGs inspected; no material layout obstruction or blank frame. Simulator evidence only."
+  }
+}

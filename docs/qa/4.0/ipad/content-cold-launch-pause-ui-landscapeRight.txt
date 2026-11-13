@@ -1,0 +1,1 @@
+attempt=1; elapsed=2.1516716666667435; visiblePixels=4096; contrastingPixels=564; contrastingCells=9; content=true

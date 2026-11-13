@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "candidate": 17,
+  "gameVersion": "4.0",
+  "build": 1,
+  "sourceCommit": "3ba5abe95502fc00332b8fb50503bcde063317aa",
+  "ci": {
+    "runId": 43497161293,
+    "url": "https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43497161293",
+    "conclusion": "success",
+    "jobs": {
+      "logic": "success",
+      "browser": "success",
+      "iphone": "success",
+      "ipad": "success"
+    }
+  },
+  "local": {
+    "node": {
+      "passed": 14,
+      "total": 14,
+      "exitStatus": 0,
+      "log": "/tmp/dite-final17-node.log"
+    },
+    "browser": {
+      "passed": 19,
+      "total": 19,
+      "exitStatus": 0,
+      "log": "/tmp/dite-final17-browser.log"
+    },
+    "packaging": {
+      "passed": 8,
+      "total": 8,
+      "exitStatus": 0
+    },
+    "sync": "success",
+    "project": "success",
+    "assets": "success"
+  },
+  "checksums": {
+    "distNative": "95849cc1c7675cb0b4ac25133845bc17d40acd499023fd812c94183dd6c8fe34",
+    "siteArena": "4fa61a6d2776915466de8b318cb1c589e6577cde048f5919436dfe4c53d6b03a",
+    "core": "503a2903f3f302782e35183e859679d530443c9c56f6adeafa990a5e4a766190"
+  }
+}
