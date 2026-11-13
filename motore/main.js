@@ -59,8 +59,8 @@ G.start = function () {
       if (result && result.then) result.then(() => {
         if (context !== ac) { if (context.state !== 'closed') return context.suspend(); return; }
         const desired = audioWanted && active();
-        // Una promessa vecchia puo terminare dopo una pausa o un nuovo gesto di ripresa.
-        if ((desired && context.state === 'suspended') || (!desired && context.state === 'running')) audioTransition(context, desired);
+        // Riconcilia una promessa vecchia, senza ripetere un tentativo dello stesso intento rimasto senza effetto.
+        if (desired !== want && ((desired && context.state === 'suspended') || (!desired && context.state === 'running'))) audioTransition(context, desired);
       }).catch(() => {});
     } catch (error) { /* l'audio non impedisce la navigazione */ }
   }

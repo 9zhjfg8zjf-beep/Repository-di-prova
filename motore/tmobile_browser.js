@@ -2,7 +2,7 @@
 'use strict';
 const assert = require('node:assert/strict'), fs = require('node:fs');
 const { chromium } = require('./pw.js'), B = require('./bricks.js'), Storage = require('./storage.js');
-const selected = (process.argv[2] || 'all').split(','), available = ['all', 'bootstrap', 'coach', 'navigation', 'input', 'storage', 'loading', 'journal', 'bonuses', 'counter'];
+const selected = (process.argv[2] || 'all').split(','), available = ['all', 'audio', 'bootstrap', 'coach', 'navigation', 'input', 'storage', 'loading', 'journal', 'bonuses', 'counter'];
 for (const name of selected) assert.ok(available.includes(name), 'scenario mobile sconosciuto: ' + name);
 const wants = name => selected.includes('all') || selected.includes(name);
 const profile = Storage.normalize({ recipe: { nome: 'Prova mobile', slots: ['dardo', 'scatto', 'nova', 'nova', 'ira'].map(id => ({ id, el: 'luce', t: 1 })) }, fame: 80, seed: 14, tips: true, onboarding: { version: 1, step: 5, skipped: false }, muted: true }, B);
@@ -27,6 +27,84 @@ const sevenPowerStates = () => {
   fs.mkdirSync(__dirname + '/shots', { recursive: true });
   const browser = await chromium.launch({ executablePath: process.env.CHROME || undefined, args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   try {
+    if (wants('audio')) {
+      const controlled = await browser.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true, deviceScaleFactor: 1 });
+      await controlled.addInitScript(profile => {
+        localStorage.setItem('dite2', JSON.stringify(profile));
+        const audit = window.__controlledAudio = {
+          context: null, calls: [], pending: [], fuse: 0, modes: { resume: 'normal', suspend: 'normal' },
+          phase(modes) { this.modes = { resume: 'normal', suspend: 'normal', ...modes }; this.calls = []; this.fuse = 0; },
+          snapshot() { return { state: this.context && this.context.state, calls: this.calls.slice(), pending: this.pending.map(value => value.kind), fuse: this.fuse }; },
+          finish(kind) { const index = this.pending.findIndex(value => value.kind === kind); if (index < 0) throw new Error('Nessuna promessa audio ' + kind); const task = this.pending.splice(index, 1)[0]; this.context.state = kind === 'resume' ? 'running' : 'suspended'; task.resolve(); },
+        };
+        const parameter = () => ({ value: 0, setValueAtTime() {}, exponentialRampToValueAtTime() {} });
+        const node = () => ({ gain: parameter(), frequency: parameter(), Q: parameter(), connect() {}, start() {}, stop() {} });
+        class ControlledAudioContext {
+          constructor() { this.state = 'suspended'; this.sampleRate = 64; this.currentTime = 0; this.destination = {}; audit.context = this; }
+          createGain() { return node(); } createOscillator() { return node(); } createBiquadFilter() { return node(); } createBufferSource() { return node(); }
+          createBuffer(channels, length) { return { getChannelData: () => new Float32Array(length) }; }
+          transition(kind) {
+            audit.calls.push(kind);
+            // Il negativo deve fallire con un contatore, senza affamare il browser di microtask.
+            if (audit.calls.filter(value => value === kind).length >= 8) { audit.fuse++; return Promise.reject(new Error('Fusibile audio: otto tentativi nello stesso caso')); }
+            if (audit.modes[kind] === 'defer') return new Promise(resolve => audit.pending.push({ kind, resolve }));
+            if (audit.modes[kind] === 'reject') return Promise.reject(new Error('Audio non disponibile'));
+            if (audit.modes[kind] !== 'unchanged') this.state = kind === 'resume' ? 'running' : 'suspended';
+            return Promise.resolve();
+          }
+          resume() { return this.transition('resume'); } suspend() { return this.transition('suspend'); }
+        }
+        window.AudioContext = window.webkitAudioContext = ControlledAudioContext;
+      }, profile);
+      const page = await controlled.newPage(), errors = [];
+      page.on('pageerror', error => errors.push(error.message));
+      await page.goto(process.env.DITE_MOBILE_URL || 'file://' + __dirname + '/dist/index.html');
+      await page.waitForFunction(() => window.__dite && window.__dite.screen().screen === 'lobby');
+      const screen = name => page.waitForFunction(name => window.__dite.screen().screen === name, name);
+      const phase = modes => page.evaluate(modes => window.__controlledAudio.phase(modes), modes);
+      // Il timer prova che il ciclo restituisce il controllo a un task successivo.
+      const snapshot = () => page.evaluate(() => new Promise(resolve => setTimeout(() => resolve({ ...window.__controlledAudio.snapshot(), screen: window.__dite.screen() }), 0)));
+      const resume = async () => { await page.locator(await page.locator('#play').isVisible() ? '#play' : '#resume').tap(); await screen('playing'); };
+      const pause = async () => { await page.locator('#menuBtn').tap(); await screen('pause'); };
+      const count = (value, kind) => value.calls.filter(call => call === kind).length;
+      for (const mode of ['unchanged', 'reject']) {
+        // Un documento nuovo evita che una sospensione precedente aggiunga una riconciliazione legittima.
+        if (mode === 'reject') { await page.reload(); await page.waitForFunction(() => window.__dite && window.__dite.screen().screen === 'lobby'); }
+        await phase({ resume: mode }); await resume();
+        let value = await snapshot();
+        assert.equal(count(value, 'resume'), 1, mode + ': una ripresa senza effetto non deve ritentare lo stesso intento: ' + JSON.stringify(value));
+        assert.equal(value.fuse, 0); assert.equal(value.state, 'suspended'); assert.equal(value.screen.playing, true);
+        await pause(); await phase({}); await resume();
+        assert.equal((await snapshot()).state, 'running', 'Controllo positivo: la ripresa accettata deve avviare davvero l’audio');
+        await phase({ suspend: mode }); await pause(); value = await snapshot();
+        assert.equal(count(value, 'suspend'), 1, mode + ': una sospensione senza effetto non deve ritentare lo stesso intento: ' + JSON.stringify(value));
+        assert.equal(value.fuse, 0); assert.equal(value.state, 'running'); assert.equal(value.screen.playing, false);
+        // Ripristina il contesto con gli stessi comandi reali, senza forzare lo stato del router.
+        await phase({}); await resume(); await pause(); assert.equal((await snapshot()).state, 'suspended');
+      }
+      await page.reload(); await page.waitForFunction(() => window.__dite && window.__dite.screen().screen === 'lobby');
+      await phase({ resume: 'defer' }); await resume();
+      assert.deepEqual((await snapshot()).pending, ['resume']); await pause();
+      await page.evaluate(() => window.__controlledAudio.finish('resume'));
+      let value = await snapshot();
+      assert.equal(value.state, 'suspended', 'Una vecchia ripresa completata dopo Pausa deve essere sospesa');
+      assert.equal(value.screen.screen, 'pause'); assert.equal(value.screen.playing, false); assert.equal(count(value, 'resume'), 1); assert.deepEqual(value.pending, []); assert.equal(value.fuse, 0);
+      const pausedCalls = value.calls;
+      await page.waitForTimeout(100); assert.deepEqual((await snapshot()).calls, pausedCalls, 'Nessuna ripartenza audio involontaria durante la pausa');
+      await phase({}); await resume(); await phase({ suspend: 'defer' }); await pause(); await resume();
+      const before = await snapshot(); assert.ok(before.pending.length > 0 && before.pending.every(kind => kind === 'suspend'));
+      const reconciled = await page.evaluate(async () => { const audit = window.__controlledAudio, states = []; while (audit.pending.length) { audit.finish('suspend'); await new Promise(resolve => setTimeout(resolve, 0)); states.push(audit.snapshot()); } return states; });
+      assert.equal(reconciled.length, before.pending.length);
+      for (const state of reconciled) { assert.equal(state.state, 'running', 'Ogni vecchia sospensione deve riconciliare la ripresa prima della promessa successiva'); assert.equal(state.fuse, 0); }
+      value = await snapshot();
+      assert.equal(value.state, 'running', 'Una vecchia sospensione deve rispettare la ripresa esplicita successiva');
+      assert.equal(value.screen.playing, true); assert.deepEqual(value.pending, []); assert.equal(value.fuse, 0);
+      assert.ok(count(value, 'resume') > count(before, 'resume') && count(value, 'resume') <= count(before, 'resume') + before.pending.length, 'Ogni promessa vecchia puo riconciliare il nuovo intento una volta');
+      await phase({}); await pause(); assert.equal((await snapshot()).state, 'suspended');
+      assert.deepEqual(errors, []); await controlled.close();
+      console.log('audio: tap reali, resume/suspend senza effetto o rifiutati finiti, promesse tardive riconciliate e nessuna ripresa involontaria');
+      if (selected.length === 1 && selected[0] === 'audio') { console.log('nessun errore'); return; }
+    }
     if (wants('bootstrap')) {
       const broken = await browser.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true, deviceScaleFactor: 1 });
       await broken.addInitScript(profile => {
