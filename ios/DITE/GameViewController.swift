@@ -28,6 +28,8 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
     private let activity = UIActivityIndicatorView(style: .large)
     #if DEBUG
     private var failNextWebGLForUITest = false
+    private var uiTestDiagnostics: UIView?
+    private var uiTestEvents: [String] = []
     #endif
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .landscape }
@@ -59,6 +61,23 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
                 probe.widthAnchor.constraint(equalToConstant: 1),
                 probe.heightAnchor.constraint(equalToConstant: 1)
             ])
+            let diagnostics = UIView()
+            diagnostics.backgroundColor = .clear
+            diagnostics.isOpaque = false
+            diagnostics.isUserInteractionEnabled = false
+            diagnostics.isAccessibilityElement = true
+            diagnostics.accessibilityIdentifier = "dite.ui-test.events"
+            diagnostics.accessibilityLabel = "UI test event trace"
+            diagnostics.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(diagnostics)
+            NSLayoutConstraint.activate([
+                diagnostics.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+                diagnostics.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 2),
+                diagnostics.widthAnchor.constraint(equalToConstant: 1),
+                diagnostics.heightAnchor.constraint(equalToConstant: 1)
+            ])
+            uiTestDiagnostics = diagnostics
+            recordUITestEvent("host view ready; active=\(hostActive)")
         }
         #endif
         configureAudio()
@@ -90,6 +109,11 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
         configuration.allowsAirPlayForMediaPlayback = false
         configuration.mediaTypesRequiringUserActionForPlayback = .all
         configuration.userContentController.add(WeakScriptHandler(self), name: "dite")
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
+            configuration.userContentController.add(WeakScriptHandler(self), name: "diteUITest")
+        }
+        #endif
         webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = self
         webView.uiDelegate = self
@@ -230,6 +254,40 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
         let script = "Object.defineProperty(window,'__DITE_HOST__',{value:Object.freeze(\(json)),writable:false,configurable:false});"
         controller.addUserScript(WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("--ui-testing") {
+            // Observe real events without dispatching input or changing game state.
+            // No input text or saved profile contents enter the diagnostic trace.
+            let trace = """
+            (() => {
+              const report = (event, detail = {}) => {
+                const state = window.__dite && window.__dite.screen();
+                window.webkit.messageHandlers.diteUITest.postMessage(JSON.stringify({
+                  time: Math.round(performance.now()), event, ...detail,
+                  screen: state && state.screen, blockers: state && state.blockers,
+                  session: state && state.hasSession, visibility: document.visibilityState,
+                  nativeActive: window.__dite && window.__dite.G.native.active
+                }));
+              };
+              for (const type of ['pointerdown', 'pointerup', 'pointercancel', 'touchstart', 'touchend', 'click']) {
+                document.addEventListener(type, event => {
+                  const target = event.target.closest && event.target.closest('button,input,canvas');
+                  const detail = {target: target ? target.id || target.tagName : event.target.tagName,
+                    trusted: event.isTrusted, x: event.clientX, y: event.clientY};
+                  setTimeout(() => report(type, {...detail, prevented: event.defaultPrevented}), 0);
+                }, {capture: true, passive: true});
+              }
+              for (const type of ['visibilitychange', 'pageshow', 'pagehide', 'focus', 'blur']) {
+                window.addEventListener(type, () => setTimeout(() => report(type), 0));
+              }
+              document.addEventListener('DOMContentLoaded', () => {
+                new MutationObserver(() => report('screen')).observe(document.body,
+                  {attributes: true, attributeFilter: ['data-screen']});
+                report('document');
+              });
+            })();
+            """
+            controller.addUserScript(WKUserScript(source: trace, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        }
         if failNextWebGLForUITest {
             failNextWebGLForUITest = false
             // Failure injection only: XCTest still taps the real recovery button and waits for the real lobby.
@@ -247,6 +305,9 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
 
     func setHostActive(_ active: Bool, reason: String) {
         hostActive = active
+        #if DEBUG
+        recordUITestEvent("host lifecycle \(reason); active=\(active); ready=\(ready)")
+        #endif
         if isViewLoaded {
             sendLifecycle(reason: reason)
             updateAudioAndIdleTimer()
@@ -271,12 +332,24 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
         guard ready,
               let data = try? JSONSerialization.data(withJSONObject: object),
               let json = String(data: data, encoding: .utf8) else { return }
-        webView.evaluateJavaScript("window.DiteNative && window.DiteNative.receive(\(json));") { _, _ in
+        webView.evaluateJavaScript("window.DiteNative && window.DiteNative.receive(\(json));") { [weak self] _, error in
             // Page teardown can race a lifecycle message. The next ready handshake resends current state.
+            #if DEBUG
+            if let error { self?.recordUITestEvent("host delivery error: " + error.localizedDescription) }
+            #endif
         }
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        #if DEBUG
+        if message.name == "diteUITest" {
+            guard uiTestDiagnostics != nil, message.frameInfo.isMainFrame,
+                  navigationPolicy?.isGameDocument(message.frameInfo.request.url) == true,
+                  let value = message.body as? String, value.utf8.count <= 4096 else { return }
+            recordUITestEvent("web " + value)
+            return
+        }
+        #endif
         guard message.name == "dite", message.frameInfo.isMainFrame,
               navigationPolicy?.isGameDocument(message.frameInfo.request.url) == true else { return }
         guard let decoded = BridgeMessage.decode(message.body) else {
@@ -298,6 +371,9 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
             save(snapshot, id: id)
         case let .state(screen, isPlaying):
             guard ready else { return }
+            #if DEBUG
+            recordUITestEvent("host received screen=\(screen); playing=\(isPlaying)")
+            #endif
             if awaitingReady && screen != "boot" && screen != "loading" {
                 awaitingReady = false
                 readyTimer?.invalidate()
@@ -358,6 +434,15 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
             backgroundSave = .invalid
         }
     }
+
+    #if DEBUG
+    private func recordUITestEvent(_ value: String) {
+        guard let probe = uiTestDiagnostics else { return }
+        uiTestEvents.append(String(format: "%.3f ", ProcessInfo.processInfo.systemUptime) + value)
+        if uiTestEvents.count > 60 { uiTestEvents.removeFirst(uiTestEvents.count - 60) }
+        probe.accessibilityValue = uiTestEvents.joined(separator: "\n")
+    }
+    #endif
 
     private func showFailure(_ title: String, detail: String) {
         send(["v": 1, "type": "lifecycle", "active": false, "reason": "host-error"])

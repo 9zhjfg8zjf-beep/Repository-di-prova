@@ -23,6 +23,13 @@ final class DITEUITests: XCTestCase {
             tree.lifetime = .keepAlways
             add(tree)
         }
+        let probe = app.descendants(matching: .any).matching(identifier: "dite.ui-test.events").firstMatch
+        if probe.exists, let value = probe.value as? String {
+            let trace = XCTAttachment(string: value)
+            trace.name = "Passive native and web event trace"
+            trace.lifetime = .keepAlways
+            add(trace)
+        }
         app.terminate()
     }
 
@@ -30,10 +37,10 @@ final class DITEUITests: XCTestCase {
         attachScreenshot("lobby-landscape-left")
         tap("Entra nel gioco")
         tap("Pausa")
-        XCTAssertTrue(button("Riprendi partita").isHittable)
+        waitForButton("Riprendi partita")
         tap("Impostazioni")
         tap("Indietro")
-        XCTAssertTrue(button("Riprendi partita").isHittable, "Settings must return to pause")
+        waitForButton("Riprendi partita") // Settings must return to pause, never resume automatically.
         attachScreenshot("pause")
         tap("Riprendi partita")
         waitForButton("Pausa")
@@ -52,7 +59,7 @@ final class DITEUITests: XCTestCase {
             if index > 0 {
                 // First prove a live rotation reaches the other UI orientation.
                 waitForInterfaceOrientation(orientation.interface)
-                XCTAssertTrue(button("Riprendi partita").isHittable)
+                waitForButton("Riprendi partita")
                 attachScreenshot("rotated-pause-ui-" + orientation.interface)
                 // The new device orientation is already set before this cold launch.
                 app.terminate()
@@ -63,8 +70,7 @@ final class DITEUITests: XCTestCase {
             observed.insert(waitForInterfaceOrientation(orientation.interface))
             tap("Entra nel gioco")
             tap("Pausa")
-            let pause = button("Riprendi partita")
-            XCTAssertTrue(pause.isHittable)
+            let pause = waitForButton("Riprendi partita")
             XCTAssertTrue(app.frame.intersects(pause.frame))
             attachScreenshot("cold-launch-pause-ui-" + orientation.interface)
         }
@@ -75,7 +81,13 @@ final class DITEUITests: XCTestCase {
         tap("Entra nel gioco")
         waitForButton("Pausa")
         XCUIDevice.shared.press(.home)
+        let background = NSPredicate { _, _ in
+            self.app.state == .runningBackground || self.app.state == .runningBackgroundSuspended
+        }
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: background, object: app)], timeout: 10), .completed,
+                       "Home must move the app to the background before activation")
         app.activate()
+        XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10))
         waitForButton("Riprendi partita")
         attachScreenshot("paused-after-background")
         tap("Riprendi partita")
@@ -86,13 +98,18 @@ final class DITEUITests: XCTestCase {
         tap("Impostazioni")
         tap("Grafica e comfort")
         let control = reducedMotionControl()
-        XCTAssertTrue(control.waitForExistence(timeout: 10))
-        let before = String(describing: control.value)
+        let reachable = NSPredicate(format: "exists == true AND hittable == true")
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: reachable, object: control)], timeout: 10), .completed,
+                       "The reduced-motion switch must be reachable")
+        guard let before = control.value as? String, ["0", "1"].contains(before) else {
+            XCTFail("Expected a boolean switch value, got \(String(describing: control.value))")
+            return
+        }
+        let after = before == "0" ? "1" : "0"
         control.tap()
-        let changed = NSPredicate { _, _ in String(describing: control.value) != before }
-        expectation(for: changed, evaluatedWith: control)
-        waitForExpectations(timeout: 10)
-        let after = String(describing: control.value)
+        let changed = NSPredicate(format: "exists == true AND value == %@", after)
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: changed, object: control)], timeout: 10), .completed,
+                       "The reduced-motion switch must change to the opposite boolean value")
         // Wait for the user-visible acknowledgement, not a guessed disk-write duration.
         let saved = app.staticTexts.matching(NSPredicate(format: "label == %@", "Salvato sul dispositivo")).firstMatch
         XCTAssertTrue(saved.waitForExistence(timeout: 15), "The native save must be acknowledged")
@@ -104,7 +121,7 @@ final class DITEUITests: XCTestCase {
         tap("Grafica e comfort")
         let restored = reducedMotionControl()
         XCTAssertTrue(restored.waitForExistence(timeout: 10))
-        XCTAssertEqual(String(describing: restored.value), after)
+        XCTAssertEqual(restored.value as? String, after)
         attachScreenshot("preference-restored")
     }
 
@@ -156,8 +173,7 @@ final class DITEUITests: XCTestCase {
     }
 
     private func reducedMotionControl() -> XCUIElement {
-        // WebKit can expose HTML checkboxes as switches or generic descendants, depending on OS.
-        app.descendants(matching: .any).matching(NSPredicate(format: "label == %@ AND value != nil", "Movimento ridotto")).firstMatch
+        app.switches.matching(NSPredicate(format: "label == %@", "Movimento ridotto")).firstMatch
     }
 
     private func waitForNoKeyboard() {
