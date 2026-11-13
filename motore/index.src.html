@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <!--APPMETA-->
-<title>DITE</title>
+<title>DITE · 4.0</title>
 <style>
   :root { --cy: #3fe9ff; --mg: #ff3fd0; --am: #ffb23a; --rd: #ff4028; --gd: #ffd24a; --ink: #0a0608; --ui: 'Rajdhani', 'Segoe UI', system-ui, sans-serif; --ti: 'Cinzel', Georgia, serif; --el: #3fc8ff;
     --st: env(safe-area-inset-top, 0px); --sr: env(safe-area-inset-right, 0px); --sb: env(safe-area-inset-bottom, 0px); --sl: env(safe-area-inset-left, 0px); }
@@ -98,71 +98,141 @@
   .num.big { font-size: 24px; } .num.go { animation: num .75s ease-out forwards; }
   @keyframes num { 0% { opacity: 1; transform: translate(-50%, -50%) scale(1.5); } 20% { transform: translate(-50%, -100%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -280%); } }
 
-  .overlay { position: fixed; inset: 0; background: radial-gradient(ellipse at center, rgba(20,6,8,.55), rgba(6,2,3,.9)); display: flex; overflow-y: auto; padding: calc(var(--st) + 12px) calc(var(--sr) + 14px) calc(var(--sb) + 12px) calc(var(--sl) + 14px); touch-action: pan-y; -webkit-overflow-scrolling: touch; }
-  .card { margin: auto; width: 100%; max-width: 800px; background: linear-gradient(180deg, rgba(26,10,14,.94), rgba(12,5,7,.96)); border: 1px solid rgba(255,178,58,.5); box-shadow: 0 0 0 1px #000, 0 0 40px rgba(255,64,40,.25); padding: 16px 18px; }
-  h1 { font: 900 40px var(--ti); letter-spacing: 12px; margin: 0; color: var(--am); text-shadow: 0 0 24px rgba(255,90,30,.8); line-height: 1; }
-  h2 { font: 900 20px var(--ti); letter-spacing: 5px; margin: 0; color: var(--am); line-height: 1; }
-  .sub { font-size: 11px; letter-spacing: 4px; color: var(--cy); margin: 6px 0 10px; font-weight: 700; }
-  .cols { display: grid; grid-template-columns: 1.15fr 1fr; gap: 0 18px; }
-  .card p { font-size: 14px; line-height: 1.35; margin: 0 0 8px; color: #e6dcd6; font-weight: 500; }
-  .how { font-size: 12px !important; color: #b9aeb2 !important; }
-  .go-btn { width: 100%; font: 900 19px var(--ti); letter-spacing: 7px; padding: 12px 10px; color: #120608; background: linear-gradient(180deg, #ffd27a, var(--am)); border: 0; box-shadow: 0 0 22px rgba(255,150,40,.7); cursor: pointer; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
-  .go-btn:active, .btn2:active, .chip:active { filter: brightness(1.35); } .go-btn:disabled { filter: grayscale(1) brightness(.6); }
-  .btn2 { font: 700 13px var(--ui); letter-spacing: 2px; padding: 9px 12px; color: #fff; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.35); cursor: pointer; text-transform: uppercase; }
-  .btn2.on { border-color: var(--am); color: var(--am); background: rgba(255,178,58,.14); box-shadow: inset 0 0 12px rgba(255,178,58,.25); }
-  .row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-  .hero { background: rgba(0,0,0,.35); border-left: 3px solid var(--el); padding: 7px 10px; margin-bottom: 8px; }
-  .hero b { font: 900 17px var(--ti); letter-spacing: 2px; color: #fff; display: block; } .hero span { font-size: 12px; color: #cfc6c8; }
-  .kit { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 6px; }
-  .kit .ic { aspect-ratio: 1; border: 2px solid var(--c); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; background: radial-gradient(circle at 35% 30%, #2a1a22, #0c0609); box-shadow: 0 0 8px var(--c); max-width: 54px; }
-  .kit .ic svg { width: 52%; height: 52%; } .kit div.n { font-size: 10px; text-align: center; letter-spacing: .5px; color: #cfc6c8; font-weight: 700; text-transform: uppercase; overflow: hidden; }
-  #rot { display: none; font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #120608; background: var(--am); padding: 7px 10px; margin: 0 0 10px; }
-  @media (pointer: coarse) and (orientation: portrait) { #rot { display: block; } }
-
-  /* Officina */
-  #forge { padding: calc(var(--st) + 8px) calc(var(--sr) + 10px) calc(var(--sb) + 8px) calc(var(--sl) + 10px); background: rgba(8,3,5,.96); flex-direction: column; gap: 6px; overflow: hidden; }
-  #fTop { display: flex; gap: 8px; align-items: center; flex: none; }
-  #fName { flex: 1; min-width: 60px; font: 700 16px var(--ui); letter-spacing: 1px; color: #fff; background: rgba(0,0,0,.5); border: 1px solid rgba(255,178,58,.5); padding: 6px 8px; border-radius: 0; user-select: text; -webkit-user-select: text; }
-  #fBud { width: 150px; flex: none; } #fBud .lab { margin-bottom: 3px; } #fBudFill { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, #2a9a50, #9dff3a); } #fBud.over #fBudFill { background: var(--rd); } #fBud.over .lab { color: var(--rd); }
-  #fBody { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 8px; }
-  .fcol { overflow-y: auto; min-height: 0; touch-action: pan-y; -webkit-overflow-scrolling: touch; padding-right: 2px; }
-  #fDesc { width: 100%; font: 500 16px var(--ui); color: #fff; background: rgba(0,0,0,.5); border: 1px solid rgba(63,233,255,.5); padding: 6px 8px; border-radius: 0; resize: none; height: 52px; user-select: text; -webkit-user-select: text; }
-  .chip { font: 700 11px var(--ui); letter-spacing: 1px; color: #fff; background: rgba(255,255,255,.07); border: 1px solid var(--c, rgba(255,255,255,.3)); padding: 5px 8px; cursor: pointer; text-transform: uppercase; }
-  .chip.mon { background: var(--gd); color: #120608; border-color: var(--gd); }
-  #fFind { width: 100%; font: 500 16px var(--ui); color: #fff; background: rgba(0,0,0,.5); border: 1px solid rgba(255,210,74,.6); padding: 7px 8px; border-radius: 0; margin-bottom: 5px; user-select: text; -webkit-user-select: text; }
-  .forge-filters { display: flex; flex-wrap: wrap; gap: 7px; align-items: end; margin: 7px 0; }
-  .forge-filter-tabs { display: flex; gap: 4px; }
-  .forge-filter-tabs .chip { min-height: 40px; }
-  .forge-family { display: flex; flex: 1; min-width: 150px; flex-direction: column; gap: 3px; color: #c7b9bc; font: 700 10px var(--ui); letter-spacing: 1px; text-transform: uppercase; }
-  .forge-family select { min-height: 40px; width: 100%; font: 600 14px var(--ui); color: #f9f1de; border: 1px solid #6a543b; border-radius: 0; background: #191017; padding: 7px; }
-  .forge-empty { padding: 16px 8px; color: #c7b9bc; font-size: 13px; }
-  .forge-results { color: #c7b9bc; font-size: 11px; margin: 7px 0; }
-  .arch .arch-tags { color: #82c9c4; font-size: 10px; margin-top: 4px; line-height: 1.4; }
-  .arch .arch-new { display: inline-block; color: #14100b; background: #f3cb73; padding: 2px 4px; margin-left: 5px; font: 800 8px var(--ui); letter-spacing: .5px; vertical-align: middle; }
-  .forge-more { width: 100%; min-height: 44px; margin: 5px 0 12px; }
-  #powerHud { margin-top: 6px; border-left: 2px solid #80ddd2; color: #e4f7ee; font: 700 10px var(--ui); letter-spacing: .7px; line-height: 1.6; }
-  #powerHud .power-energy { color: #ffd778; }
-  .slot { display: grid; grid-template-columns: 40px 1fr auto; gap: 8px; align-items: center; padding: 5px 7px; margin-top: 5px; background: rgba(0,0,0,.4); border: 1px solid rgba(255,255,255,.14); border-left: 3px solid var(--c); cursor: pointer; }
-  .slot.sel { border-color: var(--am); background: rgba(255,178,58,.12); }
-  .slot .ic { width: 38px; height: 38px; border: 2px solid var(--c); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; } .slot .ic svg { width: 56%; height: 56%; }
-  .slot b { font-size: 14px; letter-spacing: 1px; display: block; line-height: 1.1; } .slot small { font-size: 10.5px; color: #b9aeb2; letter-spacing: 1px; text-transform: uppercase; font-weight: 700; }
-  .slot .co { font: 900 15px var(--ti); color: var(--am); }
-  .pips { display: flex; gap: 5px; } .pip { width: 44px; height: 30px; font: 700 12px var(--ui); color: #fff; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.3); cursor: pointer; } .pip.on { background: var(--am); color: #120608; border-color: var(--am); }
-  .els { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; margin: 6px 0; } .eld { height: 30px; border: 2px solid transparent; background: var(--c); cursor: pointer; opacity: .55; } .eld.on { opacity: 1; border-color: #fff; box-shadow: 0 0 10px var(--c); }
-  #fElTxt { font-size: 12px; color: #e6dcd6; margin-bottom: 6px; min-height: 15px; } #fElTxt b { color: var(--c); letter-spacing: 1px; }
-  .arch { width: 100%; text-align: left; font: inherit; color: #fff; display: grid; grid-template-columns: 32px 1fr auto; gap: 8px; align-items: center; padding: 5px 7px; margin-bottom: 4px; background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.12); cursor: pointer; }
-  .arch.on { border-color: var(--am); background: rgba(255,178,58,.14); } .arch.used { opacity: .35; }
-  .arch .ic { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; color: #fff; } .arch .ic svg { width: 76%; height: 76%; }
-  .arch b { font-size: 13.5px; letter-spacing: .8px; } .arch span { display: block; font-size: 11.5px; line-height: 1.2; color: #b9aeb2; } .arch .co { font: 900 13px var(--ti); color: var(--am); white-space: nowrap; }
-  .sec { font-size: 10px; letter-spacing: 2px; color: var(--cy); font-weight: 700; margin: 8px 0 4px; text-transform: uppercase; }
-  .saved { display: flex; gap: 4px; margin-top: 4px; } .saved .chip { flex: 1; text-align: left; overflow: hidden; white-space: nowrap; } .saved .x { flex: none; width: 30px; text-align: center; color: var(--rd); }
-  #fMsg { font-size: 12px; color: var(--am); font-weight: 700; letter-spacing: 1px; min-height: 15px; margin-top: 4px; }
-
-  @media (max-width: 640px) { .cols { grid-template-columns: 1fr; } h1 { font-size: 32px; } #fBody { grid-template-columns: 1fr; } }
-  @media (orientation: portrait) { #mid { top: calc(var(--st) + 130px); width: 72vw; } #mini { width: 84px; height: 84px; } }
-  @media (orientation: landscape) and (max-height: 520px) {
-    .card { padding: 11px 15px; } h1 { font-size: 28px; } .sub { margin: 4px 0 7px; } .card p { font-size: 12.5px; margin-bottom: 6px; } .how { font-size: 11px !important; } .go-btn { padding: 9px; font-size: 16px; }
-    #mini { width: 92px; height: 92px; } #banner { top: 17%; font-size: 24px; } #banner.rd { font-size: 28px; } #left { width: 170px; }
+  /* Dite: superfici del rifugio, metallo scuro e luce d'ambra. */
+  :root { --ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; --ti: Georgia, 'Times New Roman', serif; --paper:#f3e9d8; --muted:#b4b5b7; --line:#ffffff20; --surface:#1b1d21; --am:#edbd78; --cy:#8bd5ce; --gd:#edbd78; }
+  button,input,select,textarea { font:inherit; } button { min-width:44px; min-height:44px; cursor:pointer; } button:disabled { cursor:default; opacity:.45; } button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible { outline:2px solid var(--cy); outline-offset:3px; }
+  button,select,input[type=range],summary { touch-action:manipulation; } input[type=text],input[type=search],textarea { user-select:text; -webkit-user-select:text; }
+  button:active:not(:disabled) { filter:brightness(1.18); } svg { fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .screen-head [tabindex="-1"]:focus,#homeTitle:focus { outline:none; }
+  .sr-only { position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important; }
+  .overlay { position:fixed; inset:0; z-index:20; display:flex; padding:calc(var(--st) + 12px) calc(var(--sr) + 18px) calc(var(--sb) + 12px) calc(var(--sl) + 18px); background:radial-gradient(ellipse at 20% 0%,#38302a 0%,#17191d 48%,#101215 100%); color:var(--paper); overflow:hidden; touch-action:pan-y; }
+  .screen-shell { width:100%; height:100%; max-width:1180px; margin:auto; display:flex; flex-direction:column; min-height:0; }
+  .screen-head { display:flex; align-items:center; gap:14px; min-height:52px; flex:none; padding-bottom:10px; border-bottom:1px solid var(--line); }
+  .screen-head h2,.screen-head h1 { margin:0; font:600 25px var(--ui); letter-spacing:-.6px; line-height:1.15; color:var(--paper); }
+  .screen-head .head-copy { flex:1; min-width:0; } .screen-head p { margin:3px 0 0; color:var(--muted); font-size:13px; }
+  .screen-content { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
+  .screen-foot { flex:none; display:flex; align-items:center; gap:12px; padding-top:10px; border-top:1px solid var(--line); min-height:58px; }
+  .screen-foot>p { flex:1; color:var(--muted); font-size:12px; line-height:1.4; margin:0; } .screen-foot .go-btn { width:auto; min-width:190px; }
+  .eyebrow { color:var(--am); font-size:10px; line-height:1.3; letter-spacing:1.7px; text-transform:uppercase; font-weight:750; }
+  .go-btn,.btn2,.chip,.icon-btn { border:1px solid var(--line); color:var(--paper); background:#ffffff08; border-radius:8px; padding:10px 14px; font-size:14px; font-weight:650; line-height:1.2; letter-spacing:0; text-transform:none; box-shadow:none; }
+  .go-btn { background:var(--am); color:#231b13; border-color:var(--am); font-size:16px; padding:12px 22px; min-height:48px; clip-path:none; }
+  .go-btn:disabled { opacity:.45; filter:none; } .btn2.on,.chip.mon { color:var(--am); background:#edbd7814; border-color:#edbd7870; }
+  .icon-btn { width:44px; height:44px; padding:10px; display:inline-flex; align-items:center; justify-content:center; flex:none; }
+  .icon-btn svg { width:22px; height:22px; } .back-btn { font-size:25px; padding:0; }
+  .row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; } .muted { color:var(--muted); } .screen-note { color:var(--muted); font-size:13px; line-height:1.5; }
+  .brand-mark { width:50px; height:60px; color:var(--am); display:block; flex:none; } .brand { display:flex; align-items:center; gap:12px; }
+  .brand h1 { font:500 32px var(--ti); letter-spacing:6px; margin:0; line-height:1; color:var(--paper); } .brand .sub { margin-top:6px; color:var(--muted); font-size:9px; letter-spacing:1.5px; }
+  #home .screen-head { justify-content:space-between; border:0; padding-bottom:0; min-height:64px; } .lobby-tools { display:flex; gap:8px; }
+  .lobby-stage { position:relative; flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr); gap:30px; }
+  .refuge-view { position:relative; display:flex; min-height:0; flex-direction:column; justify-content:flex-end; padding:12px 12px 16px 0; }
+  .refuge-view::before { content:''; position:absolute; inset:0 -20px -20px -80px; pointer-events:none; background:radial-gradient(ellipse at 55% 65%,#d28a3420,transparent 65%); }
+  .refuge-art { position:absolute; width:115%; height:100%; left:-5%; bottom:0; color:#d6ac78; opacity:.4; overflow:visible; }
+  .refuge-art .windows { stroke-width:2.5; opacity:.65; } .refuge-art .city-floor { opacity:.3; }
+  .refuge-label { position:relative; border-left:2px solid var(--am); padding:0 0 0 14px; text-shadow:0 2px 12px #000; }
+  .refuge-label h2 { font:500 clamp(24px,4.4vw,42px) var(--ti); margin:5px 0 8px; letter-spacing:-.5px; line-height:1.1; }
+  .refuge-label p { font-size:13px; line-height:1.5; color:#d3c8ba; max-width:280px; margin:0; }
+  .lobby-kit { display:flex; min-height:0; justify-content:flex-start; flex-direction:column; padding:12px 0 10px; overflow-y:auto; scrollbar-width:thin; overscroll-behavior:contain; }
+  #hero { border:0; padding:0; margin:0; background:none; flex:none; } .hero-title { display:flex; align-items:center; gap:9px; margin-bottom:7px; } .hero-title .active-tag { flex:none; color:var(--am); font-size:11px; padding:4px 6px; border:1px solid #edbd7840; border-radius:5px; } #hero h3 { font-size:24px; font-weight:650; letter-spacing:-.7px; margin:0; line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; flex:1; }
+  #hero .hero-meta { margin:0; font-size:12px; color:var(--muted); } .kit { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; margin:14px 0; }
+  .kit-power { min-width:0; text-align:center; } .kit-power .ic { width:44px; height:44px; margin:0 auto 5px; color:var(--c); border:1px solid color-mix(in srgb,var(--c) 40%,transparent); background:#ffffff05; border-radius:12px; display:flex; align-items:center; justify-content:center; }
+  .kit-power .ic svg { width:25px; height:25px; } .kit-power .n { color:#e3ddd2; font-size:11px; line-height:1.25; overflow-wrap:anywhere; }
+  .kit-power small { display:block; color:var(--muted); font-size:11px; margin-bottom:4px; } .lobby-kit-actions { display:flex; gap:8px; flex:none; } .lobby-kit-actions .btn2 { flex:1; }
+  #hero .kit-power .n { max-height:28px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+  .lobby-footer { display:flex; align-items:center; gap:20px; flex:none; min-height:64px; padding-top:10px; border-top:1px solid var(--line); }
+  .lobby-destination { flex:1; min-width:0; display:flex; align-items:center; gap:12px; } .lobby-destination .btn2 { min-width:112px; } .lobby-destination p { margin:0; font-size:12px; line-height:1.45; color:var(--muted); }
+  #lobbyCityName { display:block; font-size:17px; font-weight:650; color:var(--paper); margin-bottom:3px; } #play { width:220px; min-height:52px; flex:none; }
+  #saveStatus { display:block; flex:none; color:var(--muted); font-size:10px; line-height:1.3; min-height:13px; margin-top:5px; } #saveStatus[data-state=temporary],#saveStatus[data-state=recovered] { color:var(--am); }
+  #cities { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; padding:16px 0; height:100%; min-height:200px; }
+  .city-card { position:relative; text-align:left; display:flex; flex-direction:column; justify-content:flex-end; overflow:hidden; padding:18px; border:1px solid var(--line); border-radius:12px; background:#ffffff04; color:var(--paper); min-height:180px; }
+  .city-card::before { content:''; position:absolute; inset:0; background:linear-gradient(transparent 5%,#101215a0 45%,#101215ed 100%); pointer-events:none; z-index:1; } .city-card>span,.city-card>strong { position:relative; z-index:2; }
+  .city-card .city-art { position:absolute; inset:0; width:100%; height:100%; color:var(--city); opacity:.65; z-index:0; } .city-card strong { font:500 27px var(--ti); margin:4px 0 8px; } .city-card .city-desc { font-size:13px; line-height:1.45; color:#d0ccca; }
+  .city-card .city-status { margin-top:14px; font-size:12px; color:var(--city); } .city-card.on { border-color:var(--city); background:color-mix(in srgb,var(--city) 8%,transparent); } .city-card.on .city-status { color:var(--paper); }
+  .loadout-layout { display:grid; grid-template-columns:minmax(220px,.9fr) minmax(0,1.1fr); gap:22px; min-height:0; flex:1; padding-top:12px; }
+  #loadoutCards { overflow-y:auto; min-height:0; padding:0 10px 12px 0; } .kit-group { margin:14px 0 7px; color:var(--muted); font-size:12px; font-weight:650; } .kit-group:first-child { margin-top:0; }
+  .kit-card { display:grid; grid-template-columns:40px minmax(0,1fr) auto; width:100%; align-items:center; gap:10px; text-align:left; background:transparent; border:0; border-bottom:1px solid var(--line); border-radius:0; padding:12px 8px; color:var(--paper); }
+  .kit-card>svg { width:30px; height:30px; color:var(--c); } .kit-card b { display:block; font-size:15px; margin-bottom:4px; } .kit-card small { display:block; font-size:11px; font-weight:400; line-height:1.4; color:var(--muted); } .kit-card .kit-marker { font-size:11px; color:var(--am); }
+  .kit-card.selected { background:#edbd780a; box-shadow:inset 3px 0 var(--am); } .kit-preview-wrap { display:flex; flex-direction:column; min-width:0; min-height:0; }
+  #loadoutPreview { overflow-y:auto; min-height:0; flex:1; padding-right:4px; } #loadoutPreview h3 { font:500 30px var(--ti); margin:5px 0 8px; } #loadoutPreview>p { margin:0 0 10px; color:var(--muted); font-size:14px; line-height:1.45; }
+  #loadoutPreview .kit { margin:12px 0 18px; } .preview-details-title { margin:16px 0 5px; font-size:12px; color:var(--muted); font-weight:650; } .preview-power { display:grid; grid-template-columns:36px 1fr; gap:9px; padding:7px 0; border-top:1px solid var(--line); align-items:center; } .preview-power .ic { color:var(--c); } .preview-power svg { width:26px; height:26px; } .preview-power b { display:block; font-size:13px; } .preview-power small { color:var(--muted); font-size:11px; line-height:1.35; display:block; margin-top:3px; }
+  .preview-foot { display:flex; align-items:center; gap:12px; min-height:62px; flex:none; border-top:1px solid var(--line); } #loadoutBudget { font-size:12px; flex:1; color:var(--muted); } #equipKit { min-width:150px; }
+  .settings-tabs { display:flex; gap:8px; margin:12px 0; flex:none; } .settings-tabs .btn2 { min-width:100px; } .settings-panel { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 24px; align-content:start; }
+  .setting { display:flex; min-height:76px; align-items:center; gap:15px; border-bottom:1px solid var(--line); padding:10px 0; }
+  .setting-copy { flex:1; min-width:0; } .setting b { display:block; font-size:14px; margin-bottom:4px; } .setting small { display:block; color:var(--muted); font-size:12px; line-height:1.4; }
+  .setting input[type=checkbox] { appearance:none; -webkit-appearance:none; width:48px; height:44px; margin:0; background:transparent; border:0; position:relative; flex:none; }
+  .setting input[type=checkbox]::before { content:''; position:absolute; top:7px; left:0; width:48px; height:30px; background:#ffffff18; border:1px solid #ffffff35; border-radius:20px; } .setting input[type=checkbox]::after { content:''; position:absolute; top:12px; left:5px; width:20px; height:20px; background:#c2c3c7; border-radius:50%; transition:transform .15s; } .setting input[type=checkbox]:checked::before { background:#edbd7830; border-color:var(--am); } .setting input[type=checkbox]:checked::after { background:var(--am); transform:translateX(18px); }
+  .setting input[type=range] { min-width:90px; width:40%; height:44px; margin:0; accent-color:var(--am); } .setting select { max-width:45%; min-height:44px; color:var(--paper); background:#25272b; border:1px solid var(--line); border-radius:7px; padding:8px; }
+  .setting output { color:var(--am); width:43px; font-size:12px; text-align:right; } .setting.wide { grid-column:1/-1; } #hapticsNote { margin-top:4px; } .settings-foot .btn2 { margin-left:auto; }
+  .pause-shell { max-width:720px; justify-content:center; } .pause-body { display:grid; grid-template-columns:.9fr 1.1fr; gap:40px; align-items:center; padding:14px 0; min-height:0; }
+  .pause-title .brand-mark { width:76px; height:94px; margin-bottom:16px; } .pause-title h2 { font:500 40px var(--ti); margin:0 0 10px; } #menuSub { font-size:13px; line-height:1.5; color:var(--muted); }
+  .pause-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; } #resume { grid-column:1/-1; margin-bottom:4px; } .pause-actions .btn2 { min-height:50px; } #menuHome { grid-column:1/-1; }
+  .guide-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 22px; padding:4px 0 12px; } .guide-section { padding:15px 0 12px; border-bottom:1px solid var(--line); display:grid; grid-template-columns:28px 1fr; gap:10px; }
+  .guide-section .guide-number { color:var(--am); font:500 20px var(--ti); } .guide-section h3 { font-size:15px; margin:0 0 6px; font-weight:650; } .guide-section p { margin:0; color:var(--muted); font-size:13px; line-height:1.5; } .guide-section kbd { color:var(--paper); font:inherit; }
+  #guideCoach { position:absolute; left:calc(var(--sl) + 12px); top:calc(var(--st) + 138px); bottom:auto; max-width:300px; pointer-events:auto; padding:10px 12px; border-left:2px solid var(--am); background:#15181aeb; border-radius:0 8px 8px 0; }
+  #guideStep { display:block; color:var(--am); font-size:11px; font-weight:700; margin-bottom:3px; } #guideText { font-size:13px; line-height:1.35; margin:0; } .coach-actions { display:flex; gap:8px; margin-top:7px; } .coach-actions button { background:transparent; border:0; color:#d7d2c8; padding:5px 10px; font-size:12px; }
+  .blocking-shell { max-width:460px; margin:auto; text-align:center; } .blocking-shell .brand-mark { margin:0 auto 22px; width:78px; height:96px; } .blocking-shell h2 { font:500 32px var(--ti); margin:0 0 12px; } .blocking-shell p { color:var(--muted); font-size:14px; line-height:1.55; }
+  .loading-track { height:2px; background:#ffffff16; width:160px; margin:25px auto; overflow:hidden; } .loading-track::after { content:''; display:block; width:40%; height:100%; background:var(--am); animation:loading 1.5s ease-in-out infinite alternate; } @keyframes loading { to { transform:translateX(150%); } }
+  .rotate-icon { width:100px; height:62px; border:2px solid var(--am); border-radius:12px; margin:0 auto 24px; position:relative; } .rotate-icon::after { content:''; position:absolute; width:3px; height:24px; background:var(--am); top:17px; left:7px; border-radius:2px; }
+  #hero .hero-records { color:var(--muted); font-size:11px; margin:5px 0 0; } #loadoutBudget.over { color:#ffb29c; }
+  .journal-layout { display:grid; grid-template-columns:minmax(150px,.55fr) minmax(0,1.45fr); gap:32px; flex:1; min-height:0; padding-top:14px; } .journal-totals { border-right:1px solid var(--line); padding-right:24px; overflow-y:auto; } .journal-totals>div { margin:0 0 20px; } .journal-totals strong { display:block; font:500 38px var(--ti); color:var(--am); } .journal-totals span { display:block; font-size:12px; margin-top:3px; } .journal-totals p { font-size:11px; color:var(--muted); line-height:1.5; }
+  .journal-history h3 { color:var(--muted); font-size:12px; margin:3px 0 10px; font-weight:500; } #journalEntries { list-style:none; padding:0; margin:0; } .journal-entry { display:flex; align-items:center; gap:12px; padding:14px 0; border-bottom:1px solid var(--line); } .journal-icon { color:var(--am); flex:none; } .journal-icon svg { width:26px; height:26px; } .journal-entry>div { flex:1; } .journal-entry b { font-size:14px; font-weight:650; } .journal-entry small { display:block; font-size:11px; line-height:1.5; color:var(--muted); margin-top:4px; } .journal-reward { color:var(--am); font-size:18px; text-align:right; } .journal-empty { padding:22px 12px; max-width:360px; } .journal-empty-mark svg { color:var(--am); width:42px; height:42px; } .journal-empty h3 { color:var(--paper); font:500 24px var(--ti); margin:18px 0 10px; } .journal-empty p { color:var(--muted); font-size:13px; line-height:1.6; }
+  /* L'officina ha una bozza distinta e azioni che non scorrono con il catalogo. */
+  #forge { flex-direction:column; gap:6px; background:#14171b; padding:calc(var(--st) + 10px) calc(var(--sr) + 12px) calc(var(--sb) + 10px) calc(var(--sl) + 12px); }
+  .keyboard-open #forge { top:var(--forge-top,0px); bottom:auto; height:var(--forge-height,100%); }
+  #fTop { display:flex; flex:none; align-items:center; gap:12px; min-height:44px; } #fTop h2 { font-size:20px; letter-spacing:-.5px; margin:0; font-weight:650; } #fTop .eyebrow { display:block; font-size:9px; margin-bottom:3px; }
+  #fName { min-width:0; max-width:330px; flex:1; height:44px; font-size:16px; background:#ffffff06; color:var(--paper); border:1px solid var(--line); border-radius:8px; padding:9px 12px; } #fCancel { margin-left:auto; }
+  #fBody { flex:1; min-height:0; display:grid; grid-template-columns:minmax(92px,.48fr) minmax(0,1.35fr) minmax(0,1fr); gap:12px; }
+  .fcol { min-width:0; min-height:0; overflow-y:auto; touch-action:pan-y; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; scrollbar-width:thin; scrollbar-color:#ffffff35 transparent; }
+  #fSlotRail { padding-right:4px; border-right:1px solid var(--line); } #fSlots { display:flex; height:100%; flex-direction:column; gap:1px; }
+  .slot { min-height:44px; flex:1; width:100%; min-width:0; display:grid; grid-template-columns:28px minmax(0,1fr); align-items:center; gap:7px; padding:5px 6px; border:1px solid transparent; border-radius:7px; background:transparent; color:var(--paper); text-align:left; }
+  .slot.sel { border-color:#edbd7880; background:#edbd7810; } .slot .ic { color:var(--c); } .slot .ic svg { width:26px; height:26px; } .slot b { display:block; font-size:12px; line-height:1.2; font-weight:650; overflow-wrap:anywhere; } .slot small { display:block; color:var(--muted); font-size:11px; line-height:1.2; margin-bottom:4px; } .slot .co { display:none; }
+  #fPick { padding-right:3px; } .catalogue-heading { font-size:12px; margin:0 0 7px; color:var(--muted); } #fFind { width:100%; height:44px; padding:10px 12px; color:var(--paper); background:#ffffff06; border:1px solid #ffffff35; border-radius:8px; font-size:16px; }
+  .forge-filters { display:grid; grid-template-columns:auto minmax(0,1fr); gap:6px; align-items:end; margin:7px 0; } .forge-filter-tabs { display:flex; gap:4px; } .forge-filter-tabs .chip { min-width:49px; padding:5px 7px; font-size:11px; display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .forge-filter-tabs .chip b { font-size:11px; opacity:.75; font-weight:500; } .forge-family { min-width:0; } .forge-family select { min-width:0; width:100%; min-height:44px; font-size:12px; color:var(--paper); background:#25272b; border:1px solid var(--line); border-radius:7px; padding:6px 3px; }
+  .forge-results { color:var(--muted); font-size:11px; margin:7px 0; } .arch { width:100%; min-width:0; color:var(--paper); text-align:left; display:grid; grid-template-columns:26px minmax(0,1fr) auto; align-items:start; gap:8px; padding:10px 8px; margin-bottom:5px; background:#ffffff03; border:1px solid var(--line); border-radius:8px; }
+  .arch.on { border-color:#edbd7880; background:#edbd7810; } .arch.used { opacity:.4; } .arch .ic svg { width:23px; height:23px; } .arch b { font-size:13px; line-height:1.3; font-weight:650; } .arch span { display:block; font-size:12px; line-height:1.4; color:var(--muted); margin-top:4px; } .arch .co { color:var(--am); white-space:nowrap; font-size:11px; padding-top:2px; }
+  .arch .arch-controls { font-size:11px; color:#c4dcd6; } .arch .arch-tags { display:block; font-size:10px; color:#94bdb9; line-height:1.35; margin-top:5px; } .arch-new { font-size:8px; font-style:normal; font-weight:650; color:var(--am); margin-left:5px; vertical-align:1px; }
+  .forge-more { width:100%; min-height:44px; margin:5px 0 12px; font-size:12px; } .forge-empty { color:var(--muted); font-size:13px; line-height:1.5; margin:14px 4px; }
+  #fWorkbench { border-left:1px solid var(--line); padding-left:12px; } .detail-heading { display:flex; gap:9px; align-items:center; } .detail-heading .ic { color:var(--c); flex:none; } .detail-heading svg { width:30px; height:30px; } .detail-heading h3 { margin:2px 0; font-size:16px; font-weight:650; line-height:1.2; } .detail-heading small { font-size:10px; color:var(--muted); }
+  .detail-desc,.detail-controls { font-size:13px; line-height:1.45; color:var(--muted); margin:10px 0; } .detail-controls { border-left:2px solid var(--cy); color:#c9e4df; padding-left:8px; }
+  .sec { color:var(--muted); font-size:11px; font-weight:650; margin:15px 0 7px; line-height:1.4; } .pips { display:flex; gap:6px; } .pip { flex:1; min-width:44px; min-height:44px; border:1px solid var(--line); border-radius:6px; color:var(--paper); background:#ffffff05; font-size:12px; } .pip.on { border-color:var(--am); color:var(--am); background:#edbd7810; }
+  .els { display:grid; grid-template-columns:repeat(4,minmax(44px,1fr)); gap:5px; } .eld { min-width:44px; min-height:44px; padding:5px 2px; color:var(--paper); background:#ffffff05; border:1px solid var(--line); border-radius:6px; font-size:11px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:5px; }
+  .eld::before { content:''; width:12px; height:12px; border-radius:50%; background:var(--c); } .eld.on { border-color:var(--c); background:color-mix(in srgb,var(--c) 12%,transparent); } #fElTxt,#fModTxt { font-size:11px; color:var(--muted); line-height:1.45; margin-top:8px; } #fElTxt b { color:var(--c); }
+  .modifier-list { display:flex; flex-wrap:wrap; gap:5px; } .modifier-list .chip { font-size:11px; padding:7px 9px; }
+  .forge-recipes { margin-top:20px; padding-top:4px; border-top:1px solid var(--line); } #fDesc { width:100%; min-height:72px; resize:vertical; font-size:16px; color:var(--paper); background:#ffffff06; border:1px solid var(--line); border-radius:8px; padding:10px; } .forge-recipes .row { margin-top:8px; } .forge-recipes .chip { font-size:11px; padding:8px 10px; }
+  .saved { display:flex; gap:5px; margin-top:5px; } .saved .chip { flex:1; text-align:left; overflow-wrap:anywhere; } .saved .x { flex:none; width:44px; padding:0; color:#eda08c; }
+  #fFooter { flex:none; display:flex; align-items:center; gap:12px; min-height:52px; padding-top:4px; border-top:1px solid var(--line); } #fBud { width:110px; flex:none; } #fBud .lab { color:var(--muted); font-size:10px; letter-spacing:0; margin-bottom:6px; } #fBudTxt { font-weight:700; color:var(--paper); } #fBud .bar { height:4px; border:0; background:#ffffff12; border-radius:2px; } #fBudFill { position:absolute; inset:0 auto 0 0; background:var(--cy); }
+  #fBud.over #fBudFill { background:#f49379; } #fBud.over #fBudTxt { color:#ffad98; } #fMsg { flex:1; min-width:0; font-size:11px; line-height:1.35; color:var(--muted); max-height:44px; overflow-y:auto; } #fMsg.error { color:#ffb29c; } #fUse { min-width:112px; } #fSave { min-width:70px; }
+  /* HUD: le informazioni si ancorano ai bordi, il centro resta al mondo. */
+  .panel { border-color:#ffffff25; background:#171a1dde; box-shadow:none; border-radius:7px; clip-path:none; padding:6px 9px; } .lab { letter-spacing:.5px; font-size:10px; } #cnt { padding:0 0 0 10px; gap:8px; font-size:10px; letter-spacing:0; background:#171a1dd9; } #cnt>span { max-width:103px; }
+  #menuBtn { width:44px; height:44px; min-width:44px; min-height:44px; font-size:24px; line-height:1; border:0; background:#ffffff08; border-radius:7px; }
+  #left { width:180px; gap:5px; } #qLine { font-size:12px; line-height:1.3; } #quest.none #qLine { font-size:11px; } #buffs { letter-spacing:0; } #bossName { font-family:var(--ui); font-size:12px; font-weight:700; letter-spacing:.5px; text-shadow:none; } #bossCast { font-size:12px; letter-spacing:.5px; } #mid { width:min(32vw,330px); } #place { font-size:10px; letter-spacing:.5px; } #mini { width:86px; height:86px; border-color:#ffffff30; border-radius:5px; box-shadow:none; opacity:.8; }
+  #powerHud { margin-top:0; border-left:2px solid var(--cy); font-size:10px; line-height:1.45; color:#e1eee6; } #powerHud .power-energy { color:var(--am); }
+  #btns { width:246px; height:190px; right:calc(var(--sr) + 12px); bottom:calc(var(--sb) + 12px); }
+  .ab { border-width:1px; background:#171b20db; font:600 10px var(--ui); letter-spacing:0; text-transform:none; opacity:.65; gap:2px; overflow:hidden; } .ab .nm { white-space:normal; max-width:88%; font-size:11px; line-height:1.05; max-height:35px; overflow-wrap:anywhere; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; }
+  .ab svg { width:22px; height:22px; flex:none; } .ab .key { font-size:8px; top:4px; z-index:2; } .ab svg,.ab .nm { position:relative; z-index:2; } .ab .cd { z-index:1; pointer-events:none; } .desk .ab svg { margin-top:8px; } .ab.ready { box-shadow:0 0 0 1px #0005,inset 0 0 12px #ffffff05; } .ab.act { background:#ffffff18; } #b0 { width:88px; height:88px; right:0; bottom:0; } #b0 .nm { font-size:11px; max-height:35px; } #b0 svg { width:29px; height:29px; }
+  #b1 { width:64px; height:64px; right:98px; bottom:0; } #b2 { width:64px; height:64px; right:105px; bottom:76px; } #b3 { width:64px; height:64px; right:27px; bottom:104px; } #b4 { width:64px; height:64px; right:177px; bottom:45px; border-width:2px; } #b4.ready { animation:none; }
+  #useBtn { left:auto; right:calc(var(--sr) + 20px); bottom:calc(var(--sb) + 212px); transform:none; max-width:240px; min-height:44px; font-size:13px; letter-spacing:0; text-transform:none; padding:9px 13px; box-shadow:none; border-radius:8px; clip-path:none; background:var(--am); color:#231b13; } #useBtn small { font-size:11px; }
+  #hint { font-size:11px; letter-spacing:.5px; text-transform:none; max-width:50vw; margin:auto; } #toast { font-size:12px; letter-spacing:0; text-transform:none; border:0; border-radius:6px; max-width:70vw; white-space:normal; text-align:center; }
+  #banner { font-family:var(--ti); letter-spacing:1px; font-weight:500; text-shadow:0 2px 12px #000; } #banner small { font-family:var(--ui); letter-spacing:.5px; text-transform:none; }
+  .left-handed #btns { left:calc(var(--sl) + 12px); right:auto; } .left-handed #b0 { left:0; right:auto; } .left-handed #b1 { left:98px; right:auto; } .left-handed #b2 { left:105px; right:auto; } .left-handed #b3 { left:27px; right:auto; } .left-handed #b4 { left:177px; right:auto; } .left-handed #useBtn { left:calc(var(--sl) + 20px); right:auto; } .left-handed #guideCoach { left:auto; right:calc(var(--sr) + 12px); top:calc(var(--st) + 152px); }
+  .reduce-motion *, .reduce-motion *::before, .reduce-motion *::after { animation-duration:.001ms!important; animation-iteration-count:1!important; transition-duration:.001ms!important; } .reduce-motion #banner.go,.reduce-motion #toast.go { animation-duration:2s!important; } .reduce-motion .num.go { animation-duration:.75s!important; }
+  .reduce-flash #flashfx { display:none!important; } .reduce-flash #castfx,.reduce-flash #ocfx { visibility:hidden; } .reduce-flash #vig { box-shadow:inset 0 0 45px 12px #ff301d55; } .reduce-flash .ab.hot,.reduce-flash #res.full #resTxt { animation:none; }
+  @media(max-width:760px) {
+    .overlay { padding:calc(var(--st) + 10px) calc(var(--sr) + 12px) calc(var(--sb) + 10px) calc(var(--sl) + 12px); } .lobby-stage { gap:20px; grid-template-columns:.8fr 1.2fr; } .refuge-label h2 { font-size:28px; } .refuge-label p { font-size:12px; } .lobby-destination p { font-size:11px; } .lobby-footer { gap:12px; } #play { width:180px; }
+    #hero h3 { font-size:21px; } .kit { gap:4px; margin:10px 0; } .kit-power .ic { width:36px; height:36px; } .kit-power .n { font-size:11px; } .kit-power small { font-size:11px; } #loadoutPreview .kit { gap:1px; } .lobby-kit-actions .btn2 { font-size:12px; padding:9px 8px; }
+    #cities { gap:9px; } .city-card { padding:12px; } .city-card strong { font-size:24px; } .city-card .city-desc { font-size:11px; } .city-card .city-status { font-size:11px; }
+    .loadout-layout { grid-template-columns:minmax(190px,.9fr) minmax(0,1.1fr); gap:14px; } .kit-card { gap:7px; grid-template-columns:28px minmax(0,1fr) auto; padding:10px 5px; } .kit-card>svg { width:25px; } .kit-card b { font-size:13px; } #loadoutPreview h3 { font-size:26px; }
+    #fBody { grid-template-columns:104px minmax(0,1.23fr) minmax(0,1fr); gap:8px; } #fWorkbench { padding-left:8px; } .slot { grid-template-columns:22px minmax(0,1fr); gap:5px; padding:4px; } .slot .ic svg { width:22px; height:22px; } .slot b { font-size:11px; max-height:15px; overflow:hidden; display:block; white-space:nowrap; text-overflow:ellipsis; } .slot small { font-size:11px; margin-bottom:2px; } .els { grid-template-columns:repeat(3,minmax(44px,1fr)); } .arch { grid-template-columns:22px minmax(0,1fr); gap:6px; } .arch .co { grid-column:2; padding:0; margin-top:-2px; } .arch .ic svg { width:20px; height:20px; } .arch b { font-size:12px; } #fTop h2 { font-size:18px; } #fFooter { gap:8px; } #fBud { width:90px; } #fUse { min-width:95px; padding:10px; } #fSave { min-width:55px; padding:10px; }
+  }
+  @media(orientation:landscape) and (max-height:480px) {
+    #home .screen-head { min-height:52px; } .brand-mark { width:36px; height:44px; } .brand h1 { font-size:27px; } .brand .sub { font-size:8px; margin-top:4px; } .lobby-kit { padding:8px 0; } .refuge-view { padding-bottom:10px; } .lobby-footer { min-height:60px; } #hero h3 { font-size:21px; } .screen-head { min-height:49px; padding-bottom:7px; } .screen-head h2 { font-size:22px; } .screen-head p { font-size:11px; } .screen-foot { min-height:54px; padding-top:8px; }
+    #cities { padding:10px 0; } .city-card { min-height:180px; } .settings-tabs { margin:8px 0; } .setting { min-height:66px; padding:8px 0; } .setting small { font-size:11px; } .pause-title .brand-mark { width:58px; height:70px; margin-bottom:10px; } .pause-title h2 { font-size:34px; }
+    #left { width:164px; top:calc(var(--st) + 8px); left:calc(var(--sl) + 10px); } #mini { width:68px; height:68px; } #info { gap:4px; } #banner { top:18%; font-size:25px; } #banner.rd { font-size:28px; } #banner small { font-size:11px; } #useBtn { left:40%; right:auto; bottom:calc(var(--sb) + 12px); transform:translateX(-50%); max-width:160px; } .left-handed #useBtn { left:60%; right:auto; } #guideCoach { max-width:230px; top:calc(var(--st) + 128px); bottom:auto; padding:7px 10px; } #guideText { font-size:12px; }
+  }
+  @media(max-width:560px) {
+    .lobby-stage { grid-template-columns:1fr; overflow-y:auto; } .refuge-view { min-height:130px; padding:15px 0; } .refuge-art { width:100%; } .lobby-kit { padding:10px 0; } .lobby-footer { flex-wrap:wrap; } #play { flex:1; width:auto; } .lobby-destination { flex-basis:100%; } .lobby-tools .btn2 { padding:10px; } #cities { grid-template-columns:1fr; height:auto; } .city-card { min-height:170px; }
+    .loadout-layout { grid-template-columns:1fr; overflow-y:auto; } #loadoutCards { max-height:180px; flex:none; } .kit-preview-wrap { min-height:330px; } .settings-panel,.guide-grid { grid-template-columns:1fr; } .pause-body { grid-template-columns:1fr; gap:18px; overflow:auto; } .pause-title .brand-mark { display:none; }
+    #fBody { grid-template-columns:75px minmax(0,1fr); } #fWorkbench { grid-column:2; border:0; padding-left:0; max-height:220px; } #fSlotRail { grid-row:1/3; } #fPick { min-height:160px; } #fFooter { flex-wrap:wrap; } #fMsg { flex-basis:50%; } #fTop { gap:6px; } #fTop h2 { font-size:15px; } #fName { width:100px; } .screen-foot>p { font-size:11px; } .screen-foot .go-btn { min-width:130px; }
   }
 </style>
 </head>
@@ -186,10 +256,11 @@
     <div class="panel hidden" id="boss"><div id="bossName"></div><div class="bar"><div id="bossFill"></div><div class="tick" id="tk1"></div><div class="tick" id="tk2"></div></div><div id="bossCast"></div></div>
   </div>
   <div id="info">
-    <div class="panel" id="cnt"><span>FAMA <b id="famePt">0</b> · LIV <b id="fameLv">0</b></span><button id="menuBtn" type="button">≡</button></div>
+    <div class="panel" id="cnt"><span>FAMA <b id="famePt">0</b> · LIV <b id="fameLv">0</b></span><button id="menuBtn" type="button" aria-label="Pausa">≡</button></div>
     <canvas id="mini" width="132" height="132"></canvas>
     <div id="place"></div>
   </div>
+  <aside id="guideCoach" class="hidden" aria-live="polite"><span id="guideStep"></span><p id="guideText"></p><div class="coach-actions"><button id="guideSkip" type="button">Salta percorso</button><button id="guideHelp" type="button">Guida</button></div></aside>
   <button id="useBtn" class="hidden" type="button"></button>
   <div id="btns">
     <button class="ab" id="b4" type="button"><span class="key">R</span><span class="svg"></span><span class="nm"></span><span class="cd"></span></button>
@@ -200,76 +271,50 @@
   </div>
 </div>
 
-<div id="home" class="overlay">
-  <div class="card">
-    <h1>DITE</h1>
-    <div class="sub">MOTORE DI MATTONCINI · VERSIONE 3.2</div>
-    <div id="rot">GIRA IL TELEFONO IN ORIZZONTALE</div>
-    <div class="cols">
-      <div>
-        <div class="hero" id="hero"></div>
-        <div class="row" style="margin-bottom:8px"><button class="btn2" id="openForge" type="button" style="flex:1">Officina: crea o cambia personaggio</button></div>
-        <div class="sec" style="margin-top:0">Citta</div>
-        <div class="row" id="cities"></div>
-        <div class="row" style="margin-top:6px"><button class="btn2" id="newCity" type="button" style="flex:1">Genera un'altra pianta</button><button class="btn2" id="mute" type="button">Audio si</button></div>
-      </div>
-      <div>
-        <p id="homeMsg">Mille meccaniche scritte a mano, da comporre in officina. Scegli i poteri, entra in citta. Chi ha un <b style="color:var(--gd)">!</b> sopra la testa ti da una missione: ogni missione alza la Fama, la Fama sblocca punti per mattoncini migliori. Nelle arene dormono tre boss: i loro colpi si vedono a terra prima di cadere.</p>
-        <p class="how"><b>Telefono:</b> pollice sinistro per camminare, trascina a destra per guardare. Il tasto grande si tiene premuto e puoi mirare con lo stesso dito. I poteri a terra cadono dove guardi.<br><b>Computer:</b> clic per agganciare il mouse e colpire, WASD, spazio, Q, E, R per i poteri, F per parlare.</p>
-        <button id="play" class="go-btn" type="button">ENTRA</button>
-      </div>
+<main id="home" class="overlay" aria-labelledby="homeTitle">
+  <div class="screen-shell">
+    <header class="screen-head">
+      <div class="brand"><!--BRAND_MARK--><div><h1 id="homeTitle">DITE</h1><div class="sub">VERSIONE 4.0 · IL RIFUGIO</div></div></div>
+      <nav class="lobby-tools" aria-label="Rifugio"><button id="openJournal" class="btn2" type="button" data-nav="journal">Registro</button><button id="openGuide" class="btn2" type="button" data-nav="guide">Guida</button><button id="openSettings" class="icon-btn" type="button" data-nav="settings" aria-label="Impostazioni"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8a4 4 0 0 0 0-8zM12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg></button></nav>
+    </header>
+    <div class="lobby-stage">
+      <section class="refuge-view" aria-labelledby="refugeTitle">
+        <svg class="refuge-art" viewBox="0 0 420 250" aria-hidden="true"><path d="M-30 245H445M12 245V146l23-12 22 12v99M31 143V93l12-8 12 8v50M64 245V107l31-19 32 19v138M77 97V55l18-11 18 11v42M142 245V137l36-20 34 20v108M165 120V76l14-9 15 9v44M226 245V87l35-21 34 21v158M241 76V28l20-13 19 13v48M312 245V122l25-15 25 15v123M331 109V63l14-8 14 8v54M378 245V174l25-15 28 15v71"/><path d="M150 245v-52q30-52 60 0v52M155 245v-51q25-41 50 0v51M12 184l52-20M127 128l98-30M293 107l86 83M31 163l39-22"/><path class="windows" d="M87 124v11m16-19v11m-16 24v11m16-19v11m143-64v14m22-26v14m-22 30v14m22-26v14m-22 30v14m22-26v14m57 7v12m15-21v12m-15 23v12m15-21v12M22 173v9m20-18v9m-20 24v9m20-18v9M391 191v10m17-19v10"/><path class="city-floor" d="m10 245 130-42m-70 42 92-30m178 30-135-42m205 42-190-57"/></svg>
+        <div class="refuge-label"><span class="eyebrow">Oltre le mura</span><h2 id="refugeTitle">La città ti aspetta.</h2><p id="homeMsg">Cinque poteri. Una strada tua.<br>Aiuta gli abitanti e sfida i custodi.</p></div>
+      </section>
+      <section class="lobby-kit" aria-label="Kit equipaggiato"><div id="hero"></div><div class="lobby-kit-actions"><button class="btn2 on" id="openLoadout" data-nav="loadout" type="button">Scegli kit</button><button class="btn2" id="openForge" type="button">Officina</button></div><span id="saveStatus" role="status"></span></section>
     </div>
+    <footer class="lobby-footer"><div class="lobby-destination"><button id="openCities" type="button" class="btn2" data-nav="city">Cambia città</button><div><span id="lobbyCityName">Dite</span><p id="lobbyActivity">Esplora, trova una missione, conquista la tua Fama.</p><span id="lobbyProgress" class="sr-only"></span></div></div><button id="play" class="go-btn" type="button" aria-label="Inizia partita">Entra a Dite</button></footer>
   </div>
-</div>
+</main>
 
-<div id="tips" class="overlay hidden">
-  <div class="card" style="max-width:520px">
-    <h2>COME SI GIOCA</h2>
-    <div style="font-size:14px;line-height:1.55;text-align:left;opacity:.92">
-      <p><b>Meta sinistra dello schermo</b>: ti muovi. <b>Meta destra</b>: giri lo sguardo.</p>
-      <p><b>Tasto grande</b>: il potere principale, tienilo premuto. Trascinando il dito mentre lo tieni, miri.</p>
-      <p><b>Tasti piccoli</b>: movimento, due abilita e la suprema, che si carica colpendo.</p>
-      <p>Chi ha un <b>!</b> sopra la testa offre una missione. I tre <b>sigilli</b> sulla mappa svegliano i boss: i loro colpi si vedono a terra prima di arrivare, spostati.</p>
-      <p>In <b>officina</b> cambi i cinque mattoncini del personaggio quando vuoi.</p>
-    </div>
-    <div class="row"><button class="go-btn" id="tipsOk" type="button">HO CAPITO</button></div>
-  </div>
-</div>
-<div id="menu" class="overlay hidden">
-  <div class="card" style="max-width:460px">
-    <h2>PAUSA</h2>
-    <div class="sub" id="menuSub"></div>
-    <div class="row" style="flex-direction:column;align-items:stretch">
-      <button class="go-btn" id="resume" type="button">RIPRENDI</button>
-      <button class="btn2" id="menuForge" type="button">Officina: cambia personaggio</button>
-      <button class="btn2" id="menuHome" type="button">Torna all'inizio (cambia citta)</button>
-      <button class="btn2" id="menuMute" type="button">Audio si</button>
-      <button class="btn2" id="menuTips" type="button">Come si gioca</button>
-      <label style="display:flex;align-items:center;gap:10px;font-size:13px;opacity:.85;padding:6px 4px">Sensibilita visuale <input id="sens" type="range" min="40" max="220" step="5" style="flex:1"> <b id="sensV" style="min-width:44px;text-align:right"></b></label>
-    </div>
-  </div>
-</div>
+<section id="cityScreen" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="cityTitle"><div class="screen-shell"><header class="screen-head"><button class="icon-btn back-btn" type="button" data-nav="back" aria-label="Indietro">‹</button><div class="head-copy"><h2 id="cityTitle">Oltre il rifugio</h2><p>Tre città, strade sempre diverse.</p></div></header><div class="screen-content"><div id="cities" aria-label="Scegli una città"></div></div><footer class="screen-foot"><p id="cityStatus">Cambiare città ricomincia l’esplorazione. Il tuo kit e la tua Fama restano con te.</p><button class="btn2" id="newCity" type="button">Nuova pianta</button></footer></div></section>
 
-<div id="forge" class="overlay hidden">
-  <div id="fTop">
-    <h2>OFFICINA</h2>
-    <input id="fName" type="text" maxlength="18" placeholder="Nome del personaggio" autocomplete="off" autocapitalize="words" spellcheck="false">
-    <div id="fBud"><div class="lab"><span>PUNTI</span><span id="fBudTxt"></span></div><div class="bar"><div id="fBudFill"></div></div></div>
-    <button class="btn2" id="fCancel" type="button">Annulla</button>
-    <button class="btn2 on" id="fUse" type="button">Usa</button>
-  </div>
-  <div id="fBody">
-    <div class="fcol">
-      <textarea id="fDesc" placeholder="Descrivi cosa sa fare (es: un demone della tv che controlla la corrente e ipnotizza la folla)" autocomplete="off" spellcheck="false"></textarea>
-      <div class="row" style="margin-top:4px"><button class="chip" id="fCompose" type="button" style="--c:var(--cy)">Componi dalla descrizione</button><button class="chip" id="fRandom" type="button">A caso</button><button class="chip" id="fSave" type="button" style="--c:var(--gd)">Salva</button></div>
-      <div id="fMsg"></div>
-      <div id="fSlots"></div>
-      <div class="sec">Pronti</div><div class="row" id="fPresets"></div>
-      <div class="sec" id="fSavedT">Salvati</div><div id="fSaved"></div>
-    </div>
-    <div class="fcol" id="fPick"></div>
-  </div>
-</div>
+<section id="loadout" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="loadoutTitle"><div class="screen-shell"><header class="screen-head"><button class="icon-btn back-btn" type="button" data-nav="back" aria-label="Indietro">‹</button><div class="head-copy"><h2 id="loadoutTitle">Il tuo modo di combattere</h2><p>Scegli un kit, poi rendilo tuo in officina.</p></div></header><div class="loadout-layout"><div id="loadoutCards" aria-label="Kit pronti e salvati"></div><section class="kit-preview-wrap" aria-label="Anteprima del kit"><div id="loadoutPreview"></div><footer class="preview-foot"><span id="loadoutBudget"></span><button id="equipKit" class="go-btn" type="button">Equipaggia</button></footer></section></div></div></section>
+
+<section id="journalScreen" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="journalTitle"><div class="screen-shell"><header class="screen-head"><button class="icon-btn back-btn" type="button" data-nav="back" aria-label="Indietro">‹</button><div class="head-copy"><h2 id="journalTitle">Il tuo passaggio a Dite</h2><p>Le imprese registrate su questo dispositivo.</p></div></header><div class="journal-layout"><aside class="journal-totals"><div><strong id="journalMissions">0</strong><span>Missioni completate</span></div><div><strong id="journalBosses">0</strong><span>Custodi sconfitti</span></div><p>Il registro conserva i risultati delle tue esplorazioni, fino alle ultime 32 imprese.</p></aside><div class="screen-content journal-history"><h3 id="journalCount"></h3><ol id="journalEntries"></ol></div></div></div></section>
+
+<section id="settings" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle"><div class="screen-shell"><header class="screen-head"><button class="icon-btn back-btn" type="button" data-nav="back" aria-label="Indietro">‹</button><div class="head-copy"><h2 id="settingsTitle">Impostazioni</h2><p>Il gioco, alla tua mano.</p></div></header><div class="settings-tabs" role="tablist" aria-label="Categorie impostazioni"><button class="btn2 on" role="tab" aria-selected="true" aria-controls="settingsControls" type="button" data-settings-tab="controls">Comandi</button><button class="btn2" role="tab" aria-selected="false" aria-controls="settingsAudio" type="button" data-settings-tab="audio">Audio</button><button class="btn2" role="tab" aria-selected="false" aria-controls="settingsComfort" type="button" data-settings-tab="comfort">Grafica e comfort</button></div><div class="screen-content">
+  <div id="settingsControls" class="settings-panel" role="tabpanel"><label class="setting wide"><span class="setting-copy"><b>Sensibilità visuale</b><small>La stessa risposta sullo schermo e sul tasto primario.</small></span><input id="sens" aria-label="Sensibilità visuale" type="range" min="40" max="220" step="5"><output id="sensV" for="sens">100%</output></label><label class="setting"><span class="setting-copy"><b>Comandi per mancini</b><small>Movimento a destra, poteri a sinistra.</small></span><input type="checkbox" aria-label="Comandi per mancini" data-pref="leftHanded"></label><label class="setting"><span class="setting-copy"><b>Inverti visuale verticale</b><small>Trascina in alto per guardare in basso.</small></span><input type="checkbox" aria-label="Inverti visuale verticale" data-pref="invertY"></label></div>
+  <div id="settingsAudio" class="settings-panel hidden" role="tabpanel"><label class="setting wide"><span class="setting-copy"><b>Volume</b><small>Effetti e atmosfera della città.</small></span><input type="range" data-pref="volume" aria-label="Volume" min="0" max="1" step="0.05"><output id="volumeV">100%</output></label><div class="setting"><span class="setting-copy"><b>Audio del gioco</b><small>Puoi silenziare il gioco senza cambiare volume.</small></span><button id="mute" class="btn2" type="button">Audio sì</button></div><label class="setting"><span class="setting-copy"><b>Feedback tattile</b><small id="hapticsNote">Disponibile nell’app su dispositivi compatibili.</small></span><input type="checkbox" aria-label="Feedback tattile" data-pref="haptics"></label></div>
+  <div id="settingsComfort" class="settings-panel hidden" role="tabpanel"><label class="setting wide"><span class="setting-copy"><b>Qualità grafica</b><small>Prestazioni riduce il carico degli effetti. Le minacce restano visibili.</small></span><select data-pref="quality" aria-label="Qualità grafica"><option value="auto">Automatica</option><option value="performance">Prestazioni</option><option value="quality">Alta qualità</option></select></label><label class="setting"><span class="setting-copy"><b>Movimento ridotto</b><small>Limita oscillazioni e animazioni decorative.</small></span><input type="checkbox" aria-label="Movimento ridotto" data-pref="reducedMotion"></label><label class="setting"><span class="setting-copy"><b>Lampi ridotti</b><small>Attenua i bagliori a pieno schermo.</small></span><input type="checkbox" aria-label="Lampi ridotti" data-pref="reducedFlash"></label></div>
+  </div><footer class="screen-foot settings-foot"><p id="settingsSaveStatus" role="status">Le preferenze si applicano subito.</p><button class="btn2" type="button" data-app-action="reset-settings">Ripristina valori</button></footer></div></section>
+
+<section id="tips" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="tipsTitle"><div class="screen-shell"><header class="screen-head"><button class="icon-btn back-btn" id="tipsOk" type="button" aria-label="Indietro">‹</button><div class="head-copy"><h2 id="tipsTitle">Impara la città</h2><p>I tuoi cinque poteri, il tuo percorso.</p></div></header><div class="screen-content"><div class="guide-grid">
+  <article class="guide-section"><span class="guide-number">01</span><div><h3>Muoviti e guarda</h3><p id="guideMoveCopy">Trascina nella zona sinistra per camminare. Trascina nella zona destra libera per guardarti intorno.</p><p class="guide-keyboard">Con tastiera: <kbd>WASD</kbd> per muoverti, mouse per guardare.</p></div></article>
+  <article class="guide-section"><span class="guide-number">02</span><div><h3>Il primario</h3><p>Tieni premuto il tasto grande per usare il tuo primario. Puoi trascinare lo stesso dito per mirare. Si attiva solo mentre lo premi.</p><p class="guide-keyboard">Con il mouse: tieni premuto il tasto sinistro.</p></div></article>
+  <article class="guide-section"><span class="guide-number">03</span><div><h3>Gli altri quattro poteri</h3><p>Movimento, due abilità e una suprema. La suprema si carica colpendo. Gli stati attivi mostrano il comando per terminarli: ripremilo quando vuoi.</p><p class="guide-keyboard"><kbd>Spazio</kbd>, <kbd>Q</kbd>, <kbd>E</kbd>, <kbd>R</kbd> sulla tastiera.</p></div></article>
+  <article class="guide-section"><span class="guide-number">04</span><div><h3>Abitanti e custodi</h3><p>Avvicinati a un abitante con il segno <b>!</b> e accetta una missione. La Fama ti dà più punti per i poteri. Nelle arene i colpi dei boss sono annunciati a terra: spostati prima che arrivino.</p></div></article>
+  <article class="guide-section"><span class="guide-number">05</span><div><h3>Costruisci il tuo kit</h3><p>In officina ogni spazio ha il suo tipo di potere. Cerca una meccanica, poi scegli grado, elemento e innesto. La bozza diventa il tuo kit solo con Equipaggia.</p></div></article>
+  </div></div><footer class="screen-foot"><p>Il percorso guidato osserva le tue azioni, un passo alla volta.</p><button class="btn2" id="guideRestart" type="button">Ricomincia i passaggi</button><button class="go-btn" id="guideStart" type="button">Inizia il percorso</button></footer></div></section>
+
+<section id="menu" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="menuTitle"><div class="screen-shell pause-shell"><div class="pause-body"><div class="pause-title"><!--BRAND_MARK--><span class="eyebrow">Il tempo si ferma</span><h2 id="menuTitle">Una tregua.</h2><div id="menuSub"></div></div><nav class="pause-actions" aria-label="Menu di pausa"><button class="go-btn" id="resume" type="button" aria-label="Riprendi partita">Riprendi</button><button class="btn2" id="menuForge" type="button">Officina</button><button class="btn2" id="menuSettings" type="button" data-nav="settings" aria-label="Impostazioni">Impostazioni</button><button class="btn2" id="menuTips" type="button">Guida</button><button class="btn2" id="menuMute" type="button">Audio sì</button><button class="btn2" id="menuHome" type="button">Torna al rifugio</button></nav></div></div></section>
+
+<section id="forge" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="forgeTitle"><header id="fTop"><div><span class="eyebrow">La tua bozza</span><h2 id="forgeTitle">Officina</h2></div><label for="fName" class="sr-only">Nome del kit</label><input id="fName" type="text" maxlength="18" placeholder="Nome del kit" enterkeyhint="done" autocomplete="off" autocapitalize="words" spellcheck="false"><button class="btn2 hidden" id="fKeyboardDone" type="button" aria-label="Chiudi tastiera">Fine</button><button class="btn2" id="fCancel" type="button">Annulla</button></header><div id="fBody"><nav class="fcol" id="fSlotRail" aria-label="I cinque spazi del kit"><div id="fSlots"></div></nav><section class="fcol" id="fPick" aria-label="Catalogo dei poteri"></section><aside class="fcol" id="fWorkbench" aria-label="Dettaglio e creazione"><div id="fDetail"></div><section class="forge-recipes"><h3 class="sec">Componi da una descrizione</h3><label for="fDesc" class="sr-only">Descrizione del kit</label><textarea id="fDesc" placeholder="Esempio: controlla il ghiaccio, scatta e protegge gli alleati" autocomplete="off" spellcheck="false"></textarea><div class="row"><button class="chip" id="fCompose" type="button">Componi</button><button class="chip" id="fRandom" type="button">Sorprendimi</button></div><h3 class="sec">Kit pronti</h3><div class="row" id="fPresets"></div><h3 class="sec" id="fSavedT">I tuoi kit</h3><div id="fSaved"></div></section></aside></div><footer id="fFooter"><div id="fBud"><div class="lab"><span>Punti kit</span><span id="fBudTxt"></span></div><div class="bar"><div id="fBudFill"></div></div></div><div id="fMsg" role="status" aria-live="polite"></div><button class="btn2" id="fSave" type="button">Salva</button><button class="go-btn" id="fUse" type="button">Equipaggia</button></footer></section>
+
+<section id="loading" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="loadingTitle"><div class="blocking-shell"><!--BRAND_MARK--><h2 id="loadingTitle">Si aprono le porte.</h2><p id="loadingDetail">Prepariamo le strade della città.</p><div class="loading-track" aria-hidden="true"></div></div></section>
+<section id="rotateGuard" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="rotateTitle"><div class="blocking-shell"><div class="rotate-icon" aria-hidden="true"></div><h2 id="rotateTitle">Gira lo schermo.</h2><p>Dite si esplora in orizzontale.<br>La partita resta in pausa mentre ti sistemi.</p></div></section>
+<section id="appError" class="overlay hidden" role="alertdialog" aria-modal="true" aria-labelledby="errorTitle" aria-describedby="errorDetail"><div class="blocking-shell"><!--BRAND_MARK--><h2 id="errorTitle">La città si è fermata.</h2><p id="errorDetail">Puoi provare a riaprire le porte.</p><button id="errorRetry" class="go-btn" type="button" data-app-action="retry">Riprova</button></div></section>
 
 <script>/*THREE*/</script>
 <script>
