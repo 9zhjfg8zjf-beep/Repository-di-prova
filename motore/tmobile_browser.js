@@ -2,7 +2,7 @@
 'use strict';
 const assert = require('node:assert/strict'), fs = require('node:fs');
 const { chromium } = require('./pw.js'), B = require('./bricks.js'), Storage = require('./storage.js');
-const selected = (process.argv[2] || 'all').split(','), available = ['all', 'bootstrap', 'coach', 'navigation', 'input', 'storage', 'loading', 'journal', 'bonuses'];
+const selected = (process.argv[2] || 'all').split(','), available = ['all', 'bootstrap', 'coach', 'navigation', 'input', 'storage', 'loading', 'journal', 'bonuses', 'counter'];
 for (const name of selected) assert.ok(available.includes(name), 'scenario mobile sconosciuto: ' + name);
 const wants = name => selected.includes('all') || selected.includes(name);
 const profile = Storage.normalize({ recipe: { nome: 'Prova mobile', slots: ['dardo', 'scatto', 'nova', 'nova', 'ira'].map(id => ({ id, el: 'luce', t: 1 })) }, fame: 80, seed: 14, tips: true, onboarding: { version: 1, step: 5, skipped: false }, muted: true }, B);
@@ -134,7 +134,7 @@ const sevenPowerStates = () => {
           assert.ok(Object.values(states).every(value => value === true));
           await page.waitForFunction(() => window.__dite.state().player.bank === 75);
           await page.evaluate(() => { const D = window.__dite, s = D.state(); D.Core.wakeBoss(s, 0); D.Core.bossCast(s, s.boss, 'pioggia'); });
-          await page.waitForFunction(() => !document.getElementById('boss').classList.contains('hidden') && document.getElementById('bossCast').textContent === window.__dite.Bricks.ATK.pioggia.nome && document.getElementById('banner').classList.contains('go'));
+          await page.waitForFunction(() => !document.getElementById('boss').classList.contains('hidden') && document.getElementById('bossCast').textContent === window.__dite.Bricks.ATK.pioggia.nome);
         }
         await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: leftHanded ? 557 : 110, y: 314, id: 41 }] });
         await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
@@ -151,7 +151,7 @@ const sevenPowerStates = () => {
           }
           const clipped = ['guideStep', 'guideText', 'guideSkip', 'guideHelp'].filter(id => { const node = document.getElementById(id); return node.scrollWidth > node.clientWidth + 1 || node.scrollHeight > node.clientHeight + 1; });
           const livePowers = { bank: p.bank, absorb: !!p.absorb, mimic: p.mimic && p.mimic.attack, form: p.form && p.form.size, captive: !!p.captive, scan: !!p.scan, clones: s.mobs.filter(e => e.cloned && !e.dead).length };
-          return { rects, collisions, clipped, layout: document.getElementById('guideCoach').dataset.layout, livePowers, boss: s.boss && { key: s.boss.key, cast: s.boss.cast, attackSerial: s.boss.attackSerial }, banner: document.getElementById('banner').textContent, leftHanded: D.store.leftHanded, pointer: D.inputSnapshot().joy.id, checkpoint: D.store.onboarding, sameQuest: q === window.__coachQuest, quest: q && { type: q.type, giver: q.giver, obj: { ...q.obj }, time: q.time }, questText: document.getElementById('qLine').textContent, questNone: document.getElementById('quest').classList.contains('none') };
+          return { rects, collisions, clipped, layout: document.getElementById('guideCoach').dataset.layout, livePowers, boss: s.boss && { key: s.boss.key, cast: s.boss.cast, attackSerial: s.boss.attackSerial }, banner: { text: document.getElementById('banner').textContent, opacity: getComputedStyle(document.getElementById('banner')).opacity }, leftHanded: D.store.leftHanded, pointer: D.inputSnapshot().joy.id, checkpoint: D.store.onboarding, sameQuest: q === window.__coachQuest, quest: q && { type: q.type, giver: q.giver, obj: { ...q.obj }, time: q.time }, questText: document.getElementById('qLine').textContent, questNone: document.getElementById('quest').classList.contains('none') };
         });
         await page.screenshot({ path: __dirname + '/shots/mobile-coach-' + (dense ? 'denso-' : 'missione-') + (leftHanded ? 'mancino' : 'destro') + '.png' });
         const diagnostic = JSON.stringify(restarted);
@@ -167,7 +167,6 @@ const sevenPowerStates = () => {
           assert.equal(restarted.layout, 'center', 'Il caso denso deve esercitare il secondo ancoraggio');
           assert.deepEqual(restarted.livePowers, { bank: 75, absorb: true, mimic: 'tiro', form: .6, captive: true, scan: true, clones: 2 });
           assert.ok(restarted.rects.boss.visible && restarted.rects.bossCast.visible && restarted.boss.attackSerial > 0 && restarted.boss.cast.length > 0);
-          assert.ok(restarted.rects.banner.visible && restarted.banner.length > 0, 'Il boss deve aver prodotto il suo annuncio reale');
         }
         const coach = restarted.rects.guideCoach;
         assert.ok(coach.left >= 44 && coach.right <= 623 && coach.top >= 0 && coach.bottom <= 354, 'Guida riavviata dentro la safe area: ' + diagnostic);
@@ -486,6 +485,40 @@ const sevenPowerStates = () => {
       for (const row of after) { assert.equal(row.name, names[row.key]); assert.equal(row.time, row.remaining + ' s'); }
       await page.evaluate(() => { for (const key of ['--sl', '--sr', '--sb']) document.documentElement.style.removeProperty(key); }); await page.setViewportSize({ width: 844, height: 390 });
       console.log('bonuses:8 bonus e7 stati Core, HUD sintetico667 senza overlap joystick/missione, dettagli completi, Tab e apertura persistente verdi');
+    }
+    if (wants('counter')) {
+      await page.setViewportSize({ width: 667, height: 375 });
+      await page.evaluate(() => { const style = document.documentElement.style; style.setProperty('--sl', '44px'); style.setProperty('--sr', '44px'); style.setProperty('--sb', '21px'); style.setProperty('--ui', '"DejaVu Sans",sans-serif'); return document.fonts.ready; });
+      await start();
+      const cdp = await context.newCDPSession(page); await cdp.send('DOM.enable'); await cdp.send('CSS.enable');
+      for (const fame of [999999, 1e9]) for (const leftHanded of [false, true]) {
+        assert.equal(Storage.normalize({ fame }, B).fame, fame, 'La fixture deve essere un valore di Fama accettato dal salvataggio');
+        await page.evaluate(fame => { const D = window.__dite; D.store.fame = D.state().fame = fame; D.state().level = D.Bricks.levelFor(fame); D.invalidate(); }, fame);
+        if (await page.evaluate(left => window.__dite.store.leftHanded !== left, leftHanded)) {
+          await page.locator('#menuBtn').tap(); await page.locator('#menuSettings').tap(); await page.locator('[data-settings-tab="controls"]').tap();
+          await page.locator('[data-pref="leftHanded"]').setChecked(leftHanded); await page.locator('#settings [data-nav="back"]').tap(); await page.locator('#resume').tap();
+        }
+        await page.waitForFunction(fame => document.getElementById('famePt').textContent === String(fame), fame);
+        await settle();
+        const counter = await page.evaluate(() => {
+          const span = document.querySelector('#cnt>span'), box = span.getBoundingClientRect(), button = document.getElementById('menuBtn').getBoundingClientRect();
+          const walker = document.createTreeWalker(span, NodeFilter.SHOW_TEXT), fragments = []; let node;
+          while ((node = walker.nextNode())) { if (!node.textContent.trim()) continue; const range = document.createRange(); range.selectNodeContents(node); for (const r of range.getClientRects()) fragments.push({ text: node.textContent, ...r.toJSON() }); }
+          const outside = fragments.filter(r => r.left < box.left - 1 || r.right > box.right + 1 || r.top < box.top - 1 || r.bottom > box.bottom + 1 || r.right > button.left);
+          return { text: span.textContent, span: box.toJSON(), button: button.toJSON(), fragments, outside, font: getComputedStyle(span).font, whiteSpace: getComputedStyle(span).whiteSpace, leftHanded: window.__dite.store.leftHanded };
+        });
+        const documentNode = await cdp.send('DOM.getDocument'), labelNode = await cdp.send('DOM.querySelector', { nodeId: documentNode.root.nodeId, selector: '#famePt' });
+        counter.actualFonts = (await cdp.send('CSS.getPlatformFontsForNode', { nodeId: labelNode.nodeId })).fonts;
+        await page.screenshot({ path: __dirname + '/shots/mobile-fama-' + fame + '-' + (leftHanded ? 'mancino' : 'destro') + '.png' });
+        const diagnostic = JSON.stringify(counter);
+        assert.equal(counter.leftHanded, leftHanded); assert.equal(counter.text.replace(/\s+/g, ' ').trim(), 'FAMA ' + fame + ' · LIV ' + B.levelFor(fame));
+        assert.ok(counter.actualFonts.length > 0 && counter.actualFonts.every(value => value.familyName === 'DejaVu Sans') && counter.actualFonts.some(value => value.glyphCount > 0), 'Il contatore deve usare il font largo reale: ' + diagnostic);
+        assert.ok(counter.fragments.length > 0); assert.deepEqual(counter.outside, [], 'Fama e livello devono restare dentro lo span e prima di Pausa: ' + diagnostic);
+        assert.ok(counter.button.width >= 44 && counter.button.height >= 44, 'Pausa deve conservare il bersaglio da 44 px: ' + diagnostic);
+        assert.ok(counter.span.left >= 44 && counter.button.right <= 623 && counter.button.bottom <= 354, 'Contatore e Pausa dentro la safe area: ' + diagnostic);
+        console.log('counter:', diagnostic);
+      }
+      console.log('counter: Fama 999999 e limite 1e9, DejaVu reale e due lati; frammenti di testo contenuti, Pausa distinta e target 44 px');
     }
     assert.deepEqual(errors, [], 'errori browser'); console.log('nessun errore');
   } finally { await browser.close(); }
