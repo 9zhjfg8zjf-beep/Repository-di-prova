@@ -6,29 +6,29 @@ Non chiamare questa preparazione “App Store ready”: firma, distribuzione, pr
 
 ## Stato delle verifiche
 
-- **4.0 verificata localmente, pronta per il push**: 33/33 comandi (14 Node e 19 browser/build),
-  mirati coach/bonus/contatore e packaging 8/8 verdi. Bundle iOS sincronizzato; sync, progetto e asset verdi.
-  Log finali e checksum completi in `AGENTS.md`. Queste prove non eseguono WebKit nativo.
-- Prima CI reale: [run 43429444352](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43429444352)
-  sul commit `678d219`. Verdi i 14 comandi Node, le 8 prove di packaging e i controlli bundle/progetto/asset.
-- iPhone: **build Release per dispositivo senza firma riuscita**. Per entrambe le famiglie di simulatori
-  la compilazione Swift e i **19 test unitari** sono riusciti; i **6 UI test per famiglia sono falliti in setUp**.
-  Il gioco non ha raggiunto il rifugio: il filtro WebKit `^(https?|wss?)://` è stato rifiutato con
-  `Disjunctions are not supported yet.`. Log e PNG confermano il blocco prima dell'avvio del contenuto.
-- Gli screenshot nativi del primo run documentano l'errore, non il gioco funzionante e non sono materiali Store.
-  La candidata 13 mantiene due regole condivise e una ventesima prova unitaria che compila il payload reale
-  in WebKit; **correzione e 20 unitari attendono la prossima CI**, senza esito verificato.
-- Il job browser della stessa CI ha superato 17 gruppi, poi `tmobile_browser` ha rilevato il nome Cataclisma
-  troncato nello scenario coach con il font del runner. Sono implementati suprema da 80 px e regressioni font.
-  Il gate locale finale include le correzioni a guida e Fama; la nuova CI deve ancora verificarle sul runner.
-- La prova iOS di rotazione verifica ora la vera `UIWindowScene.interfaceOrientation`, durante rotazione
-  live e riavvio, tramite una sonda solo DEBUG con `--ui-testing`. **Ancora da eseguire su macOS**, insieme
-  ai 20 unitari e 6 UI per famiglia; nessun nuovo avvio nativo riuscito ancora dimostrato.
+- Seconda CI [43447046606](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43447046606)
+  su `ba105b491046e588a526fd22265d9d6f18b1a97c`: **14 Node, 19 browser/build e packaging 8/8 verdi**.
+  Bundle web/native/Core invariati rispetto ai checksum di `AGENTS.md`; anche il gate locale 33/33 è verde.
+- **Release iPhone unsigned riuscita; 20/20 unitari e 2/6 UI verdi per famiglia**. Passano officina con tastiera
+  e retry WebGL. L'app si avvia e i video mostrano gameplay animato. Restano quattro fallimenti UI per famiglia.
+- La preferenza risulta già attiva e il salvataggio confermato: il test leggeva uno StaticText invece dello Switch.
+  Applicati selettore Switch e verifica dell'inversione 0/1; **correzione ancora da eseguire nella prossima CI**.
+  Gli altri tre fallimenti su tap/pausa/background restano in diagnosi.
+- La sonda reale `UIWindowScene.interfaceOrientation` ha verificato `landscapeRight`; il secondo verso non è
+  stato raggiunto. Aggiunta una traccia passiva nativa/web solo DEBUG con `--ui-testing`, allegata anche ai test riusciti;
+  il test background verifica ora lo stato OS prima e dopo activate. Quattro assert Riprendi attendono
+  exists+hittable per 20 s, mantenendo la geometria e senza doppi tap. Queste aggiunte non modificano Release
+  o il bundle web e devono raccogliere evidenza nel prossimo run.
+- Disponibili e controllati **9 PNG e 4 video per dispositivo**, con gli alberi di accessibilità.
+  Restano materiali diagnostici, non il set Store finché il collaudo UI è rosso. WPE WebKit Linux locale:
+  11 tap reali verdi e zero errori JS, prova complementare che non certifica iOS.
+- La prima CI [43429444352](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43429444352)
+  aveva rivelato il filtro WebKit con disgiunzione non supportata e Cataclisma troncato: entrambi corretti e verificati nel secondo run.
 - iPhone/iPad fisici, prestazioni, temperatura, autonomia, audio e interruzioni reali: **non verificati**.
 - Nessun certificato, profilo, Team ID, account App Store Connect o invio predisposto automaticamente.
 
 Registrare separatamente il prossimo esito di avvio/UI, senza sostituire i risultati parziali con una dichiarazione
-generica di conformità. Build e test unitari riusciti non certificano l'avvio; il simulatore non certifica hardware reale.
+generica di conformità. I percorsi UI incompleti richiedono nuove prove; il simulatore non certifica hardware reale.
 
 ## File e build
 
@@ -158,7 +158,8 @@ il simulatore, chiude la tastiera tramite il comando dell'interfaccia e raggiung
 Una prova provoca un primo errore WebGL attraverso uno user script esclusivamente Debug, poi tocca il vero
 «Riprova» e raggiunge rifugio e partita. L'iniezione di guasto non è compilata nella build Release.
 Le schermate sono allegati XCTest reali; al fallimento viene conservato anche l'albero di accessibilità.
-Nel primo run questi percorsi non sono stati raggiunti: il blocco in setUp precede le azioni di gioco.
+Nel secondo run sono raggiunti officina/tastiera e recupero WebGL; gli altri percorsi restano da completare.
+Le tracce diagnostiche passive si allegano anche ai test riusciti solo in DEBUG/`--ui-testing`; non pilotano il gioco.
 
 Prima della distribuzione occorrono prove su dispositivi accessibili: multi-touch simultaneo, notch e home indicator,
 tastiera e rotazione, sessioni prolungate, memoria, calore, autonomia, silenzioso, Bluetooth e interruzioni audio.

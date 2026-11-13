@@ -2,13 +2,12 @@
 
 Preparato il 13 novembre 2026. Questo documento contiene testi pronti da trasferire nei campi indicati,
 valori ancora da completare e il percorso per ottenere le immagini della build effettiva.
-La **4.0 candidata è verificata localmente e pronta per il push**: 33/33 comandi verdi, oltre a mirati e packaging.
-La prima CI macOS aveva compilato Release iPhone unsigned e superato 19 unitari per famiglia, ma i 6 UI
-si erano fermati in setUp per il filtro WebKit. Filtro corretto, 20 unitari e 6 UI per famiglia, inclusa la
-rotazione effettiva, attendono la nuova CI macOS. Non esiste una build distribuibile o un invio App Store;
-la versione del gioco pubblicata resta 3.2.
-Esiti e diagnosi del [run 43429444352, commit 678d219](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43429444352)
-sono riportati in [IOS.md](IOS.md).
+La **4.0 candidata supera 33/33 comandi web/logica e packaging anche in CI**. Il secondo run compila Release
+iPhone unsigned, supera 20 unitari per famiglia e avvia il gameplay, ma conclude solo 2/6 UI per famiglia.
+Il test Switch corretto e tre fallimenti tap/pausa/background richiedono una nuova CI diagnostica.
+Non esiste una build distribuibile o un invio App Store; la versione pubblicata resta 3.2.
+Esiti del [run 43447046606, commit ba105b4](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43447046606)
+e verifiche pendenti sono in [IOS.md](IOS.md).
 Prima del caricamento, associare questi testi alla build nativa realmente verificata, senza usare la sola
 versione web come prova del funzionamento iOS.
 
@@ -136,12 +135,12 @@ Rivedere le note se cambiano testi, funzionalità, monetizzazione o salvataggio 
 
 ## Immagini dalla build reale
 
-Il piano parte dagli allegati XCTest della stessa versione nativa da inviare. **Non sono ancora disponibili
-immagini utilizzabili per lo Store**: i PNG reali del primo run mostrano l'errore di avvio del filtro WebKit.
-Sono evidenze diagnostiche, non immagini di gameplay. Un file di test o una schermata Chromium non li sostituisce.
+Il secondo run contiene **9 PNG e 4 video per dispositivo**, con gameplay animato e schermate reali.
+Restano evidenze diagnostiche: **il set Store non è approvato mentre quattro UI per famiglia falliscono**.
+La selezione finale dovrà corrispondere alla build che completa il collaudo; una schermata Chromium non la sostituisce.
 Il workflow `.github/workflows/dite.yml` conserva `ios-iphone-evidence` e `ios-ipad-evidence`, con
 `SimulatorTests.xcresult`, log, `selected-simulator.json` e immagini; la conservazione attuale è di 14 giorni.
-La CI esporta gli allegati in `.build/xctest-attachments/`. Dopo il prossimo avvio/UI riuscito, selezionare
+La CI esporta gli allegati in `.build/xctest-attachments/`. Dopo il completamento del collaudo UI, selezionare
 le immagini del gioco effettivo e conservarle insieme a commit, build e dispositivo.
 
 | Ordine proposto | Cosa mostra | Allegato XCTest già previsto | Uso |
@@ -176,15 +175,15 @@ Il numero di build, il commit e il risultato della CI devono permettere di colle
 
 | Evidenza da collegare | Valore attuale |
 | --- | --- |
-| Esecuzione CI macOS e commit | [43429444352](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43429444352), `678d219`; run complessivo fallito |
-| Build Swift / XCTest | Release iPhone unsigned riuscita; simulatori compilati, 19 unitari verdi e 6 UI falliti in setUp per famiglia |
-| Candidata 4.0 locale, bundle 13 | 33/33, mirati e packaging 8/8 verdi; bundle iOS sincronizzato, checksum in `AGENTS.md`; pronta per il push |
-| Correzione avvio WebKit | Due regole e test sul payload reale; 20 unitari e avvio/UI ancora da verificare in CI |
-| Rotazione nativa | Test dell'orientamento effettivo della finestra in rotazione e al riavvio; ancora da eseguire su macOS |
-| Screenshot nativi selezionati | PNG di errore disponibili; immagini del gioco per lo Store ancora da acquisire |
+| Esecuzione CI macOS e commit | [43447046606](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43447046606), `ba105b4`; UI ancora rosso |
+| Build Swift / XCTest | Release unsigned riuscita; 20/20 unitari e 2/6 UI verdi per famiglia, avvio e gameplay osservati |
+| Candidata 4.0, bundle 13 | 33/33 web/logica e packaging 8/8 verdi anche in CI; checksum invariati in `AGENTS.md` |
+| Prossima CI diagnostica | Verificare selettore Switch e inversione 0/1; raccogliere tracce per i tre fallimenti tap/pausa/background |
+| Rotazione nativa | landscapeRight reale verificato; secondo verso non raggiunto |
+| Screenshot nativi selezionati | 9 PNG e 4 video per dispositivo controllati; set Store ancora da approvare dopo collaudo UI |
 | Prove su hardware fisico | Da eseguire con hardware accessibile al collaudo |
 | Archivio firmato / build App Store Connect | Da preparare con account e firma autorizzati |
 | Supporto e policy pubblici | Da configurare con identità reale |
 
 La compilazione, la firma, l'invio e l'approvazione sono risultati separati. Questo documento prepara
-i contenuti del caricamento; la compilazione riuscita non equivale a gioco avviabile o pronto per la distribuzione.
+i contenuti del caricamento; collaudo UI, firma e distribuzione restano da completare.

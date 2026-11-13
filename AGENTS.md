@@ -119,7 +119,7 @@ Ordine dei file nel build: bricks, mec*, catalogo, city, core, onboarding, journ
 world, fx, anim, poteri-fx, ui, main. Tutto in `'use strict'`. Gli export CommonJS devono restare su una riga
 con guardia indipendente `if (typeof module !== 'undefined') ...`, rimossa dal build per il browser.
 
-## Stato: 4.0 candidata locale verificata — pronta per il push
+## Stato: 4.0 candidata — web verificato in CI, diagnosi UI iOS in corso
 
 Aggiornato il 13 novembre 2026. La versione pubblicata resta **3.2**; la 4.0 e nel ramo `codex/dite-mobile`.
 Titolo e interfaccia sorgente indicano 4.0, ma un artifact di sviluppo non e una release pubblicata.
@@ -162,10 +162,10 @@ QA layout: 112 snapshot verdi su sei missioni, touch/tastiera, due lati, font, n
 zero misure nei frame stabili. Arena e bundle iOS sono sincronizzati; packaging 8/8, sync, progetto,
 asset e diff check verdi. I checksum sotto identificano il bundle finale verificato, candidata 13.
 
-La prima CI reale [43429444352](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43429444352)
-su `678d219` aveva rilevato un filtro WebKit non compilabile e Cataclisma troncato. Sono ora implementati
-due filtri separati con test sul payload reale, suprema da 80 px e regressioni tipografiche sui due lati.
-Le correzioni web hanno superato il gate locale; la nuova CI nativa resta da eseguire.
+La seconda CI [43447046606](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43447046606)
+su `ba105b491046e588a526fd22265d9d6f18b1a97c` conferma **14 Node, 19 browser/build e packaging 8/8 verdi**.
+Sono risolti il filtro WebKit e il nome troncato emersi nella prima CI
+[43429444352](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43429444352).
 
 | File della candidata 13 | SHA256 |
 | --- | --- |
@@ -173,11 +173,15 @@ Le correzioni web hanno superato il gate locale; la nuova CI nativa resta da ese
 | `motore/site/index.html` e `arena/index.html` | `abcb4a4a2345e278b7d6e11f1d2d7993ceccb70894737518d2f11410b76e429e` |
 | `motore/core.js` | `503a2903f3f302782e35183e859679d530443c9c56f6adeafa990a5e4a766190` |
 
-Nella prima CI sono riusciti Release iPhone unsigned, compilazione simulatori e 19 unitari per famiglia;
-i 6 UI test per famiglia sono falliti in setUp. Filtro corretto, 20 unitari e 6 UI attendono la prossima esecuzione.
-La prova di rotazione ora legge l'orientamento effettivo di UIWindowScene, durante rotazione e riavvio,
-tramite una sonda presente solo in DEBUG con `--ui-testing`; non e ancora stata eseguita su macOS.
-Dettagli e PNG diagnostici in `IOS.md`; nessuna verifica su dispositivi fisici. La versione pubblicata resta 3.2.
+Nella seconda CI: Release iPhone unsigned riuscita, **20/20 unitari e 2/6 UI verdi per famiglia**.
+Passano officina/tastiera e retry WebGL; il gioco si avvia ed e animato. Restano quattro fallimenti UI:
+corretto il test preferenza che leggeva uno StaticText invece dello Switch, tre casi tap/pausa/background
+ancora in diagnosi. L'orientamento reale `landscapeRight` e verificato; il secondo verso non e stato raggiunto.
+La prossima CI deve verificare il selettore Switch con inversione 0/1 e raccogliere la traccia passiva nativa/web,
+solo DEBUG/`--ui-testing`, anche sui test riusciti. Il test background controlla lo stato OS prima/dopo activate;
+quattro controlli Riprendi attendono exists+hittable per 20 s, mantenendo geometria e singolo tap.
+La diagnostica e esclusa da Release; il bundle web resta invariato. WPE WebKit Linux: 11 tap reali verdi,
+zero errori JS, prova complementare che non sostituisce iOS. Dettagli in `IOS.md`; pubblicata ancora 3.2.
 
 ## Stato storico: versione 3.2
 
@@ -210,10 +214,10 @@ Calibrazione del danno eseguita sui 336 nuovi programmi; fattori dei 1007 preced
 
 Prima di considerare la 4.0 distribuibile:
 
-1. **Push, CI e deploy**: pubblicare il codice e i bundle verificati, controllare la nuova CI e la versione
-   realmente servita. Il gate locale 33/33 e concluso; la pagina pubblicata resta 3.2 fino alla verifica del deploy.
-2. **Nuovo collaudo macOS**: eseguire i 20 unitari e i 6 UI per famiglia con il filtro corretto, inclusi avvio,
-   tastiera, orientamento reale, lifecycle e salvataggio. Conservare log e immagini del gioco funzionante.
+1. **Chiudere la diagnosi UI iOS**: eseguire la prossima CI con il test Switch corretto e le tracce passive;
+   risolvere i tre casi tap/pausa/background e raggiungere entrambi gli orientamenti reali.
+2. **Pubblicazione verificata**: dopo il collaudo completare push/deploy e verificare la versione servita.
+   Web 33/33 e packaging sono verdi anche in CI; la pagina pubblica resta 3.2.
 3. **Prestazioni e comportamento fisico**: misurare frame time, memoria, calore, batteria, multi-touch,
    silenzioso/Bluetooth e interruzioni su dispositivi accessibili. Chromium software non certifica fluidita o audio iPhone;
    non chiedere all'utente di sostituirsi al collaudo.

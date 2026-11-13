@@ -1,6 +1,6 @@
 # DITE — direzione mobile e preparazione iOS
 
-Stato: **4.0 candidata locale verificata, pronta per il push**, non ancora pubblicata. Aggiornato il 13 novembre 2026.
+Stato: **4.0 candidata, web verificato in CI e diagnosi UI iOS in corso**, non ancora pubblicata. Aggiornato il 13 novembre 2026.
 Base verificata: DITE 3.2, commit 5a50c8f70e2f214b0b6d3a704e24d39765262476.
 La versione pubblicata resta 3.2. Il lavoro è nel ramo `codex/dite-mobile`.
 
@@ -53,11 +53,17 @@ L'obiettivo qualitativo indicato dall'utente è ambizioso. Non dichiarare “liv
   Verdi i mirati coach/bonus/contatore (`/tmp/dite-final13-mirato.log`), compresi scena densa e Fama lunga.
   Arena/iOS sincronizzati; packaging 8/8 e controlli sync/progetto/asset/diff verdi. Il bundle finale
   della candidata 13 è identificato dai checksum in `AGENTS.md`.
-- La prima CI reale [43429444352](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43429444352)
-  su `678d219` aveva rilevato Cataclisma troncato e filtro WebKit non compilabile. Le correzioni comprendono
-  suprema da 80 px, regressioni font sui due lati e due regole native con prova sul payload effettivo.
-  La nuova CI macOS deve ancora eseguire 20 unitari e 6 UI per famiglia, inclusa la verifica dell'orientamento
-  effettivo durante rotazione e riavvio. La versione pubblicata resta 3.2.
+- Seconda CI [43447046606](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43447046606)
+  su `ba105b4`: 14 Node, 19 browser/build e packaging 8 verdi; Release unsigned, 20 unitari e 2/6 UI per famiglia
+  riusciti. Filtro WebKit e font della prima CI corretti; avvio e gameplay animato osservati.
+  Passano officina/tastiera e retry WebGL. Fra i quattro UI falliti, corretto il selettore della preferenza
+  (leggeva StaticText, ora Switch e inversione 0/1); tre casi tap/pausa/background ancora in diagnosi.
+  Verificato l'orientamento reale landscapeRight, non ancora il secondo verso. La prossima CI raccoglierà
+  tracce passive solo DEBUG/--ui-testing anche sui test riusciti e verificherà lo stato OS nel test background.
+  I controlli Riprendi usano l'attesa exists+hittable di 20 s, senza doppi tap e conservando le verifiche geometriche.
+  Il bundle web e i suoi checksum restano invariati; la diagnostica e esclusa da Release. WPE WebKit Linux supera 11 tap reali senza errori JS,
+  evidenza complementare a iOS. I 9 PNG e 4 video per dispositivo sono materiale di diagnosi, non ancora Store.
+  La versione pubblicata resta 3.2.
 
 ## Riferimenti e applicazione originale
 
