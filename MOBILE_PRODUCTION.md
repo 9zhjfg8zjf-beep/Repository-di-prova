@@ -1,6 +1,6 @@
 # DITE — direzione mobile e preparazione iOS
 
-Stato: **implementazione e collaudo della 4.0 in corso**, non ancora pubblicata. Aggiornato il 13 novembre 2026.
+Stato: **4.0 candidata con collaudo locale verde**, pronta per il push e non ancora pubblicata. Aggiornato il 13 novembre 2026.
 Base verificata: DITE 3.2, commit 5a50c8f70e2f214b0b6d3a704e24d39765262476.
 La versione pubblicata resta 3.2. Il lavoro è nel ramo `codex/dite-mobile`.
 
@@ -45,9 +45,11 @@ L'obiettivo qualitativo indicato dall'utente è ambizioso. Non dichiarare “liv
   due righe e conteggio degli altri. Il dettaglio espandibile in pausa conserva tempi, risorse e istruzioni.
   La modalità mancini rispecchia controlli e gruppi HUD; guida e coach seguono il lato di movimento scelto.
 - La prima nuova interfaccia è stata fotografata e corretta a 667×375 con inset 44/44/21.
-  La suite Node finale è verde: 14 comandi sul Core con SHA256 iniziante per `503a2903f3f3`.
-  I 19 comandi browser/build finali e la revisione conclusiva delle foto sono ancora in corso;
-  compilazione e test iOS su macOS restano da eseguire.
+  Collaudo locale finale verde: **14 comandi Node e 19 browser/build**, entrambe le sequenze con esito 0;
+  log `/tmp/dite-final3-node.log` e `/tmp/dite-final9-browser.log`. Foto campione finali approvate,
+  senza regressioni concrete rilevate. Verdi anche packaging iOS (8 prove), progetto, sincronizzazione e asset.
+  I checksum esatti dei bundle dist/site e del Core sono registrati nello Stato di `AGENTS.md`.
+  Compilazione Swift, XCTest e verifiche fisiche restano da eseguire; la pubblicazione è ancora quella della 3.2.
 
 ## Riferimenti e applicazione originale
 

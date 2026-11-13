@@ -117,7 +117,7 @@ Ordine dei file nel build: bricks, mec*, catalogo, city, core, onboarding, journ
 world, fx, anim, poteri-fx, ui, main. Tutto in `'use strict'`. Gli export CommonJS devono restare su una riga
 con guardia indipendente `if (typeof module !== 'undefined') ...`, rimossa dal build per il browser.
 
-## Stato: 4.0 candidata mobile — collaudo finale in corso
+## Stato: 4.0 candidata mobile — collaudo locale verde
 
 Aggiornato il 13 novembre 2026. La versione pubblicata resta **3.2**; la 4.0 e nel ramo `codex/dite-mobile`.
 Titolo e interfaccia sorgente indicano 4.0, ma un artifact di sviluppo non e una release pubblicata.
@@ -150,11 +150,19 @@ La distribuzione non e predisposta: identificatore tecnico unsigned, nessun Team
 
 Verifiche gia svolte in questo ciclo: baseline 3.2 prima degli edit; prove mirate storage (19), router
 (11 casi e 2000 transizioni), guida (17), registro (11); 8 prove Linux di packaging/metadati iOS.
-Audit e fotografie browser hanno guidato correzioni di layout, touch e risorse. **I 14 comandi Node finali sono verdi**
-sul Core con SHA256 iniziante per `503a2903f3f3`. **I 19 comandi browser/build e la revisione conclusiva delle foto
-sono ancora in corso: il collaudo completo dei 33 comandi non e ancora dichiarato verde per la candidata.**
+**Collaudo locale finale verde: 33 comandi, 14 Node e 19 browser/build**, entrambe le sequenze concluse con esito 0.
+Log della sessione: `/tmp/dite-final3-node.log` e `/tmp/dite-final9-browser.log`. Foto campione finali controllate
+e approvate, senza regressioni concrete rilevate. Verdi anche le 8 prove di packaging iOS e i controlli
+di aggiornamento del progetto, sincronizzazione bundle e asset. Candidata 4.0 locale pronta per il push.
+
+| File verificato | SHA256 |
+| --- | --- |
+| `motore/dist/index.html` | `eb83e58dec2afd966427b73299ad36f6113b957da2e74b073e76f5984787de22` |
+| `motore/site/index.html` | `5d7a465b48b93e4f299723ff2a263997be720409bde0122b07a325a954b3be1c` |
+| `motore/core.js` | `503a2903f3f302782e35183e859679d530443c9c56f6adeafa990a5e4a766190` |
+
 Compilazione Swift, XCTest e schermate iOS su macOS ancora da eseguire; nessun risultato su dispositivi fisici.
-Chi chiude la release deve sostituire questo paragrafo con gli esiti verificati e il relativo commit.
+La versione pubblicata resta 3.2: dopo il push verificare il deploy e registrare la versione realmente servita.
 
 ## Stato storico: versione 3.2
 
@@ -187,8 +195,8 @@ Calibrazione del danno eseguita sui 336 nuovi programmi; fattori dei 1007 preced
 
 Prima di considerare la 4.0 distribuibile:
 
-1. **Chiudere il collaudo della candidata**: tutti i 33 comandi verdi sullo stesso codice, foto finali controllate,
-   bundle web/nativo aggiornati e versione pubblicata verificata.
+1. **Pubblicare la candidata verificata**: trasferire i bundle con i checksum sopra, completare push e deploy,
+   poi verificare la versione servita. Il collaudo locale dei 33 comandi e la revisione delle foto sono conclusi.
 2. **Eseguire davvero la pipeline macOS**: compilazione Swift, XCTest iPhone/iPad, screenshot, rotazione,
    tastiera, lifecycle, avvio offline, persistenza e recupero. Conservare link, commit e artifact della CI riuscita.
 3. **Prestazioni e comportamento fisico**: misurare frame time, memoria, calore, batteria, multi-touch,

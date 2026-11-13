@@ -8,7 +8,8 @@ Il catalogo comprende 1343 meccaniche originali. Il gioco è pensato per il tele
 La versione pubblicata è **3.2**. La **4.0 candidata** introduce un nuovo rifugio, comandi e interfaccia mobile,
 guida giocabile, registro locale e preparazione iOS offline. Gli effetti vicini alla visuale sono più contenuti;
 stati e bonus hanno riepiloghi compatti e dettagli in pausa. Comandi e guida si adattano alla modalità mancini.
-Le 14 prove Node finali sono verdi; il collaudo browser finale è in corso.
+Il collaudo locale completo è verde: 14 comandi Node e 19 browser/build, con foto finali controllate.
+La candidata 4.0 è pronta per il push; la pubblicazione resta da verificare.
 Compilazione Swift, simulatori e dispositivi fisici restano da verificare.
 
 Per lavorare sul progetto, leggere prima [AGENTS.md](AGENTS.md): contiene architettura, stato e regole di pubblicazione.
