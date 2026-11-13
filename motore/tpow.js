@@ -1,5 +1,7 @@
-// Tutti i 40 mattoncini provati nel browser vero, con creature davanti: cerco errori e scatto qualche foto.
+// Ricette campione nel browser vero, con creature davanti; fotografie base/DSL separate.
 const { chromium } = require('./pw.js');
+const fs = require('node:fs'), shotDir = __dirname + '/shots/' + (process.env.X ? 'dsl' : 'base');
+fs.mkdirSync(shotDir, { recursive: true });
 (async () => {
   const b = await chromium.launch({ executablePath: process.env.CHROME || undefined, args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const errs = [];
@@ -25,11 +27,11 @@ const { chromium } = require('./pw.js');
     const cdp = await ctx.newCDPSession(pg);
     await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: b0[0], y: b0[1], id: 5 }] });
     await pg.waitForTimeout(900);
-    await pg.screenshot({ path: 'shots/p' + i + '-a.png' });
+    await pg.screenshot({ path: shotDir + '/p' + i + '-a.png' });
     await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-    for (const k of [4, 2, 3, 1]) { await pg.evaluate((k) => { const D = window.__dite, s = D.state(); if (s.player.ride) return; D.press(k); }, k); await pg.waitForTimeout(450); if (k === 3) await pg.screenshot({ path: 'shots/p' + i + '-b.png' }); }
+    for (const k of [4, 2, 3, 1]) { await pg.evaluate((k) => { const D = window.__dite, s = D.state(); if (s.player.ride) return; D.press(k); }, k); await pg.waitForTimeout(450); if (k === 3) await pg.screenshot({ path: shotDir + '/p' + i + '-b.png' }); }
     await pg.waitForTimeout(500);
-    await pg.screenshot({ path: 'shots/p' + i + '-c.png' });
+    await pg.screenshot({ path: shotDir + '/p' + i + '-c.png' });
     const st = await pg.evaluate(() => { const s = window.__dite.state(); if (s.player.ride) window.__dite.press(1); return { casts: s.stats.casts.join(','), fizz: s.stats.fizz, mobs: s.mobs.map((e) => e.kind[0] + (e.team === 'a' ? '+' : '') + Math.round(e.hp)).join(' '), res: Math.round(s.player.res) }; });
     console.log(i, info, '|', JSON.stringify(st));
     await pg.waitForTimeout(900);
