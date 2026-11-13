@@ -459,7 +459,7 @@ const sevenPowerStates = () => {
       assert.equal(await page.evaluate(() => window.__dite.screen().playing), false); empty(await page.evaluate(() => window.__dite.inputSnapshot()));
       await page.locator('#resume').tap(); await screen('playing');
       const runningAfterRotation = await page.evaluate(() => window.__dite.state().t); await page.waitForFunction(t => window.__dite.state().t > t, runningAfterRotation);
-      // Un semplice resize landscape (come il viewport ridotto dalla tastiera) non e una rotazione.
+      // Un resize del viewport di layout landscape non e una rotazione ne una prova di tastiera.
       const orientationEvents = await page.evaluate(() => window.__mobileOrientations.length);
       await orient('landscapeSecondary', 270, 844, 350); await settle();
       const resized = await page.evaluate(() => ({ screen: window.__dite.screen(), type: window.screen.orientation.type, angle: window.screen.orientation.angle, height: innerHeight, events: window.__mobileOrientations.length, t: window.__dite.state().t }));
@@ -468,6 +468,44 @@ const sevenPowerStates = () => {
       await orient('landscapeSecondary', 270); await settle(); assert.equal(await page.evaluate(() => window.__dite.screen().playing), true);
       await orient('landscapePrimary', 90); await screen('pause'); await page.locator('#resume').tap(); await screen('playing');
       console.log('input rotazione180: orientationchange trusted a dimensioni uguali, reset, gioco fermo, ripresa manuale e resize landscape senza pausa verdi');
+
+      // Una finestra iPad puo diventare alta mentre lo schermo fisico resta landscape.
+      // CDP cambia le vere metriche di layout: nessun override del router o del canvas.
+      const windowMetrics = (width, height) => cdp.send('Emulation.setDeviceMetricsOverride', { width, height, screenWidth: 1024, screenHeight: 768, deviceScaleFactor: 1, mobile: true, screenOrientation: { type: 'landscapePrimary', angle: 90 } });
+      await windowMetrics(844, 390); await settle();
+      await page.evaluate(() => { window.__mobileViewportEvents = []; for (const type of ['resize', 'orientationchange']) window.addEventListener(type, event => window.__mobileViewportEvents.push({ type, trusted: event.isTrusted })); });
+      const viewportState = () => page.evaluate(() => {
+        const D = window.__dite, canvas = document.getElementById('c'), viewport = window.visualViewport;
+        return { inner: [innerWidth, innerHeight], layout: [document.documentElement.clientWidth, document.documentElement.clientHeight], canvas: [canvas.clientWidth, canvas.clientHeight], physical: [window.screen.width, window.screen.height, window.screen.orientation.type, window.screen.orientation.angle], visual: viewport && { width: viewport.width, height: viewport.height, scale: viewport.scale }, screen: D.screen(), input: D.inputSnapshot(), t: D.state().t, guard: !document.getElementById('rotateGuard').classList.contains('hidden'), events: window.__mobileViewportEvents.slice() };
+      });
+      await hold(); const wideWindow = await viewportState();
+      assert.equal(wideWindow.screen.playing, true); assert.notEqual(wideWindow.input.joy.id, null); assert.equal(wideWindow.input.fireBtn, true);
+      await windowMetrics(520, 768); await settle(); const narrowWindow = await viewportState();
+      const narrowPhoto = await cdp.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
+      fs.writeFileSync(__dirname + '/shots/mobile-finestra-stretta.png', Buffer.from(narrowPhoto.data, 'base64'));
+      const diagnostic = JSON.stringify(narrowWindow);
+      assert.deepEqual(narrowWindow.canvas, [520, 768], 'La finestra deve ridimensionare davvero il canvas: ' + diagnostic);
+      assert.deepEqual(narrowWindow.layout, narrowWindow.canvas); assert.deepEqual(narrowWindow.inner, narrowWindow.canvas);
+      assert.deepEqual(narrowWindow.physical, [1024, 768, 'landscape-primary', 90]); assert.deepEqual(narrowWindow.physical, wideWindow.physical);
+      assert.ok(narrowWindow.events.some(event => event.type === 'resize' && event.trusted));
+      assert.equal(narrowWindow.events.filter(event => event.type === 'orientationchange').length, 0, 'Il caso deve essere un ridimensionamento, non una rotazione');
+      assert.equal(narrowWindow.screen.screen, 'pause', 'Una finestra alta deve sospendere anche su schermo fisico landscape: ' + diagnostic);
+      assert.ok(narrowWindow.screen.blockers.includes('portrait')); assert.equal(narrowWindow.guard, true); assert.equal(await page.locator('#rotateGuard').isVisible(), true); empty(narrowWindow.input);
+      await touch('touchEnd', []); await frozen('finestra alta su schermo landscape');
+      await windowMetrics(900, 600); await settle(); const widerWindow = await viewportState();
+      assert.deepEqual(widerWindow.canvas, [900, 600]); assert.deepEqual(widerWindow.physical, narrowWindow.physical);
+      assert.equal(widerWindow.guard, false); assert.equal(await page.locator('#rotateGuard').isVisible(), false); assert.equal(widerWindow.screen.blockers.includes('portrait'), false);
+      assert.equal(widerWindow.screen.screen, 'pause'); assert.equal(widerWindow.screen.playing, false); empty(widerWindow.input);
+      await frozen('finestra allargata prima di Riprendi');
+      await page.locator('#resume').tap(); await screen('playing'); const resumedWindow = await viewportState();
+      await page.waitForFunction(t => window.__dite.state().t > t, resumedWindow.t);
+      await windowMetrics(900, 560); await settle(); const shorterWindow = await viewportState();
+      assert.deepEqual(shorterWindow.canvas, [900, 560]); assert.deepEqual(shorterWindow.physical, narrowWindow.physical);
+      assert.equal(shorterWindow.events.filter(event => event.type === 'orientationchange').length, 0);
+      assert.equal(shorterWindow.guard, false); assert.equal(shorterWindow.screen.playing, true, 'Un normale resize landscape deve lasciare il gioco attivo');
+      await page.waitForFunction(t => window.__dite.state().t > t, shorterWindow.t);
+      await orient('landscapePrimary', 90); await settle(); assert.equal(await page.evaluate(() => window.__dite.screen().playing), true);
+      console.log('input finestra: layout alto con orientamento fisico invariato, guard, reset, simulazione ferma, allargamento e ripresa manuale verdi');
 
       // Il rilascio della capture è reale, dopo un pointerdown generato dal CDP.
       await start();

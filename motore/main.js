@@ -619,9 +619,8 @@ G.start = function () {
   function resize(force) {
     const w = canvas.clientWidth || window.innerWidth, h = canvas.clientHeight || window.innerHeight; if (!w || !h) return;
     W = w; Hh = h; renderer.setSize(w, h, false); composer.setSize(w, h); cam.aspect = w / h; cam.updateProjectionMatrix();
-    // L'orientamento fisico non cambia quando la tastiera riduce il visual viewport.
-    const orientation = window.screen && window.screen.orientation;
-    const portrait = coarse && orientation && typeof orientation.type === 'string' ? orientation.type.startsWith('portrait') : coarse && typeof window.orientation === 'number' ? Math.abs(window.orientation) % 180 === 0 : window.innerHeight > window.innerWidth;
+    // Conta la finestra di gioco; la tastiera riduce il visual viewport, non il canvas di layout.
+    const portrait = h > w;
     document.body.classList.toggle('portrait', portrait); app.setBlocker('portrait', portrait);
     if ($('rotateGuard')) $('rotateGuard').classList.toggle('hidden', !portrait);
     if (!force) resetInput(); invalidate();
