@@ -6,20 +6,18 @@ Non chiamare questa preparazione “App Store ready”: firma, distribuzione, pr
 
 ## Stato delle verifiche
 
-- Quinta CI [43480792340](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43480792340)
-  su `5f55c7fcd90b3b9f2af9da48ed0ec2aef39c8c85`: **14 Node, packaging 8/8 e controlli bundle verdi**.
-  **Release universale compilata**; entrambe le build Debug falliscono prima di XCTest per quattro
-  conversioni `NSStringFromCGRect`/`NSStringFromUIEdgeInsets`
-  rinominate in Swift. **Nessun unitario o UI eseguito, nessuna foto prodotta**.
-  Corretti cinque usi con il fix-it `NSCoder.string(for:)`: quattro nella sonda e uno negli UI test,
-  non ancora raggiunto dalla compilazione. Fix in questo ramo, senza modifiche ad asserzioni o web;
-  la sesta CI ripeterà l'intera suite. Evidenze originali: `ios-run43480792340/verified-evidence.json` nel workspace.
-- Quarta CI [43467319898](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43467319898)
-  su `a67ee7071addbd39bf3672e565748f060baef677` (candidata 15): **14 Node, 19 browser/build e packaging 8/8 verdi**.
-  **20/20 unitari per famiglia, 6/6 UI iPhone e 4/6 UI iPad**. Pausa verde su entrambe le famiglie senza
-  diagnostica JS; su iPhone sono verdi anche entrambi i landscape effettivi e background OS con ripresa manuale.
-- I due fallimenti iPad sono background OS non raggiunto e scena ferma a landscapeRight mentre il sistema
-  passa a landscapeLeft. Gli allegati mostrano una finestra iPhone ingrandita in compatibilità.
+- Sesta CI [43482793151](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43482793151)
+  su `c906226600bc6834a954d7f88749fb4efe391a73`: **14 Node, 19 browser/build e packaging 8/8 verdi**.
+  Target universale: **20/20 unitari per famiglia, 6/6 UI iPhone e 5/6 UI iPad**. Risolte le conversioni
+  Swift che bloccavano Debug nella quinta CI. Entrambi i landscape effettivi, inclusi rotazione live e
+  nuovo avvio, e il percorso officina/tastiera sono verdi su entrambe le famiglie.
+- Unico fallimento iPad: `Window Controls` trovato zero volte prima di qualsiasi azione OS. Foto, albero
+  di accessibilità e geometria mostrano fullscreen 1180×820 senza controlli finestra. Il test non ha
+  raggiunto né dimostrato il background OS; Minimize non è stato eseguito.
+- La sola fixture XCTest ora preme Home su entrambe le famiglie e rimuove Minimize. Conserva i requisiti
+  di vero background OS 2/3 prima di activate, foreground 4, pausa al ritorno e ripresa esplicita.
+  **La nuova fixture e il background iPad attendono la settima CI**. Minimize in Windowed Apps non è verificato.
+  Web, Core e bundle della candidata 17 restano invariati; il gate locale seguente resta valido.
 - Candidata 17: **33/33 prove locali verdi** sulla candidata attuale: 19 browser/build e poi 14 Node,
   senza modifiche ai sorgenti o alle prove, entrambi con esito 0. Log: `/tmp/dite-final17-browser.log`
   e `/tmp/dite-final17-node.log`. Packaging 8/8, sync, progetto e asset ripetuti con esito 0. Checksum in `AGENTS.md`.
@@ -29,23 +27,20 @@ Non chiamare questa preparazione “App Store ready”: firma, distribuzione, pr
   viene dal gate completo della 17.
 - Il target locale ora è universale `1,2`, con telefono landscape e quattro orientamenti iPad. La guardia web
   osserva il rapporto del canvas anche in una finestra stretta e richiede ripresa esplicita.
-  **Il collaudo XCTest, inclusa la tastiera sul target universale, attende la sesta CI**: nella quinta
-  la Release compila, ma gli errori Debug hanno impedito ogni esecuzione dei test.
+  I due landscape effettivi e il percorso officina/tastiera sono verificati dalla sesta CI; resta aperto
+  il background iPad con la nuova fixture Home.
   La guardia usa le dimensioni del canvas; i resize di layout che restano landscape sono verificati nel browser.
-- Il nuovo test iPad usa i controlli reali `Window Controls` → `Minimize`: le etichette restano da verificare
-  sul simulatore. Se mancano, il test conserva diagnostica e fallisce. Rimangono obbligatori lo stato OS
-  background prima di activate e l'orientamento effettivo della scena nei due landscape.
 - La sonda DEBUG legge `effectiveGeometry` e i flag di geometria disponibili da iOS 26. Non pilota il gioco.
   La traccia JS resta opt-in `--ui-testing-event-trace`, assente dai test normali; sonde e log nativi restano
   DEBUG/`--ui-testing`. WPE Linux è una prova complementare, non iOS.
-- Gli originali della quarta CI contengono 13 PNG iPhone e 11 PNG più 2 video iPad, mappati nel workspace
-  in `ios-run43467319898/evidence-map.json` e verificati in `verified-evidence.json`. Il set finale
-  `docs/qa/4.0` (PNG originali, manifest e TXT) è da creare; non certifica la candidata 17 o il set Store.
+- Gli originali della sesta CI contengono 13 PNG per famiglia e un video iPad, verificati nel workspace
+  in `ios-run43482793151/verified-evidence.json`. Il set finale `docs/qa/4.0` (PNG originali, manifest e TXT)
+  è da creare dopo una CI completa verde; non è il set Store finale.
 - iPhone/iPad fisici, prestazioni, temperatura, autonomia, audio e interruzioni reali: **non verificati**.
 - Nessun certificato, profilo, Team ID, account App Store Connect o invio predisposto automaticamente.
 
-Registrare separatamente il prossimo esito nativo sul commit effettivo. I risultati della candidata 15
-non certificano il nuovo target iPad; il simulatore non certifica hardware reale.
+Registrare il prossimo esito sul commit effettivo: la correzione della fixture non prova già il background iPad.
+Il simulatore non certifica hardware reale.
 
 ## File e build
 
@@ -101,8 +96,8 @@ Per eseguire localmente su un Mac configurato: `bash scripts/ci_ios.sh iphone` e
   in Info.plist; vengono aperti dal sistema. L'elenco attuale è vuoto, senza indirizzi o identità inventati.
 - Il sito dati WebKit è non persistente. I progressi iOS passano dal salvataggio nativo, non da cookie/localStorage.
 - Target universale iPhone/iPad (`TARGETED_DEVICE_FAMILY = 1,2`): telefono nei due landscape, iPad nei
-  quattro orientamenti. La quinta CI compila la Release; XCTest attende la correzione Debug nella sesta CI.
-  La quarta CI usava ancora la compatibilità iPhone.
+  quattro orientamenti. La sesta CI esegue XCTest sul target universale e verifica i due landscape;
+  il caso iPad osservato è fullscreen 1180×820, distinto dalla precedente compatibilità iPhone.
 - Il canvas occupa il contenitore; CSS gestisce safe area e margini. Non sommare nuovamente inset UIKit:
   `contentInsetAdjustmentBehavior = .never`. Non usa `UIRequiresFullScreen` per aggirare il ridimensionamento.
   La finestra verticale mostra una guardia e sospende il gioco; tornando in orizzontale serve Riprendi.
@@ -178,9 +173,9 @@ il simulatore, chiude la tastiera tramite il comando dell'interfaccia e raggiung
 Una prova provoca un primo errore WebGL attraverso uno user script esclusivamente Debug, poi tocca il vero
 «Riprova» e raggiunge rifugio e partita. L'iniezione di guasto non è compilata nella build Release.
 Le schermate sono allegati XCTest reali; al fallimento viene conservato anche l'albero di accessibilità.
-Nella quarta CI sono verdi tutti i sei test UI iPhone e quattro su iPad; su iPad restano aperti orientamento
-e background. La quinta CI compila la Release universale ma non avvia XCTest; configurazione universale
-e percorso Minimize attendono il collaudo della sesta CI dopo la correzione Swift.
+Nella sesta CI sono verdi tutti i sei test UI iPhone e cinque su iPad. Su iPad la fixture si ferma cercando
+controlli finestra assenti in fullscreen, prima di ogni azione OS. La nuova fixture Home per entrambe le
+famiglie attende la settima CI; conserva veri stati background/foreground e ripresa esplicita.
 La traccia eventi JS richiede anche `--ui-testing-event-trace`; i normali UI test non la caricano.
 
 Prima della distribuzione occorrono prove su dispositivi accessibili: multi-touch simultaneo, notch e home indicator,

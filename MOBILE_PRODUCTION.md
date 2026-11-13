@@ -1,6 +1,6 @@
 # DITE — direzione mobile e preparazione iOS
 
-Stato: **4.0 candidata 17, 33/33 prove locali verdi e correzione Swift in attesa della sesta CI**, non ancora pubblicata. Aggiornato il 13 novembre 2026.
+Stato: **4.0 candidata 17, 33/33 prove locali verdi e background iPad in attesa della settima CI**, non ancora pubblicata. Aggiornato il 13 novembre 2026.
 Base verificata: DITE 3.2, commit 5a50c8f70e2f214b0b6d3a704e24d39765262476.
 La versione pubblicata resta 3.2. Il lavoro è nel ramo `codex/dite-mobile`.
 
@@ -52,7 +52,7 @@ L'obiettivo qualitativo indicato dall'utente è ambizioso. Non dichiarare “liv
   attivazione con Spazio. Dalla candidata 16 il menu recupera un pointer ID pen obsoleto. La candidata 17
   contiene i nomi lunghi dell'officina su una riga e protegge il gioco quando il canvas è verticale, anche senza rotazione fisica.
   Il ritorno in orizzontale richiede ripresa manuale. La guardia usa le dimensioni del canvas, non quelle del
-  visual viewport; la tastiera nel nuovo target universale resta da verificare in CI nativa.
+  visual viewport; il percorso officina/tastiera è verde nella sesta CI su entrambe le famiglie.
 - Candidata 17: **33/33 prove locali attuali verdi**: 19 browser/build e poi 14 Node, senza modifiche ai
   sorgenti o alle prove, entrambi con esito 0. Log: `/tmp/dite-final17-browser.log` e `/tmp/dite-final17-node.log`.
   Packaging 8/8, sync, progetto e asset ripetuti con esito 0; checksum in `AGENTS.md`.
@@ -60,26 +60,22 @@ L'obiettivo qualitativo indicato dall'utente è ambizioso. Non dichiarare “liv
   e verticali: regressione riprodotta sulla 16 e superata sulla 17.
   Il precedente timeout screenshot `DSL 19-b` sulla 16 resta di causa non dimostrata; il risultato attuale
   viene dal gate completo della 17.
-- Quinta CI [43480792340](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43480792340),
-  su `5f55c7f`: Node 14, packaging 8/8 e bundle verdi.
-  Release iOS universale compilata; entrambe le build Debug falliscono prima di XCTest per quattro
-  conversioni geometriche rinominate in Swift. Nessun unitario/UI eseguito e nessuna foto prodotta.
-  Corretti cinque usi con `NSCoder.string(for:)` (quattro nella sonda, uno negli UI test non ancora raggiunto).
-  Fix in questo ramo; la sesta CI ripeterà l'intera suite. Asserzioni e web invariati: il gate locale
-  33/33 più packaging 8/8 della stessa candidata web 17 resta valido.
-- Quarta CI [43467319898](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43467319898),
-  su `a67ee7071addbd39bf3672e565748f060baef677` (candidata 15): web 14+19 e packaging 8/8 verdi;
-  20 unitari per famiglia, UI 6/6 iPhone e 4/6 iPad. Pausa verde su entrambi senza diagnostica JS;
-  su iPhone verificati entrambi i landscape effettivi e background OS con ripresa manuale.
-  Su iPad lo stato OS background non viene raggiunto e la scena resta landscapeRight mentre il sistema
-  passa a landscapeLeft. Gli allegati mostrano ancora la finestra iPhone ingrandita in compatibilità.
-- Target universale `1,2`, con telefono landscape e quattro orientamenti iPad: Release compilata nella
-  quinta CI, XCTest in attesa della sesta. Sonda DEBUG `effectiveGeometry` e flag disponibili da iOS 26;
-  test iPad tramite i controlli reali
-  `Window Controls` → `Minimize`, con etichette ancora da verificare e fallimento diagnostico se assenti.
-  Restano obbligatori background OS e due landscape effettivi. Traccia JS solo opt-in `--ui-testing-event-trace`.
-- Evidenze originali quarta CI mappate e verificate nel workspace; il set `docs/qa/4.0` con PNG originali,
-  manifest e TXT è da creare e non è il set Store finale. La versione pubblicata resta 3.2.
+- Sesta CI [43482793151](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43482793151),
+  su `c906226`: Node 14, 19 browser/build e packaging 8/8 verdi; sul target universale, 20 unitari per famiglia,
+  UI 6/6 iPhone e 5/6 iPad. Risolte le conversioni Swift che bloccavano Debug nella quinta CI.
+  Entrambi i landscape effettivi, rotazione live, nuovo avvio e percorso officina/tastiera sono verdi.
+  Su iPhone è verde anche background OS con ripresa esplicita.
+- Unico fallimento iPad: `Window Controls` trovato zero volte prima di qualsiasi azione OS. Foto,
+  accessibilità e geometria mostrano fullscreen 1180×820 senza controlli finestra; Minimize non è eseguito.
+  La sola fixture XCTest ora usa Home su entrambe le famiglie e rimuove Minimize, mantenendo veri stati OS
+  background 2/3 → foreground 4, pausa al ritorno e ripresa esplicita. Attende la settima CI: background iPad
+  ancora da verificare, nessuna verifica di Minimize in Windowed Apps. Web, Core e bundle 17 invariati;
+  il gate locale 33/33 e packaging 8/8 resta valido.
+- Il target universale `1,2` dichiara due landscape per telefono e quattro orientamenti iPad; la sesta CI
+  verifica i due landscape effettivi. Sonda DEBUG `effectiveGeometry`, flag disponibili da iOS 26 e traccia
+  JS solo opt-in `--ui-testing-event-trace`. Evidenze originali in `ios-run43482793151/verified-evidence.json`.
+  Il set `docs/qa/4.0` con PNG originali, manifest e TXT è da creare dopo una CI completa verde e non è il
+  set Store finale. La versione pubblicata resta 3.2.
 
 ## Riferimenti e applicazione originale
 
@@ -184,8 +180,8 @@ Audio rispettoso del silenzioso e della musica dell'utente, da verificare su dis
 Preparare progetto Xcode, schema condiviso, risorse, licenze e procedura di sincronizzazione con checksum.
 Aggiungere CI macOS per build unsigned e test su simulatore; una workflow è verificata solo dopo esecuzione riuscita.
 Alla data dell'audit gli upload richiedono Xcode 26+ e SDK iOS 26+: il deployment target è una scelta distinta.
-La quarta CI prova ancora il target iPhone in compatibilità iPad; il nuovo target universale richiede
-una nuova esecuzione nativa e non eredita automaticamente quei risultati.
+La sesta CI prova il target universale e i due landscape effettivi sul simulatore iPad fullscreen;
+il background iPad con la nuova fixture Home richiede ancora la settima CI.
 
 Privacy policy, manifest privacy e dichiarazioni App Store Connect sono elementi distinti:
 compilarli dai comportamenti reali, senza dichiarare automaticamente assenza di raccolta o API usate.

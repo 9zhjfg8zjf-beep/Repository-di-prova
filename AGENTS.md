@@ -119,7 +119,7 @@ Ordine dei file nel build: bricks, mec*, catalogo, city, core, onboarding, journ
 world, fx, anim, poteri-fx, ui, main. Tutto in `'use strict'`. Gli export CommonJS devono restare su una riga
 con guardia indipendente `if (typeof module !== 'undefined') ...`, rimossa dal build per il browser.
 
-## Stato: 4.0 candidata 17 — 33/33 prove locali verdi, correzione Swift in attesa della sesta CI
+## Stato: 4.0 candidata 17 — 33/33 prove locali verdi, background iPad in attesa della settima CI
 
 Aggiornato il 13 novembre 2026. La versione pubblicata resta **3.2**; la 4.0 e nel ramo `codex/dite-mobile`.
 Titolo e interfaccia sorgente indicano 4.0, ma un artifact di sviluppo non e una release pubblicata.
@@ -134,7 +134,7 @@ cancellati e attivazione con Spazio. Dalla candidata 16 il menu recupera anche u
 La candidata 17 limita i nomi lunghi dell'officina a una riga e protegge il gioco quando il canvas diventa verticale,
 indipendentemente dall'orientamento fisico. Tornare a una finestra orizzontale richiede Riprendi.
 Il flip di 180 gradi sospende il gioco attivo; la guardia usa le dimensioni del canvas, non quelle del
-visual viewport. La tastiera nel nuovo target universale resta da verificare in CI nativa.
+visual viewport. Il percorso officina con tastiera e rotazione e verde nella sesta CI su entrambe le famiglie.
 
 Primo ingresso con Dardo, Scatto, Scudo, Nova e Cataclisma con costo 8 sul budget iniziale di 12; guida breve, saltabile e riprendibile,
 che avanza su azioni del gioco. Aiuto riapribile e registro delle ultime 32 imprese reali, senza premi o progressi fittizi.
@@ -170,23 +170,21 @@ Copertura mirata: storage 19 casi, router 11 e 2000 transizioni, onboarding 18, 
 QA layout precedente: 112 snapshot verdi su sei missioni, touch/tastiera, due lati, font, nome lungo, stati
 e boss; zero misure nei frame stabili. Arena e bundle iOS sono sincronizzati ai checksum della candidata 17.
 
-La quinta CI [43480792340](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43480792340),
-su `5f55c7fcd90b3b9f2af9da48ed0ec2aef39c8c85`, conferma **14 Node, packaging 8/8 e controlli bundle verdi**.
-La Release iOS universale compila; entrambe le build Debug falliscono prima di XCTest per quattro
-chiamate a funzioni geometriche rinominate in Swift.
-**Nessun test unitario o UI e stato eseguito e nessuna foto e stata prodotta**. Corretti cinque usi con
-`NSCoder.string(for:)`: quattro nella sonda e uno negli UI test, non ancora raggiunto dalla compilazione.
-La correzione e in questo ramo; la sesta CI ripetera l'intera suite. Nessuna asserzione o codice web
-cambia. Il gate locale 33/33 e packaging 8/8 della stessa candidata web 17 resta valido.
-Evidenze: `ios-run43480792340/verified-evidence.json` nel workspace.
+La sesta CI [43482793151](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43482793151),
+su `c906226600bc6834a954d7f88749fb4efe391a73`, conferma **14 Node, 19 browser/build e packaging 8/8 verdi**.
+Nativo universale: **20/20 unitari per famiglia, 6/6 UI iPhone e 5/6 UI iPad**. Le conversioni Swift
+che bloccavano Debug nella quinta CI sono risolte. Su entrambe le famiglie sono verdi landscapeRight
+all'avvio, rotazione reale a landscapeLeft, nuovo avvio a landscapeLeft e percorso officina/tastiera.
+Su iPhone e verde anche il background OS con pausa e ripresa esplicita.
 
-La quarta CI [43467319898](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43467319898),
-sul commit remoto `a67ee7071addbd39bf3672e565748f060baef677` (candidata 15), conferma **14 Node,
-19 browser/build e packaging 8/8 verdi**. Nativo: **20/20 unitari per famiglia, 6/6 UI iPhone e 4/6 UI iPad**.
-Su iPhone sono verificati entrambi i landscape effettivi e il background OS con ripresa esplicita.
-Pausa risolta su entrambe le famiglie senza diagnostica JS. Su iPad restano due fallimenti: lo stato OS
-background non viene raggiunto e la scena rimane landscapeRight mentre il sistema passa a landscapeLeft.
-Le immagini mostrano ancora una finestra iPhone ingrandita in compatibilita, non un layout iPad nativo.
+L'unico fallimento iPad e `Window Controls` trovato zero volte, prima di qualsiasi azione OS.
+Foto, accessibilita e geometria mostrano la finestra fullscreen 1180×820 senza controlli finestra:
+il tentativo non dimostra ne un ingresso in background ne l'uso di Minimize.
+La sola fixture XCTest ora usa Home su entrambe le famiglie e rimuove Minimize, mantenendo obbligatori
+stati OS background 2/3 → foreground 4, pausa al ritorno e ripresa esplicita. Attende la settima CI;
+**background iPad ancora da verificare**, nessuna verifica di Minimize in Windowed Apps.
+Web, Core e bundle della candidata 17 sono invariati: il gate locale 33/33 e packaging 8/8 resta valido.
+Evidenze originali: `ios-run43482793151/verified-evidence.json` nel workspace.
 
 | File della candidata 17 | SHA256 |
 | --- | --- |
@@ -194,15 +192,12 @@ Le immagini mostrano ancora una finestra iPhone ingrandita in compatibilita, non
 | `motore/site/index.html` e `arena/index.html` | `4fa61a6d2776915466de8b318cb1c589e6577cde048f5919436dfe4c53d6b03a` |
 | `motore/core.js` | `503a2903f3f302782e35183e859679d530443c9c56f6adeafa990a5e4a766190` |
 
-La candidata 17 prepara il target universale `1,2`: telefono nei due landscape, iPad con tutti e quattro
-gli orientamenti e guardia del canvas verticale. La sonda DEBUG usa `effectiveGeometry` e, quando disponibili,
-i flag iOS 26. Il test iPad prova i controlli reali `Window Controls` → `Minimize`, senza sostituire il requisito
-di background OS o quello dei due landscape effettivi. Le etichette di sistema e le modifiche native devono
-ancora essere verificate da XCTest nella sesta CI; se i controlli non sono disponibili, la prova fallisce con diagnostica.
-La traccia JS resta opt-in `--ui-testing-event-trace`; le sonde native sono solo DEBUG/`--ui-testing`.
-Gli originali della quarta CI sono mappati in `ios-run43467319898/evidence-map.json` e
-`verified-evidence.json` nel workspace. Il set finale `docs/qa/4.0` (PNG originali, manifest e TXT)
-e ancora da creare; non e un set App Store approvato. WPE Linux resta complementare, non iOS.
+Il target universale `1,2` dichiara due landscape per telefono e quattro orientamenti per iPad;
+la guardia web protegge il canvas verticale. Gli XCTest della sesta CI verificano i due landscape effettivi.
+La sonda DEBUG usa `effectiveGeometry` e, quando disponibili, i flag iOS 26; la traccia JS resta opt-in
+`--ui-testing-event-trace`. Le sonde native sono solo DEBUG/`--ui-testing`.
+Il set finale `docs/qa/4.0` (PNG originali, manifest e TXT) e ancora da creare dopo la CI completa verde;
+non e un set App Store approvato. WPE Linux resta complementare, non iOS.
 La versione pubblicata resta **3.2**, main `5a50c8f70e2f214b0b6d3a704e24d39765262476`.
 
 ## Stato storico: versione 3.2
@@ -236,9 +231,9 @@ Calibrazione del danno eseguita sui 336 nuovi programmi; fattori dei 1007 preced
 
 Prima di considerare la 4.0 distribuibile:
 
-1. **Nuova CI e pubblicazione verificata**: dopo il gate locale verde, verificare target universale, tastiera,
-   entrambi i landscape effettivi e background OS iPad. Solo dopo prove verdi procedere a pubblicazione
-   e verifica della versione servita. Pubblicata ancora 3.2.
+1. **Settima CI e pubblicazione verificata**: verificare la fixture Home su iPad con veri stati OS e ripresa
+   esplicita, mantenendo verdi tutte le prove. Solo dopo procedere a pubblicazione e verifica della versione
+   servita. Pubblicata ancora 3.2.
 2. **Prestazioni e comportamento fisico**: misurare frame time, memoria, calore, batteria, multi-touch,
    silenzioso/Bluetooth e interruzioni su dispositivi accessibili. Chromium software non certifica fluidita o audio iPhone;
    non chiedere all'utente di sostituirsi al collaudo.

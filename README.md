@@ -13,12 +13,11 @@ La **candidata 17** aggiunge la pausa nelle finestre verticali, con ripresa manu
 dei tocchi sul menu introdotto nella candidata 16.
 La candidata supera **33/33 prove locali attuali** (14 Node e 19 browser/build), più packaging 8/8
 e verifiche di sincronizzazione, progetto e asset.
-La [quinta CI](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43480792340) conferma
-14 Node, packaging 8/8 e bundle. La Release iOS universale compila,
-ma entrambe le build Debug si fermano prima di XCTest: nessun test nativo eseguito e nessuna foto prodotta.
-Le conversioni Swift sono corrette in questo ramo; la sesta CI ripeterà l'intera suite.
-Il codice web verificato resta identico.
-Orientamento, background e tastiera del target universale, prove fisiche e distribuzione restano da verificare.
+La [sesta CI](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43482793151) conferma
+14 Node, 19 browser/build, packaging 8/8 e 20 unitari per famiglia: UI 6/6 iPhone e 5/6 iPad sul target universale.
+Orientamenti effettivi e percorso officina/tastiera sono verdi. L'unico fallimento iPad precede l'azione OS:
+il test cerca controlli finestra assenti in fullscreen. La fixture ora usa Home e attende la settima CI;
+il background iPad resta da verificare. Web e Core sono invariati; prove fisiche e distribuzione restano aperte.
 
 Per lavorare sul progetto, leggere prima [AGENTS.md](AGENTS.md): contiene architettura, stato e regole di pubblicazione.
 Il piano mobile è in [MOBILE_PRODUCTION.md](MOBILE_PRODUCTION.md); pipeline nativa e passaggi ancora necessari

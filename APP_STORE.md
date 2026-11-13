@@ -4,14 +4,12 @@ Preparato il 13 novembre 2026. Questo documento contiene testi pronti da trasfer
 valori ancora da completare e il percorso per ottenere le immagini della build effettiva.
 La **candidata 17 supera 33/33 prove locali attuali**: 14 Node e 19 browser/build, entrambi con esito 0.
 Packaging 8/8, sincronizzazione, progetto e asset sono verdi; log e checksum sono in `AGENTS.md`.
-La [quinta CI 43480792340](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43480792340),
-su `5f55c7f`, conferma 14 Node, packaging 8/8 e bundle.
-La Release universale compila, ma entrambe le build Debug falliscono prima di XCTest per conversioni Swift
-rinominate: nessun test nativo eseguito e nessuna foto prodotta. I cinque usi sono corretti con
-`NSCoder.string(for:)` in questo ramo; la sesta CI ripeterà l'intera suite. Il codice web resta identico
-e il gate locale resta valido.
-L'ultima CI con XCTest eseguiti resta la quarta, sulla candidata 15: 20 unitari per famiglia, UI 6/6 iPhone
-e 4/6 iPad in compatibilità. Il collaudo del nuovo target universale resta da completare.
+La [sesta CI 43482793151](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43482793151),
+su `c906226`, conferma 14 Node, 19 browser/build e packaging 8/8. Sul target universale sono verdi 20 unitari per famiglia,
+UI 6/6 iPhone e 5/6 iPad, inclusi entrambi i landscape effettivi e il percorso officina/tastiera.
+L'unico fallimento iPad cerca `Window Controls` assenti in fullscreen 1180×820, prima di qualsiasi azione OS.
+La fixture ora usa Home su entrambe le famiglie, senza Minimize, e attende la settima CI: background iPad
+ancora da verificare con veri stati OS e ripresa esplicita. Web, Core e bundle restano identici; il gate locale resta valido.
 Non esiste una build distribuibile o un invio App Store; la versione pubblicata resta 3.2.
 Esiti, checksum e verifiche pendenti sono in [IOS.md](IOS.md) e [AGENTS.md](AGENTS.md).
 Prima del caricamento, associare questi testi alla build nativa realmente verificata, senza usare la sola
@@ -141,12 +139,11 @@ Rivedere le note se cambiano testi, funzionalità, monetizzazione o salvataggio 
 
 ## Immagini dalla build reale
 
-La quinta CI non ha prodotto foto: XCTest non è stato avviato.
-La quarta CI contiene **13 PNG iPhone e 11 PNG più 2 video iPad**, esportati dagli XCTest reali.
-Restano evidenze diagnostiche della candidata 15: su iPad mostrano ancora la compatibilità iPhone.
-Il set `docs/qa/4.0` con PNG originali, manifest e TXT deve ancora essere creato.
-**Il set Store è da acquisire e approvare sulla build finale**, dopo il collaudo del nuovo target universale;
-le immagini della candidata 15 o di Chromium non ne dimostrano il funzionamento.
+La sesta CI contiene **13 PNG per famiglia e un video iPad**, esportati dagli XCTest reali del target universale.
+Su iPad documentano il caso fullscreen; il test background si ferma prima dell'azione OS.
+Il set `docs/qa/4.0` con PNG originali, manifest e TXT deve ancora essere creato dopo una CI completa verde.
+**Il set Store è da acquisire e approvare sulla build finale**; le evidenze diagnostiche della sesta CI
+non certificano il background iPad né sostituiscono il set finale.
 Il workflow `.github/workflows/dite.yml` conserva `ios-iphone-evidence` e `ios-ipad-evidence`, con
 `SimulatorTests.xcresult`, log, `selected-simulator.json` e immagini; la conservazione attuale è di 14 giorni.
 La CI esporta gli allegati in `.build/xctest-attachments/`. Dopo il completamento del collaudo UI, selezionare
@@ -170,9 +167,8 @@ corrisponde a questa famiglia. Per il landscape iPhone,
 la tabella consultata comprende **2622×1206** e **2556×1179** per la famiglia Dynamic Island media.
 Confrontare i pixel esportati e il simulatore realmente scelto con i campi del Media Manager: lo script CI
 sceglie tra simulatori installati e non garantisce da solo una specifica dimensione commerciale.
-Il progetto è universale (`TARGETED_DEVICE_FAMILY = 1,2`): Release compilata nella quinta CI,
-collaudo XCTest ancora da eseguire dopo la correzione Debug.
-La quarta CI riguarda il precedente target iPhone in compatibilità iPad. Per la build universale acquisire
+Il progetto è universale (`TARGETED_DEVICE_FAMILY = 1,2`): la sesta CI verifica i due landscape effettivi
+e il percorso officina/tastiera, con background iPad ancora aperto. Per la build universale acquisire
 anche il set iPad richiesto da 13 pollici sul target nativo verificato, senza ingrandire una foto iPhone. Fonte:
 [Screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/).
 
@@ -185,13 +181,12 @@ Il numero di build, il commit e il risultato della CI devono permettere di colle
 
 | Evidenza da collegare | Valore attuale |
 | --- | --- |
-| Quinta CI e commit | [43480792340](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43480792340), `5f55c7fcd90b3b9f2af9da48ed0ec2aef39c8c85`; Node 14 e packaging 8 verdi |
-| Build/XCTest della quinta CI | Release universale compilata; Debug fallita su entrambe le famiglie prima di XCTest, nessun unitario/UI eseguito né foto prodotta |
-| Ultimi XCTest eseguiti | Quarta CI, candidata 15: 20/20 unitari per famiglia, 6/6 UI iPhone e 4/6 iPad in compatibilità |
-| Candidata 17 locale | 33/33 prove attuali verdi (14 Node + 19 browser/build), esito 0; packaging 8/8 e controlli bundle verdi; log/checksum in `AGENTS.md` |
-| Sesta CI nativa | Verificare i cinque fix `NSCoder.string(for:)`, poi target universale e tastiera, entrambi i landscape effettivi e background OS; asserzioni invariate |
-| Rotazione e background iPad | Nuova sonda `effectiveGeometry`; `Window Controls` → `Minimize` con etichette ancora da verificare, fallimento diagnostico se assenti |
-| Screenshot nativi | Originali quarta CI verificati; selezione `docs/qa/4.0` da creare, set Store finale ancora da acquisire |
+| Sesta CI e commit | [43482793151](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43482793151), `c906226600bc6834a954d7f88749fb4efe391a73`; 14 Node, 19 browser/build e packaging 8 verdi |
+| XCTest della sesta CI | 20/20 unitari per famiglia, 6/6 UI iPhone e 5/6 iPad sul target universale; entrambi i landscape effettivi e officina/tastiera verdi |
+| Candidata 17 locale | 33/33 prove attuali verdi (14 Node + 19 browser/build), esito 0; packaging 8/8 e controlli bundle verdi; web/Core/bundle invariati |
+| Settima CI nativa | Verificare la nuova fixture Home su entrambe le famiglie, veri stati OS background 2/3 → foreground 4, pausa e ripresa esplicita |
+| Background iPad | Unico fallimento CI6: `Window Controls` assenti in fullscreen 1180×820, prima dell'azione OS; background non ancora dimostrato, Minimize non eseguito |
+| Screenshot nativi | Originali sesta CI verificati; selezione `docs/qa/4.0` da creare dopo CI completa verde, set Store finale ancora da acquisire |
 | Prove su hardware fisico | Da eseguire con hardware accessibile al collaudo |
 | Archivio firmato / build App Store Connect | Da preparare con account e firma autorizzati |
 | Supporto e policy pubblici | Da configurare con identità reale |
