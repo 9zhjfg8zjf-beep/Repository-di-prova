@@ -20,11 +20,12 @@ for (const name of selected) assert.ok(name === 'all' || scenarios.some(([n]) =>
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
     page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
-    await page.goto('file://' + __dirname + '/dist/index.html');
+    await page.goto(process.env.DITE_TEST_URL || 'file://' + __dirname + '/dist/index.html');
     await page.waitForFunction(() => !!window.__dite);
     await page.evaluate(() => { const D = window.__dite; D.lockQ = true; D.begin(); document.getElementById('menuBtn').click(); document.getElementById('menu').classList.add('hidden'); });
-    const frames = async () => page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-    const pause = async () => page.evaluate(() => { document.getElementById('menuBtn').click(); document.getElementById('menu').classList.add('hidden'); document.getElementById('banner').className = ''; });
+    const frames = async () => page.evaluate(() => { if (!window.__dite.renderOnce()) throw Error('Draw esplicito non riuscito'); });
+    // Ferma la scena per la fotografia, mantenendo il suo HUD come nel frame attivo.
+    const pause = async () => page.evaluate(() => { document.getElementById('menuBtn').click(); document.getElementById('menu').classList.add('hidden'); document.getElementById('ui').classList.remove('hidden'); document.getElementById('banner').className = ''; });
     const advance = async (seconds = .1) => {
       const until = await page.evaluate((seconds) => { const t = window.__dite.state().t; document.getElementById('resume').click(); return t + seconds; }, seconds);
       await page.waitForFunction((until) => window.__dite.state().t >= until, until, { timeout: 60000 });

@@ -11,7 +11,7 @@ assert.ok(['all', 'scan', 'clone', 'mimic'].includes(mode), 'Uso: node tsensi_br
     const page = await browser.newPage({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true }), errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
     page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
-    await page.goto('file://' + __dirname + '/dist/index.html');
+    await page.goto(process.env.DITE_TEST_URL || 'file://' + __dirname + '/dist/index.html');
     await page.waitForFunction(() => !!window.__dite);
     await page.evaluate(() => {
       const D = window.__dite; D.lockQ = true; D.begin(); document.getElementById('menuBtn').click(); document.getElementById('menu').classList.add('hidden');
@@ -23,8 +23,9 @@ assert.ok(['all', 'scan', 'clone', 'mimic'].includes(mode), 'Uso: node tsensi_br
         for (const q of s.shots) if (!trace.seen.has(q.id)) { trace.seen.add(q.id); trace.shots.push({ id: q.id, clone: !!q.clone, team: q.team, x: q.x, z: q.z, dmg: q.dmg }); }
       };
     });
-    const pause = async () => page.evaluate(() => { document.getElementById('menuBtn').click(); document.getElementById('menu').classList.add('hidden'); document.getElementById('banner').className = ''; });
-    const frames = async () => page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    // Ferma la scena per la fotografia, mantenendo il suo HUD come nel frame attivo.
+    const pause = async () => page.evaluate(() => { document.getElementById('menuBtn').click(); document.getElementById('menu').classList.add('hidden'); document.getElementById('ui').classList.remove('hidden'); document.getElementById('banner').className = ''; });
+    const frames = async () => page.evaluate(() => { if (!window.__dite.renderOnce()) throw Error('Draw esplicito non riuscito'); });
     const advance = async (seconds) => {
       const until = await page.evaluate((seconds) => { const t = window.__dite.state().t; document.getElementById('resume').click(); return t + seconds; }, seconds);
       await page.waitForFunction((until) => window.__dite.state().t >= until, until, { timeout: 60000 });

@@ -12,11 +12,11 @@ const wants = (name) => selected.includes('all') || selected.includes(name) || (
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
     page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
-    await page.goto('file://' + __dirname + '/dist/index.html');
+    await page.goto(process.env.DITE_TEST_URL || 'file://' + __dirname + '/dist/index.html');
     await page.waitForFunction(() => !!window.__dite);
     await page.evaluate(() => { const D = window.__dite; D.lockQ = true; D.begin(); });
     await page.waitForTimeout(600);
-    await page.evaluate(() => { document.getElementById('menuBtn').click(); document.getElementById('menu').classList.add('hidden'); document.getElementById('banner').className = ''; });
+    await page.evaluate(() => { document.getElementById('menuBtn').click(); document.getElementById('menu').classList.add('hidden'); document.getElementById('ui').classList.remove('hidden'); document.getElementById('banner').className = ''; });
     const setup = async () => page.evaluate(() => {
       const D = window.__dite, G = D.G, s = D.state(), p = s.player;
       D.Core.setRecipe(s, D.Bricks.PRESETS[0]); s.mobs.length = 0; s.shots.length = 0; s.zones.length = 0; s.events.length = 0;
@@ -35,8 +35,8 @@ const wants = (name) => selected.includes('all') || selected.includes(name) || (
       return enemies.map((e) => e.id);
     });
     const inspect = async () => {
-      // Aspetta due fotogrammi: non basta che la simulazione abbia creato le mesh.
-      await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      // In pausa il renderer riposa: la fixture richiede un vero draw esplicito.
+      await page.evaluate(() => { if (!window.__dite.renderOnce()) throw Error('Draw esplicito non riuscito'); });
       const result = await page.evaluate(() => {
         const D = window.__dite, G = D.G, s = D.state(); G.scene.updateMatrixWorld(true);
         return s.mobs.map((e) => {

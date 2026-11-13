@@ -8,7 +8,7 @@ fs.mkdirSync(shotDir, { recursive: true });
   const ctx = await b.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true, deviceScaleFactor: 1 });
   const pg = await ctx.newPage();
   pg.on('pageerror', (e) => errs.push('PAGEERROR: ' + e.message + ' ' + (e.stack || '').split('\n').slice(1, 4).join(' | ')));
-  await pg.goto('file://' + __dirname + '/dist/index.html' + (process.env.X ? '#x' : ''));
+  await pg.goto((process.env.DITE_TEST_URL || 'file://' + __dirname + '/dist/index.html') + (process.env.X ? '#x' : ''));
   await pg.waitForTimeout(2500);
   await pg.evaluate(() => { window.__dite.lockQ = true; document.getElementById('play').click(); });
   await pg.waitForTimeout(600);
@@ -17,8 +17,14 @@ fs.mkdirSync(shotDir, { recursive: true });
   for (let i = 0; i < sets.length; i++) {
     if (only && !only.includes(i)) continue;
     const info = await pg.evaluate((r) => {
-      const D = window.__dite, s = D.state(), p = s.player; D.setRecipe(r);
-      for (const e of s.mobs) e.dead = true; s.fame = 320; s.level = 6;
+      const D = window.__dite, s = D.state(), p = s.player;
+      // Questa raccolta prova anche gradi alti: il progresso deve già consentire
+      // la ricetta quando il vero setter ne verifica il costo.
+      D.store.fame = s.fame = 320; s.level = D.Bricks.levelFor(s.fame);
+      if (!D.Bricks.valid(r) || D.Bricks.cost(r) > D.Bricks.budgetFor(s.level)) throw Error('Fixture oltre budget: ' + r.nome);
+      if (D.setRecipe(r) !== true) throw Error('Ricetta non equipaggiata: ' + r.nome);
+      if (JSON.stringify(s.recipe.slots) !== JSON.stringify(r.slots) || s.kit.some((k, index) => k.id !== r.slots[index].id || k.t !== r.slots[index].t)) throw Error('Kit effettivo diverso dalla ricetta: ' + r.nome);
+      for (const e of s.mobs) e.dead = true;
       p.x = 13; p.z = 12; p.hp = 100; p.invuln = 999; p.res = 100; p.dead = 0; p.ride = null; p.leap = null; p.cd = [0, 0, 0, 0, 0]; D.setLook(Math.PI / 2, -0.08);
       for (const [dx, dz, k] of [[-7, 0, 'sgherro'], [-9, 1.5, 'sgherro'], [-8, -1.5, 'tiratore'], [-11, 0, 'bruto']]) { const e = D.Core.mkMob(s, k, 13 + dx, 12 + dz, 'e'); e.spawn = 0; e.atk = 99; e.hp = e.maxHp = 600; }
       return r.slots.map((b) => b.id.slice(0, 14) + (b.m ? '+' + b.m : '')).join(' ');

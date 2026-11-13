@@ -10,10 +10,24 @@ const { chromium } = require('./pw.js');
     const pg = await ctx.newPage();
     pg.on('pageerror', (e) => errs.push(e.stack || e.message));
     const rendered = () => pg.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-    await pg.goto('file://' + __dirname + '/dist/index.html');
+    await pg.goto(process.env.DITE_TEST_URL || 'file://' + __dirname + '/dist/index.html');
     await pg.waitForFunction(() => window.__dite && window.__dite.state());
     await pg.evaluate(() => { window.__dite.lockQ = true; document.getElementById('play').click(); });
     await rendered();
+
+    // La vittoria e il livello possono annunciare messaggi consecutivi tra due
+    // RAF lenti. Osserva le vere transizioni DOM prima dell'azione, senza esigere
+    // che il polling campioni proprio il breve intervallo del primo annuncio.
+    await pg.evaluate(() => {
+      const banner = document.getElementById('banner');
+      window.__endBanners = [];
+      window.__endBannerObserver = new MutationObserver(() => {
+        if (!banner.classList.contains('go')) return;
+        const text = banner.textContent;
+        if (window.__endBanners.at(-1) !== text) window.__endBanners.push(text);
+      });
+      window.__endBannerObserver.observe(banner, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['class'] });
+    });
 
     // Fixture: boss ferito. Il colpo finale passa dal vero primario e da Core.step;
     // nessuna assegnazione a boss=null, fama, vittorie o stato del sigillo.
@@ -36,7 +50,8 @@ const { chromium } = require('./pw.js');
     assert.equal(victory.fame, victory.before.fame + victory.reward);
     assert.ok(victory.events.includes('bossDown') && victory.events.includes('fame'));
     await pg.waitForFunction((fame) => window.__dite.store.fame === fame, victory.fame);
-    await pg.waitForFunction(() => document.getElementById('banner').textContent.includes('ABBATTUTO'));
+    await pg.waitForFunction(() => window.__endBanners.some((text) => text.includes('ABBATTUTO')));
+    assert.ok(await pg.evaluate(() => window.__endBanners.some((text) => text.includes('ABBATTUTO') && text.includes('il sigillo riposa'))), 'L’annuncio di vittoria deve attraversare davvero il DOM');
     await pg.screenshot({ path: 'shots/r-bossdown1.png' });
     await rendered(); await pg.screenshot({ path: 'shots/r-bossdown2.png' });
     console.log('vittoria verificata:', JSON.stringify({ frames: victory.frames, fame: victory.fame, arena: victory.arena, wins: victory.wins, stored: await pg.evaluate(() => window.__dite.store.fame) }));
@@ -53,7 +68,7 @@ const { chromium } = require('./pw.js');
     });
     assert.equal(death.hp, 0); assert.ok(death.timer > 0 && death.hit && death.down);
     assert.equal(death.deaths, death.before + 1);
-    await pg.waitForFunction(() => document.getElementById('banner').textContent.includes('SEI CADUTO'));
+    await pg.waitForFunction(() => window.__endBanners.some((text) => text.includes('SEI CADUTO')));
     await pg.screenshot({ path: 'shots/r-caduto.png' });
     const respawn = await pg.evaluate(() => {
       const D = window.__dite, s = D.state(), p = s.player;
@@ -74,8 +89,16 @@ const { chromium } = require('./pw.js');
     const memory = [];
     for (let i = 0; i < 9; i++) {
       const theme = ['cocito', 'malebolge', 'dite'][i % 3];
-      await pg.evaluate(({ theme, seed }) => window.__dite.loadCity(theme, seed), { theme, seed: 10 + i % 3 });
-      await rendered();
+      // La camera della lobby animata vedeva risorse differenti a ogni giro.
+      // Stessa vista e stesso draw eliminano quella variazione di allocazione lazy.
+      await pg.evaluate(({ theme, seed }) => {
+        const D = window.__dite, G = D.G; D.loadCity(theme, seed);
+        const s = D.state(), p = s.player;
+        Object.assign(p.cam, { x: p.x, y: 1.7, z: p.z });
+        G.camera.position.set(p.x, 1.7, p.z); G.camera.rotation.set(.04, Math.PI / 2, 0, 'YXZ'); G.camera.updateMatrixWorld();
+        G.syncMobs(s, 0, 0); G.syncNpcs(s, 0, 0); G.syncGivers(s, 0); G.syncThings(s, 0, 0);
+        if (!D.renderOnce()) throw Error('Draw esplicito della città non riuscito');
+      }, { theme, seed: 10 + i % 3 });
       const info = await pg.evaluate(() => { const o = window.__dite.info(); return { geo: o.geo, tex: o.tex, calls: o.calls }; });
       assert.ok(info.geo > 0 && info.tex > 0 && info.calls > 0, 'La città deve essere disegnata');
       if (i >= 6) { assert.ok(info.geo <= memory[i - 3].geo + 1, theme + ': geometrie accumulate'); assert.ok(info.tex <= memory[i - 3].tex + 1, theme + ': texture accumulate'); }
