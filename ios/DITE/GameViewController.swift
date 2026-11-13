@@ -155,8 +155,7 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
         detailLabel.text = "Il gioco non richiede servizi online."
         retryButton.isHidden = true
         activity.startAnimating()
-        let rules = "[{\"trigger\":{\"url-filter\":\"^(https?|wss?)://\"},\"action\":{\"type\":\"block\"}}]"
-        WKContentRuleListStore.default().compileContentRuleList(forIdentifier: "DITELocalOnlyV1", encodedContentRuleList: rules) { [weak self] rules, _ in
+        WKContentRuleListStore.default().compileContentRuleList(forIdentifier: GameOfflineRules.identifier, encodedContentRuleList: GameOfflineRules.encodedJSON) { [weak self] rules, _ in
             DispatchQueue.main.async {
                 guard let self else { return }
                 guard let rules else {

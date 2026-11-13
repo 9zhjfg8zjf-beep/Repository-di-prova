@@ -1,5 +1,17 @@
 import Foundation
 
+enum GameOfflineRules {
+    // WebKit content blockers support a regex subset without alternation (`|`).
+    // Keep the production payload shared with the test that compiles it in WebKit.
+    static let identifier = "DITELocalOnlyV2"
+    static let encodedJSON = """
+    [
+      {"trigger":{"url-filter":"^https?://"},"action":{"type":"block"}},
+      {"trigger":{"url-filter":"^wss?://"},"action":{"type":"block"}}
+    ]
+    """
+}
+
 struct GameNavigationPolicy {
     let entryURL: URL
     let externalURLs: Set<URL>

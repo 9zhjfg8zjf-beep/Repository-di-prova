@@ -1,8 +1,22 @@
 import XCTest
+import WebKit
 @testable import DITE
 
 final class GameNavigationPolicyTests: XCTestCase {
     let entry = URL(fileURLWithPath: "/private/app/Game/index.html")
+
+    @MainActor
+    func testOfflineRulesCompileInWebKit() throws {
+        let store = try XCTUnwrap(WKContentRuleListStore.default())
+        let identifier = "DITEOfflineRulesTest-" + UUID().uuidString
+        let compiled = expectation(description: "Production offline rules compile in WebKit")
+        store.compileContentRuleList(forIdentifier: identifier, encodedContentRuleList: GameOfflineRules.encodedJSON) { rules, error in
+            XCTAssertNil(error, "Offline startup must not fail on an unsupported content-blocker expression")
+            XCTAssertNotNil(rules)
+            store.removeContentRuleList(forIdentifier: identifier) { _ in compiled.fulfill() }
+        }
+        wait(for: [compiled], timeout: 30)
+    }
 
     func testOnlyBundledEntryCanNavigate() {
         let policy = GameNavigationPolicy(entryURL: entry)
