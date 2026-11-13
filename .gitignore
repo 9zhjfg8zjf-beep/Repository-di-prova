@@ -4,3 +4,6 @@ motore/site/
 motore/shots/
 motore/logs/
 __pycache__/
+.build/
+ios/**/xcuserdata/
+ios/**/*.xcuserstate
