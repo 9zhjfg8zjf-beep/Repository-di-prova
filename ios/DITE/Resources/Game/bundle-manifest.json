@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "gameVersion": "4.0",
-  "sha256": "b5c4e0c54516ee3b15a169996f9a34958fa55dd3c5fba737082330b7ee94bed8",
+  "sha256": "522eaeb6ca39e1486ad39acbfe295a783f3b8da44c7e8bbf97067de0c925ead6",
   "source": "motore/dist/index.html",
   "thirdParty": {
     "licenseSHA256": "7dddf7c5b8fd10ee654db8857d75d104b5557889aa5a91fc4ca545ea7c07062f",
