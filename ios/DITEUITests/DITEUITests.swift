@@ -251,7 +251,7 @@ final class DITEUITests: XCTestCase {
         let probe = app.descendants(matching: .any).matching(identifier: "dite.ui-test.window-geometry").firstMatch
         let detail = probe.exists ? probe.value as? String ?? "unavailable" : "missing geometry probe"
         let webView = app.webViews.firstMatch
-        let webFrame = webView.exists ? NSStringFromCGRect(webView.frame) : "unavailable"
+        let webFrame = webView.exists ? NSCoder.string(for: webView.frame) : "unavailable"
         attachText("\(detail)\nXCUIApplication.state=\(app.state.rawValue)\napp.frame=\(app.frame)\nwebView.frame=\(webFrame)",
                    named: "Window geometry " + name)
     }

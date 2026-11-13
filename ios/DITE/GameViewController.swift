@@ -553,15 +553,15 @@ private final class UITestGeometryProbe: UIView {
             var values = [
                 "legacy=" + uiTestOrientationName(scene.interfaceOrientation),
                 "effective=" + uiTestOrientationName(geometry.interfaceOrientation),
-                "window.frame=" + NSStringFromCGRect(window.frame),
-                "window.bounds=" + NSStringFromCGRect(window.bounds),
-                "safeArea=" + NSStringFromUIEdgeInsets(window.safeAreaInsets),
+                "window.frame=" + NSCoder.string(for: window.frame),
+                "window.bounds=" + NSCoder.string(for: window.bounds),
+                "safeArea=" + NSCoder.string(for: window.safeAreaInsets),
                 "scene.activationState=\(scene.activationState.rawValue)",
                 "application.state=\(UIApplication.shared.applicationState.rawValue)"
             ]
             if #available(iOS 26.0, *) {
                 values.append("locked=\(geometry.isInterfaceOrientationLocked)")
-                values.append("geometry.bounds=" + NSStringFromCGRect(geometry.coordinateSpace.bounds))
+                values.append("geometry.bounds=" + NSCoder.string(for: geometry.coordinateSpace.bounds))
             } else {
                 values.append("locked=unavailable before iOS26")
             }
