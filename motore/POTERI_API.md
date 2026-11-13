@@ -30,6 +30,51 @@ restituisce un motivo di fallimento: non consuma ricarica o Risonanza.
 `debt`, `disarm`, `silence`, `tether` e `rewindfoe` usano un bersaglio
 mirato quando manca `r`; con `r` selezionano l'area secondo le regole `@` esistenti.
 Le durate e quantità sono limitate nel motore, indipendentemente dai dati.
+`@self` seleziona esplicitamente il giocatore; nei callback di `hit`/`each` i nuovi
+operatori singoli usano `ctx.tgt`. `shot then(...)` mantiene invece il significato
+storico di effetto a fine volo: usare `near @pt`/`circ @pt` per selezionare l'impatto.
+
+## Corpo, controllo e condizioni
+
+| Operatore | Parametri | Effetto |
+| --- | --- | --- |
+| `form` | `size2 t8` | Cambia taglia reale (`size` da 0.4 a 2.2): raggio e camera proporzionali, portata melee/cono proporzionale, danno moltiplicato per radice della taglia, velocità divisa per la stessa radice. Ripremere riporta alla taglia normale. |
+| `phase` | `t4 speed1.2` | Attraversa i muri ed evita i colpi; mentre è attivo non attacca e non lancia altre abilità. Ripremere libera. Alla fine torna all'ultima posizione sicura se si trova dentro un ostacolo. |
+| `flight` | `t8 h8 speed1.2` | Volo guidato: guardare in alto/basso mentre si avanza cambia quota, fino a `h` (2.5–12). Gli edifici restano solidi; evita pozze, melee e attacchi al terreno. I proiettili diretti a/da un giocatore in volo hanno quota e velocità verticale reali. Ripremere atterra. |
+| `possess` | `g18 t8 mul1` | Controlla direttamente un nemico leggero: il corpo originale resta fermo e vulnerabile, la camera segue l'ospite, movimento e primario comandano l'ospite. Ripremere, scadenza o morte dell'ospite ripristinano il controllo. |
+| `pact` | `g24 t5 move l2 d30 root1` oppure `attack`, anche `r/n/@` | Impone una condizione: muoversi di `l` dal segno oppure effettuare un attacco scatena una sola punizione `d` e immobilizzazione. Senza violazione scade. I boss resistono alla punizione e all'immobilizzazione. |
+| `stasis` | `g18 t5 d20 fling` | Cattura un nemico leggero, sospendendolo e togliendolo dalla scena. Ripremere o aspettare la scadenza lo libera davanti al giocatore, infliggendo `d`; `fling` lo scaglia. Non cattura boss, pesanti o un bersaglio già afferrato. |
+
+`form`, `phase`, `flight`, `possess` sono incompatibili fra loro. L'attivazione
+richiede che non siano in corso un salto, uno scatto o il trasporto sui cavi.
+`player.form/phase/flight/possession/captive` espongono `t`, `slot`, `el`;
+`phase.safe` conserva la posizione valida, `flight.y` la quota,
+`possession.id` e `captive.id` identificano la creatura.
+La creatura espone `possessed`, `captive` e `pact`.
+Gli indicatori di stasi non vanno resi come creature visibili.
+Il corpo originale rimane in `player.x/z` durante il possesso; `player.cam`
+segue l'ospite. In volo `player.cam.y` coincide con `flight.y`; con la taglia
+è `1.7 * form.size`. I proiettili con `alt` espongono `y` e `vy`, fissati
+all'emissione e aggiornati dalla simulazione. I colpi alti possono mancare i
+bersagli al suolo; quelli nemici possono mirare al giocatore in volo.
+
+`form` conserva `size` e `safe:{x,z}`; `phase` conserva `speed` e `safe`;
+`flight` conserva `speed`, `h` massimo e `y` corrente; `possession` conserva
+`id`, `team` precedente e `mul`; `captive` conserva `id`, `x/z` di cattura,
+`d` e `fling`. `pact` conserva `x/z` del segno, `l`, `d`, `root`, `attack`
+e `serial` degli attacchi. I temporizzatori usano sempre durata residua `t`.
+
+La fase e il possesso bloccano i nuovi cast manuali e l'Eco, anche prima
+della ricarica. Un'Eco già prenotata attende fino a due secondi e poi scade.
+Gli effetti persistenti lanciati prima rimangono attivi. La ricomposizione
+o la morte liberano cattura e possesso senza danno da rilascio e azzerano
+patti e trasformazioni. Il rilascio manuale non paga di nuovo il costo.
+
+Eventi aggiunti: `form`, `formEnd`, `phase`, `phaseEnd`, `flight`,
+`flightEnd`, `possessBody`, `possessBodyEnd`, `stasis`, `stasisEnd`,
+`pact`, `pactBreak`, `pactEnd`. `possessBody` è distinto dal vecchio evento
+`possess` delle sentinelle.
+`node tcorpo.js` verifica queste sei famiglie e il ripristino del ciclo di vita.
 
 ## Stato osservabile e grafica
 

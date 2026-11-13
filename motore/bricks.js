@@ -124,7 +124,7 @@ const Bricks = (() => {
   // ---------- Linguaggio dei poteri: una meccanica e' un piccolo programma scritto a mano ----------
   function splitTop(src, sep) { const out = []; let d = 0, cur = ''; for (const ch of src) { if (ch === '(') d++; else if (ch === ')') d--; if (ch === sep && d === 0) { out.push(cur); cur = ''; } else cur += ch; } out.push(cur); return out; }
   const num = (t) => (t.indexOf('/') > 0 ? t.split('/').map(Number) : Number(t));
-  const PROGRAM_OPS = new Set(('circ cone line ring tgt near shot zone sum dash blink leap buff trig chain pop rep if nth heal res cost cdr freeze mem ret aim wait absorb release magnet transmute link debt disarm silence cleanse infect portal tether barrier mimic rewindfoe revive command').split(' '));
+  const PROGRAM_OPS = new Set(('circ cone line ring tgt near shot zone sum dash blink leap buff trig chain pop rep if nth heal res cost cdr freeze mem ret aim wait absorb release magnet transmute link debt disarm silence cleanse infect portal tether barrier mimic rewindfoe revive command form phase flight possess pact stasis').split(' '));
   function parseProg(src) {
     const out = [];
     for (const st of splitTop(src, ';')) {

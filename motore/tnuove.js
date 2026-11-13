@@ -82,6 +82,9 @@ test('barriera blocca fisicamente e consuma resistenza con i colpi', () => {
   const s = world(); run(s, 'barrier @fwd4 l8 t5 hp30'); const b = s.powers.barriers[0], e = foe(s, 0, -7); e.aggro = 99; frames(s, 60); assert.ok(e.z <= -4.8, 'il nemico attraversa il segmento: ' + e.z);
   const q = shot(s, 1, -4.5, 20, 0, 20); frames(s, 1); assert.equal(q.life, 0); close(b.hp, 10); shot(s, -1, -4.5, 20, 0, 20); frames(s, 2); assert.equal(s.powers.barriers.length, 0);
 });
+test('barriera adiacente a un solido non incastra la creatura nel prop', () => {
+  const s = world(); s.city.props = [{ x: 0, z: -5.3, hx: 3, hz: 0.2 }]; run(s, 'barrier @fwd4 l8'); const e = foe(s, 0, -4.4); e.stun = 99; frames(s, 1); assert.ok(e.z >= -5.1 + e.r - 1e-6); assert.ok(Math.abs(e.z + 4) >= e.r + 0.25 - 1e-6);
+});
 test('barriera riflettente cambia velocita e squadra', () => {
   const s = world(); run(s, 'barrier @fwd4 reflect'); const q = shot(s, 0, -4.5, 10, 0, 20); frames(s, 1); assert.equal(q.team, 'p'); assert.ok(q.vz < 0); assert.ok(q.life > 0);
 });
