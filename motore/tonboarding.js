@@ -87,4 +87,20 @@ test('testi riflettono tastiera e lato effettivo del movimento', () => {
   const s = world(), g = guide(s); assert.match(g.view(s, { kind: 'touch', movementSide: 'right' }).text, /destra/); assert.match(g.view(s, { kind: 'keyboard' }).text, /W A S D/);
   const h = guide(s, 1); assert.match(h.view(s, { kind: 'touch', movementSide: 'right' }).text, /sinistra/);
 });
+test('riavviare durante una missione riconosce quella gia accettata dopo le quattro azioni', () => {
+  const s = world(), giver = s.givers[0]; s.player.x = giver.x; s.player.z = giver.z + 1;
+  C.step(s, 1 / 60, Object.assign(input(), { use: true }));
+  assert.ok(s.events.some(event => event.type === 'questStart')); assert.ok(s.quest); s.events.length = 0;
+  const quest = s.quest, fame = s.fame; let done = 0;
+  const g = O.create({ saved: { version: 1, step: 5, skipped: false }, onDone: () => done++ });
+  g.start(s, { restart: true }); assert.equal(g.snapshot().step, 0);
+  for (let n = 0; n < 20; n++) step(s, g, { my: 1 });
+  assert.equal(g.snapshot().step, 1);
+  step(s, g, { yaw: 0 }); step(s, g, { yaw: .4 }); assert.equal(g.snapshot().step, 2);
+  step(s, g, { yaw: .4, fire: true }); assert.equal(g.snapshot().step, 3);
+  step(s, g, { yaw: .4, b: [false, false, true, false, false] });
+  assert.equal(g.snapshot().step, 5, 'La guida non deve chiedere una seconda missione mentre la prima e attiva');
+  assert.equal(g.view(s).visible, false); assert.equal(done, 1);
+  assert.equal(s.quest, quest); assert.equal(s.fame, fame, 'Nessun premio per ripetere la guida');
+});
 console.log(count + ' prove onboarding superate');

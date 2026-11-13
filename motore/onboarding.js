@@ -29,6 +29,8 @@ const Onboarding = (() => {
       if (config.restart) { saved = normalize(null); for (const key of Object.keys(learned)) learned[key] = false; }
       if (saved.step >= TOTAL) { active = false; return false; }
       saved.skipped = false; active = true; bind(s);
+      // Una missione gia in corso e stata accettata davvero: non chiederne una seconda al riavvio della guida.
+      if (s && s.quest) learned.quest = true;
       if (before.step !== saved.step || before.skipped !== saved.skipped) notify();
       return true;
     }
