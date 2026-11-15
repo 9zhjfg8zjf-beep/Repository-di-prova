@@ -50,8 +50,8 @@
     "No AAA or SOTA certification."
   ],
   "sha256": {
-    "motore/dist/index.html": "84d4626cff1834c220ce735da192f7af946ef0295b9b01f1f54af37c31838e2f",
-    "arena/index.html": "aa177f03f4f2cc11c04301d04bbbdfc7afd6edb65cc85906762dc10309b50e0d",
-    "ios/DITE/Resources/Game/index.html": "84d4626cff1834c220ce735da192f7af946ef0295b9b01f1f54af37c31838e2f"
+    "motore/dist/index.html": "78469d0b1289ff69e2074cf32395cc80434a53253e8a3ca4ed651262d325da9b",
+    "arena/index.html": "874a94f05f516eca7f5485371f5257a2d3d77706f66304a8cacf28e88a26da78",
+    "ios/DITE/Resources/Game/index.html": "78469d0b1289ff69e2074cf32395cc80434a53253e8a3ca4ed651262d325da9b"
   }
 }
