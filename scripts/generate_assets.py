@@ -88,6 +88,24 @@ def png_bytes(image, size):
     return output.getvalue()
 
 
+def same_asset(actual, expected, *, png=False):
+    if actual == expected:
+        return True
+    if not png:
+        return False
+    # Windows and Linux Pillow wheels may use different DEFLATE implementations.
+    # Require identical decoded artwork and metadata, not identical compression.
+    try:
+        with Image.open(BytesIO(actual)) as saved, Image.open(BytesIO(expected)) as generated:
+            return (saved.format == generated.format == 'PNG'
+                    and saved.mode == generated.mode
+                    and saved.size == generated.size
+                    and saved.info == generated.info
+                    and saved.tobytes() == generated.tobytes())
+    except (OSError, ValueError):
+        return False
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true', help='Fail if generated assets differ.')
@@ -102,7 +120,7 @@ def main():
     stale = []
     for path, data in outputs.items():
         if args.check:
-            if not path.exists() or path.read_bytes() != data:
+            if not path.exists() or not same_asset(path.read_bytes(), data, png=path.suffix == '.png'):
                 stale.append(str(path.relative_to(ROOT)))
         else:
             path.parent.mkdir(parents=True, exist_ok=True)
