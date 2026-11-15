@@ -281,6 +281,7 @@ G.buildWorld = function (city) {
 
   // ---------- Arche nei campi ----------
   for (const t of city.props) {
+    if (t.adventure) continue;
     put('stone', STONE, box(t.hx * 2, 0.9, t.hz * 2, t.x, 0.45, t.z));
     put('stone', STONE, box(t.hx * 2 + 0.2, 0.22, t.hz * 2 + 0.2, t.x + (t.hx > 1 ? 0.5 : 0), 1.05, t.z + (t.hx > 1 ? 0 : 0.5)));
     put('neonOr', null, box(t.hx * 2 - 0.3, 0.1, t.hz * 2 - 0.3, t.x, 0.92, t.z));

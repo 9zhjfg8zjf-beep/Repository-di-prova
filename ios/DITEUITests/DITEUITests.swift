@@ -193,6 +193,28 @@ final class DITEUITests: XCTestCase {
         attachScreenshot("webgl-retry-restored-game")
     }
 
+    func testAtlasTracksAPlaceAndReturnsToPause() {
+        tap("Atlante")
+        let place = app.staticTexts.matching(NSPredicate(format: "label == %@", "Fonderia delle Ceneri")).firstMatch
+        XCTAssertTrue(place.waitForExistence(timeout: 15))
+        let follow = app.buttons.matching(NSPredicate(format: "label == %@", "Segui sulla mappa")).firstMatch
+        XCTAssertTrue(follow.waitForExistence(timeout: 15))
+        XCTAssertTrue(follow.isHittable)
+        follow.tap()
+        waitForButton("Seguito")
+        attachScreenshot("atlas-place-tracked")
+        tap("Indietro")
+        tap("Entra nel gioco")
+        tap("Pausa")
+        let atlas = button("Atlante e memorie")
+        if !atlas.isHittable { app.webViews.firstMatch.swipeUp() }
+        tap("Atlante e memorie")
+        waitForButton("Seguito")
+        tap("Indietro")
+        waitForButton("Riprendi partita")
+        attachScreenshot("atlas-returned-to-pause")
+    }
+
     private func reducedMotionControl() -> XCUIElement {
         app.switches.matching(NSPredicate(format: "label == %@", "Movimento ridotto")).firstMatch
     }

@@ -15,7 +15,7 @@ function main() {
   fs.mkdirSync(path.join(__dirname, 'shots'), { recursive: true });
   const checks = [];
   if (mode !== 'browser') checks.push(
-    { args: ['tstorage.js'] }, { args: ['tappstate.js'] },
+    { args: ['tstorage.js'] }, { args: ['tappstate.js'] }, { args: ['tmobile_policy.js'] }, { args: ['tadventure.js'] },
     { args: ['tonboarding.js'] }, { args: ['tjournal.js'] },
     { args: ['tprog.js'] }, { args: ['bot.js', 'fuzz', '300'] },
     { args: ['bot.js', 'missioni', '12'] }, { args: ['bot.js', 'boss', '3'] },
@@ -24,12 +24,12 @@ function main() {
     { args: ['tcatalogo.js'] }, { args: ['tespansione.js'] },
   );
   if (mode !== 'node') {
-    checks.push({ command: 'python3', args: ['build.py'] });
+    checks.push({ command: process.env.PYTHON || (process.platform === 'win32' ? 'python' : 'python3'), args: ['build.py'] });
     checks.push({ args: ['tpow.js'], browser: true, env: { X: '' } }, { args: ['tpow.js'], browser: true, env: { X: '1' } });
     for (const kind of ['forme', 'colpi', 'linee', 'zone']) checks.push({ args: ['tanim.js', kind], browser: true });
     for (const file of ['tend.js', 'tquest.js', 'ttips.js']) checks.push({ args: [file], browser: true });
     for (const kind of ['boss', 'temi', 'officina']) checks.push({ args: ['tour.js', kind], browser: true });
-    for (const file of ['tofficina.js', 'tvis.js', 'tcorpo_browser.js', 'tsensi_browser.js', 'tmobile_browser.js', 'trendering.js']) checks.push({ args: [file], browser: true });
+    for (const file of ['tofficina.js', 'tvis.js', 'tcorpo_browser.js', 'tsensi_browser.js', 'tmobile_browser.js', 'trendering.js', 'tcontrols_browser.js', 'tadventure_browser.js']) checks.push({ args: [file], browser: true });
   }
   for (const check of checks) {
     const label = (check.env && check.env.X ? 'X=1 ' : '') + check.args.join(' ');

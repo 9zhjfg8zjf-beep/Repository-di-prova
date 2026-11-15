@@ -5,6 +5,16 @@ const { chromium } = require('./pw.js'), B = require('./bricks.js'), Storage = r
 const selected = (process.argv[2] || 'all').split(','), available = ['all', 'audio', 'menu', 'bootstrap', 'coach', 'navigation', 'input', 'storage', 'loading', 'journal', 'bonuses', 'counter'];
 for (const name of selected) assert.ok(available.includes(name), 'scenario mobile sconosciuto: ' + name);
 const wants = name => selected.includes('all') || selected.includes(name);
+// Windows runners may provide the same real regression font without changing system fonts.
+async function wideFont(page) {
+  if (!process.env.DITE_TEST_FONT) return;
+  const data = fs.readFileSync(process.env.DITE_TEST_FONT).toString('base64');
+  await page.evaluate(async data => {
+    const face = new FontFace('DejaVu Sans', 'url(data:font/ttf;base64,' + data + ')');
+    await face.load(); document.fonts.add(face);
+  }, data);
+}
+
 const profile = Storage.normalize({ recipe: { nome: 'Prova mobile', slots: ['dardo', 'scatto', 'nova', 'nova', 'ira'].map(id => ({ id, el: 'luce', t: 1 })) }, fame: 80, seed: 14, tips: true, onboarding: { version: 1, step: 5, skipped: false }, muted: true }, B);
 const empty = input => {
   assert.deepEqual(input.keys, []); assert.equal(input.joy.id, null); assert.equal(input.joy.x, 0); assert.equal(input.joy.y, 0); assert.equal(input.look.id, null); assert.equal(input.primary.id, null);
@@ -146,6 +156,7 @@ const sevenPowerStates = () => {
       await page.locator('#play').tap(); await page.waitForFunction(() => window.__dite.screen().playing);
       const cdp = await fresh.newCDPSession(page);
       await cdp.send('DOM.enable'); await cdp.send('CSS.enable');
+      await wideFont(page);
       for (const font of ['system', 'dejavu']) for (const leftHanded of [false, true]) {
         await page.evaluate(font => { if (font === 'system') document.documentElement.style.removeProperty('--ui'); else document.documentElement.style.setProperty('--ui', '"DejaVu Sans",sans-serif'); return document.fonts.ready; }, font);
         if (await page.evaluate(leftHanded => window.__dite.store.leftHanded !== leftHanded, leftHanded)) {
@@ -753,6 +764,7 @@ const sevenPowerStates = () => {
     }
     if (wants('counter')) {
       await page.setViewportSize({ width: 667, height: 375 });
+      await wideFont(page);
       await page.evaluate(() => { const style = document.documentElement.style; style.setProperty('--sl', '44px'); style.setProperty('--sr', '44px'); style.setProperty('--sb', '21px'); style.setProperty('--ui', '"DejaVu Sans",sans-serif'); return document.fonts.ready; });
       await start();
       const cdp = await context.newCDPSession(page); await cdp.send('DOM.enable'); await cdp.send('CSS.enable');
