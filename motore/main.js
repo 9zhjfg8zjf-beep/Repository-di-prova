@@ -135,8 +135,8 @@ G.start = function () {
     if (!active()) return;
     if (e.pointerId === look.id && !locked) { turn(e.clientX - look.x, e.clientY - look.y, e.pointerType === 'mouse' ? 0.004 : 0.0062); look.x = e.clientX; look.y = e.clientY; return; }
     if (e.pointerId !== joy.id) return;
-    let dx = e.clientX - joy.ox, dy = e.clientY - joy.oy; const d = Math.hypot(dx, dy), R = 46; if (d > R) { dx = (dx / d) * R; dy = (dy / d) * R; }
-    joy.x = dx / R; joy.y = dy / R; knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+    let dx = e.clientX - joy.ox, dy = e.clientY - joy.oy; const d = Math.hypot(dx, dy), R = st.stickRadius; if (d > R) { dx = (dx / d) * R; dy = (dy / d) * R; }
+    const movement = DiteMobile.stick(dx, dy, R); joy.x = movement.x; joy.y = movement.y; knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
   });
   const ptrEnd = (e) => { if (e.pointerType === 'mouse') fireMouse = false; if (e.pointerId === look.id) look.id = null; if (e.pointerId === joy.id) { joy.id = null; joy.x = joy.y = 0; joyEl.style.display = 'none'; } };
   canvas.addEventListener('pointerup', ptrEnd); canvas.addEventListener('pointercancel', ptrEnd); canvas.addEventListener('lostpointercapture', ptrEnd);
@@ -189,9 +189,20 @@ G.start = function () {
     }
   }, true);
 
+  // Feedback immediato anche prima del prossimo frame WebGL, separato dal cast riuscito.
+  const pressedPointers = new Map();
+  for (const button of [...BT, $('useBtn')]) button.addEventListener('pointerdown', event => {
+    if (!active()) return; pressedPointers.set(event.pointerId, button); button.classList.add('pressed');
+  });
+  const releaseFeedback = event => {
+    const button = pressedPointers.get(event.pointerId); pressedPointers.delete(event.pointerId);
+    if (button && !Array.from(pressedPointers.values()).includes(button)) button.classList.remove('pressed');
+  };
+  for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) document.addEventListener(type, releaseFeedback, true);
   const inp = { mx: 0, my: 0, yaw: 0, pitch: 0, fire: false, b: [false, false, false, false, false], use: false };
   function resetInput() {
     if (menuGesture) menuGesture.cancelled = true;
+    for (const button of pressedPointers.values()) button.classList.remove('pressed'); pressedPointers.clear();
     const captures = [[canvas, joy.id], [canvas, look.id], [b0, zp.id]];
     joy.id = look.id = zp.id = null; joy.x = joy.y = 0; fireBtn = fireMouse = false; keys.clear();
     buf.fill(0); fresh.fill(false); useBuf = 0; useFresh = false; inp.mx = inp.my = 0; inp.fire = inp.use = false; inp.b.fill(false); acc = 0;
@@ -254,6 +265,7 @@ G.start = function () {
     mg.drawImage(baseMap, 0, 0);
     s.city.arenas.forEach((A, i) => { const stt = s.arenas[i]; mg.strokeStyle = css(B.BOSSES[A.boss].el); mg.globalAlpha = stt.status === 'sealed' && stt.t <= 0 ? 1 : 0.35; mg.lineWidth = 2; mg.beginPath(); mg.arc(mm(A.x), mm(A.z), 6, 0, 7); mg.stroke(); mg.globalAlpha = 1; });
     for (const tu of s.turrets) { mg.fillStyle = tu.state === 'owned' ? '#3fe9ff' : tu.state === 'idle' ? '#77778a' : tu.state === 'reboot' ? '#ffb23a' : '#ff3018'; mg.fillRect(mm(tu.x) - 1.5, mm(tu.z) - 1.5, 3, 3); }
+    for (const site of s.adventure ? s.adventure.sites : []) { mg.strokeStyle = site.progress.claimed ? '#8ddcb5' : site.color; mg.lineWidth = 1.5; mg.strokeRect(mm(site.x)-3,mm(site.z)-3,6,6); }
     for (const g of s.givers) { const on = g.offer && !s.quest; mg.fillStyle = on ? '#ffd24a' : s.quest && s.quest.giver === g.id ? '#7dffb0' : '#6a6470'; mg.beginPath(); mg.arc(mm(g.x), mm(g.z), on ? 3.2 : 2.2, 0, 7); mg.fill(); }
     for (const c of s.npcs) if (c.st === 'follow') { mg.fillStyle = '#7dffb0'; mg.fillRect(mm(c.x) - 1, mm(c.z) - 1, 2, 2); }
     for (const e of s.mobs) { if (e.spawn > 0 || e.dead || e.captive) continue; mg.fillStyle = e.team === 'a' ? (e.charm > 0 ? '#ff3fd0' : '#7dffb0') : '#ff4028'; mg.beginPath(); mg.arc(mm(e.x), mm(e.z), C.MOB[e.kind].heavy ? 2.6 : 1.6, 0, 7); mg.fill(); }
@@ -354,6 +366,8 @@ G.start = function () {
     for (const ev of s.events) {
       G.powerEvent(ev);
       switch (ev.type) {
+        case 'discovery': banner('Luogo scoperto', ev.title, 'gd'); break;
+        case 'resonance': banner('Sigillo accordato', 'Aziona la leva per aprire il passaggio', 'gd'); G.ring(ev.x,.2,ev.z,.4,2,.8,ec(ev.el)); chime(660,990); break;
         case 'cast': {
           const h = G.hands;
           if (ev.slot > 0) haptic('light');
@@ -499,6 +513,7 @@ G.start = function () {
     G.beaconMat.color.setHex(st.reducedMotion || st.reducedFlash || Math.sin(t * 3) > 0.2 ? 0xff2a18 : 0x3a0806);
     G.towerLight.intensity = 1.1 + (st.reducedMotion || st.reducedFlash ? 0 : Math.sin(t * 2) * 0.3) + (G.hypT > 0 ? 1.5 : 0);
 
+    G.syncAdventure(s,dt,t);
     G.syncMobs(s, dt, t); G.syncNpcs(s, dt, t); G.syncGivers(s, t); G.syncTurrets(s, dt, t); G.syncBoss(s, dt, t); G.syncSeals(s, t); G.syncTeles(s, t); G.syncThings(s, dt, t); G.animZones(s, dt, t); G.animMobs(s, dt); G.syncBeacon(s, t); G.syncOrbs(s, t, dt); G.drawScreens(dt, t);
     G.nodeGlows.forEach((sp, i) => { const on = s.hint.node === i; sp.scale.setScalar((on ? 5 : 2.4) + (st.reducedMotion ? 0 : Math.sin(t * 5 + i) * 0.4)); sp.material.color.setHex(on ? 0xffffff : 0x55f0ff); });
     if (active() && riding && Math.random() < 0.7) G.burst(p.cam.x, p.cam.y - 0.4, p.cam.z, 1, 0xbfefff, 2, 0, 0.3, 0.06, 0.5);
@@ -549,6 +564,11 @@ G.start = function () {
     let txt = '';
     if (riding) txt = 'guarda dove andare · ripremi per scendere'; else if (hnt.node >= 0) txt = 'cavo a portata'; else if (hnt.screen >= 0 && s.kit.some((K, i) => K.kind === 'charm' && s.ready[i])) txt = 'schermo vicino: ipnosi in onda';
     else if (s.boss && s.boss.out > 0.5) txt = 'torna nell\'arena o il boss si riaddormenta'; else if (s.quest && s.quest.type === 'ripetitori' && s.quest.hold > 0) txt = 'resta nel cerchio';
+    const tracked = s.adventure.progress.tracked;
+    if (!txt && tracked && tracked.theme === s.city.theme.id) {
+      const site=s.adventure.sites[tracked.site], dx=site.x-p.x,dz=site.z-p.z, angle=Math.atan2(-dx,-dz)-yaw, side=Math.atan2(Math.sin(angle),Math.cos(angle));
+      txt=(Math.abs(side)<.35?'↑ ':side>0?'← ':'→ ')+site.name+' · '+Math.round(Math.hypot(dx,dz))+' m';
+    }
     if (hintEl.textContent !== txt) hintEl.textContent = txt;
     if (!riding && hnt.node >= 0) { const n = s.city.nodes[hnt.node]; project(n.x, n.y, n.z, scr); if (scr.ok) { nodeMark.style.display = 'block'; nodeMark.style.left = scr.x + 'px'; nodeMark.style.top = scr.y + 'px'; } else nodeMark.style.display = 'none'; } else nodeMark.style.display = 'none';
     // tasto contestuale
@@ -557,10 +577,16 @@ G.start = function () {
     // missione
     const q = s.quest, qp = $('quest');
     if (q) { qp.classList.remove('none'); setTxt('qTitle', q.titolo.toUpperCase()); setTxt('qLine', q.line || ''); const tm = q.time > 0 ? Math.ceil(q.time) : 0; setTxt('qTime', tm ? Math.floor(tm / 60) + ':' + String(tm % 60).padStart(2, '0') : ''); $('qTime').classList.toggle('low', tm > 0 && tm <= 10); }
+    else if(tracked&&tracked.theme===s.city.theme.id){
+      const site=s.adventure.sites[tracked.site],v=site.progress;
+      qp.classList.remove('none');setTxt('qTitle',site.name);setTxt('qTime','');
+      setTxt('qLine',v.claimed?'Frammento recuperato · scegli il prossimo luogo nell’atlante':v.opened?'Entra e recupera il frammento':v.charged?'Aziona la leva accanto alla grata':'Accorda il sigillo con '+site.element);
+    }
     else { qp.classList.add('none'); setTxt('qTitle', 'MISSIONE'); setTxt('qTime', ''); setTxt('qLine', 'Cerca chi ha un ! sopra la testa'); }
     // segnale dell'obiettivo: sullo schermo se e' davanti, sul bordo se e' altrove
     let ox = null, oz = 0;
     if (q && q.obj && !(q.type === 'pubblico' && q.line[0] === 'A')) { ox = q.obj.x; oz = q.obj.z; if (q.type === 'scorta' && q.obj2 && Math.hypot(q.obj2.x - p.x, q.obj2.z - p.z) > 11) { ox = q.obj2.x; oz = q.obj2.z; } }
+    else if(!q&&!s.boss&&tracked&&tracked.theme===s.city.theme.id){const site=s.adventure.sites[tracked.site];ox=site.x;oz=site.z;}
     else if (!q && !s.boss) { let bd = 1e9; for (const g of s.givers) if (g.offer) { const d = Math.hypot(g.x - p.x, g.z - p.z); if (d < bd) { bd = d; ox = g.x; oz = g.z; } } }
     if (ox !== null && !dead) {
       const d = Math.hypot(ox - p.x, oz - p.z); project(ox, 2.6, oz, scr); let x = scr.x, y = scr.y; const m = 46;
@@ -576,12 +602,22 @@ G.start = function () {
     drawMini(dt, t);
   }
 
-  // adattamento automatico della qualita' se il dispositivo arranca
-  let slowT = 0, appliedQuality = null;
-  function quality(dt) {
+  // Il controller usa il tempo reale dei frame, non il delta limitato della simulazione.
+  let appliedQuality = null, autoQuality = DiteMobile.quality(Math.min(window.devicePixelRatio || 1, coarse ? 1.5 : 2));
+  function quality(seconds) {
     if (window.__dite.lockQ || st.quality !== 'auto') return;
-    if (dt > 0.03) slowT += dt; else slowT = Math.max(0, slowT - dt * 0.5);
-    if (slowT > 1.6) { slowT = 0; if (pxr > 1.01) { pxr = Math.max(1, pxr - 0.25); renderer.setPixelRatio(pxr); composer.setPixelRatio(pxr); resize(true); } else if (useBloom) { useBloom = false; bloom.enabled = false; } }
+    const next = autoQuality.sample(seconds); if (!next) return;
+    useBloom = next.bloom; bloom.enabled = useBloom;
+    if (pxr !== next.ratio) { pxr = next.ratio; renderer.setPixelRatio(pxr); composer.setPixelRatio(pxr); resize(true); }
+  }
+  function fitControls() {
+    const buttons = $('btns'); if (!buttons) return;
+    const edge = parseFloat(getComputedStyle(buttons)[st.leftHanded ? 'left' : 'right']) || 12;
+    const fit = Math.max(0.9, Math.min(st.controlScale, (W / 2 - edge - 16) / 253, (Hh - 150) / 190));
+    document.body.style.setProperty('--control-scale', fit);
+    document.body.style.setProperty('--control-opacity', st.controlOpacity);
+    document.body.style.setProperty('--stick-size', (st.stickRadius * 2 + 12) + 'px');
+    buttons.dataset.scale = fit.toFixed(3);
   }
   function invalidate() { dirty = true; if (!raf) raf = requestAnimationFrame(frame); }
   function renderOnce(options = {}) {
@@ -593,7 +629,8 @@ G.start = function () {
   }
   function frame(now) {
     raf = 0;
-    const dt = Math.min(0.05, (now - last) / 1000 || 0); last = now;
+    // A pending RAF can carry a timestamp older than an explicit resume.
+    const realDt = Math.max(0, (now - last) / 1000 || 0), dt = Math.min(0.05, realDt); last = now;
     if (canvas.clientWidth !== W || canvas.clientHeight !== Hh) resize();
     if (active()) visualTime += dt; const t = visualTime;
     if (!s || !graphicsReady) return;
@@ -603,16 +640,21 @@ G.start = function () {
       else {
         acc += dt; let n = 0;
         while (acc >= STEP && n < 4) {
-          const e0 = s.events.length; C.step(s, STEP, readInput());
+          const e0 = s.events.length, input = readInput();
+          const object = input.use ? DiteAdventure.nearest(s,C) : null;
+          if (object) input.use = false;
+          C.step(s, STEP, input);
           const events = s.events.slice(e0);
+          DiteAdventure.tick(s,events,C); persistAdventure();
           if (guide) guide.observe(s, inp, events); if (journal) journal.observe(s, events);
           for (const ev of events) { if ((ev.type === 'cast' || ev.type === 'fizzle' || ev.type === 'release') && ev.slot > 0) buf[ev.slot] = 0; else if (ev.type === 'ride' || ev.type === 'drop') buf[1] = 0; }
           if (inp.use) useBuf = 0; useFresh = false; for (let k = 1; k < 5; k++) fresh[k] = false;
           acc -= STEP; n++;
+          if (object) { openDialogue(object.id); break; }
         }
         if (n === 4) acc = 0;
       }
-      handleEvents(t); quality(dt); updateView(dt, t); renderCoach(); renderOnce();
+      handleEvents(t); quality(realDt); updateView(dt, t); renderCoach(); renderOnce();
     } else if (dirty && !app.snapshot().blockers.includes('context')) { updateView(0, t); renderOnce(); }
     if (active() && !raf) raf = requestAnimationFrame(frame);
   }
@@ -623,14 +665,15 @@ G.start = function () {
     const portrait = h > w;
     document.body.classList.toggle('portrait', portrait); app.setBlocker('portrait', portrait);
     if ($('rotateGuard')) $('rotateGuard').classList.toggle('hidden', !portrait);
-    if (!force) resetInput(); invalidate();
+    fitControls();
+    if (!force) { resetInput(); autoQuality.reset(); } invalidate();
   }
   window.addEventListener('resize', () => resize());
   window.addEventListener('orientationchange', () => { if (active()) app.suspend('orientation'); resize(); });
   if (window.visualViewport) window.visualViewport.addEventListener('resize', () => resize());
 
   // ---------- Citta', schermate e sessione ----------
-  const panels = { lobby: 'home', pause: 'menu', city: 'cityScreen', loadout: 'loadout', forge: 'forge', journal: 'journalScreen', settings: 'settings', guide: 'tips', loading: 'loading', error: 'appError' };
+  const panels = { lobby: 'home', pause: 'menu', city: 'cityScreen', loadout: 'loadout', forge: 'forge', journal: 'journalScreen', settings: 'settings', guide: 'tips', atlas:'atlas', dialogue:'dialogue', loading: 'loading', error: 'appError' };
   const focusMemory = new Map(); let previousScreen = 'boot', loadToken = 0, failedLoad = null;
   let coachLayoutQueued = false, coachLayoutKey = '';
   const mode = () => ({ kind: coarse ? 'touch' : 'keyboard', movementSide: st.leftHanded ? 'right' : 'left' });
@@ -693,7 +736,7 @@ G.start = function () {
       if (typing(document.activeElement)) document.activeElement.blur();
     }
     running = value.hasSession && !['lobby', 'city', 'loadout', 'loading', 'boot'].includes(value.screen);
-    if (!value.playing || changed) resetInput();
+    if (!value.playing || changed) { resetInput(); autoQuality.reset(); }
     if (!value.playing) {
       suspendAudio(); sceneTimers.length = notices.length = 0; noticeLeft = noticePriority = 0; $('banner').className = '';
     }
@@ -703,6 +746,8 @@ G.start = function () {
     if (s && $('menuSub')) $('menuSub').textContent = (st.recipe.nome || 'Senza nome') + ' · ' + s.city.nome + ' · Fama ' + s.fame;
     renderBonuses(s && s.player, value.screen === 'pause');
     if (value.screen === 'pause') renderPowerDetails();
+    if (s && value.screen === 'atlas') G.adventureUI.atlas(s);
+    if (s && $('remedyCount')) $('remedyCount').textContent = s.adventure.progress.supplies;
     renderHome(); renderCoach(); nativeState(value); last = performance.now(); invalidate();
     if (changed) {
       const remembered = focusMemory.get(value.screen), panel = $(panels[value.screen]);
@@ -719,10 +764,11 @@ G.start = function () {
   function loadCity(theme, seed) {
     if (!City.THEMES[theme] || !Number.isInteger(seed) || seed < 1 || seed > 99999) return false;
     const next = C.create({ seed, theme, recipe: st.recipe, fame: st.fame });
+    DiteAdventure.attach(next, st.adventure);
     const oldState = s, oldScene = G.scene;
     resetInput(); graphicsReady = false; sceneEpoch++; sceneTimers.length = notices.length = 0; noticeLeft = noticePriority = 0; $('banner').className = ''; pend.clear();
     try {
-      G.buildWorld(next.city); G.buildFx(next); G.buildAnim(next); G.buildPowerFx(next);
+      G.buildWorld(next.city); G.buildFx(next); G.buildAnim(next); G.buildPowerFx(next); G.buildAdventure(next);
     } catch (error) {
       if (G.scene && G.scene !== oldScene) G.disposeWorld(G.scene);
       // I dati di partita precedenti rimangono in RAM; Ricostruisci riprova solo la grafica.
@@ -779,10 +825,12 @@ G.start = function () {
     if (st.reducedMotion) { shake = kick = bobT = 0; fov = W > Hh ? 72 : 92; cam.fov = fov; cam.updateProjectionMatrix(); }
     if (appliedQuality !== st.quality) {
       appliedQuality = st.quality; pxr = Math.min(window.devicePixelRatio || 1, st.quality === 'performance' ? 1 : coarse ? 1.5 : 2);
-      useBloom = st.quality !== 'performance'; bloom.enabled = useBloom; slowT = 0;
+      autoQuality = DiteMobile.quality(pxr);
+      useBloom = st.quality !== 'performance'; bloom.enabled = useBloom;
       renderer.setPixelRatio(pxr); composer.setPixelRatio(pxr); resize(true);
     }
     document.body.classList.toggle('left-handed', st.leftHanded); document.body.classList.toggle('reduce-motion', st.reducedMotion); document.body.classList.toggle('reduce-flash', st.reducedFlash);
+    fitControls();
     if (master) master.gain.value = muted ? 0 : st.volume;
     if ($('sens')) $('sens').value = Math.round(st.sens * 100); if ($('sensV')) $('sensV').textContent = Math.round(st.sens * 100) + '%';
     renderHome(); renderCoach(); invalidate();
@@ -790,7 +838,7 @@ G.start = function () {
   function setPreference(key, value) {
     if (!Object.prototype.hasOwnProperty.call(DiteStorage.PREFS, key)) return false;
     const normalized = DiteStorage.normalize({ ...st, [key]: value }, B); st[key] = normalized[key];
-    if (key === 'leftHanded' || key === 'invertY' || key === 'sens') resetInput();
+    if (key === 'leftHanded' || key === 'invertY' || key === 'sens' || key === 'controlScale' || key === 'stickRadius') resetInput();
     applyPreferences(); G.save(); return true;
   }
   function startGuide(restart) {
@@ -798,6 +846,32 @@ G.start = function () {
     if (guide.start(s, { restart: !!restart, mode: mode().kind })) { st.onboarding = guide.snapshot(); G.save(); }
     begin(); renderCoach();
   }
+  let dialogueId = null;
+  function persistAdventure() {
+    const a=s&&s.adventure;if(!a||a.seenRevision===a.revision)return;
+    st.adventure=DiteAdventure.snapshot(s);st.fame=s.fame;a.seenRevision=a.revision;G.save();
+  }
+  function openDialogue(id) { dialogueId=id; app.go('dialogue',{returnTo:'pause'}); G.adventureUI.dialog(s,id); }
+  document.addEventListener('click',event=>{
+    const button=event.target.closest('button');if(!button||!s)return;
+    if(button.dataset.adventureAction){
+      const action=button.dataset.adventureAction;
+      if(action==='forge'){openForge();return;}
+      const result=DiteAdventure.act(s,dialogueId,action,C);persistAdventure();renderHome();
+      G.adventureUI.dialog(s,dialogueId,result.message);invalidate();return;
+    }
+    if(button.dataset.trackSite!==undefined){
+      const id=Number(button.dataset.trackSite);if(!s.adventure.sites[id])return;
+      s.adventure.progress.tracked={theme:s.city.theme.id,site:id};s.adventure.revision++;persistAdventure();G.adventureUI.atlas(s);return;
+    }
+    if(button.dataset.travelSite!==undefined){
+      const result=DiteAdventure.travel(s,Number(button.dataset.travelSite));
+      if(!result.ok){$('atlasMessage').textContent=result.message;return;}
+      yaw=Math.PI;pitch=0;resetInput();begin();return;
+    }
+    if(button.id==='dialogueClose')begin();
+    if(button.id==='useRemedy'){const result=DiteAdventure.remedy(s);persistAdventure();$('remedyMessage').textContent=result.message;$('remedyCount').textContent=s.adventure.progress.supplies;invalidate();}
+  });
   const actions = { play: begin, resume: begin, menuBtn: openMenu, openForge, menuForge: openForge, menuHome: () => navigate('lobby'), menuTips: () => navigate('guide'), openGuide: () => navigate('guide'), tipsOk: () => { st.tips = true; G.save(); navigate('back'); }, mute: () => setPreference('muted', !st.muted), menuMute: () => setPreference('muted', !st.muted), newCity: () => rebuild(st.theme, 1 + Math.floor(Math.random() * 99999)), guideStart: () => startGuide(false), guideRestart: () => startGuide(true), guideSkip: () => { if (guide) guide.skip(); renderCoach(); }, guideHelp: () => { app.go('pause'); navigate('guide'); }, errorRetry: () => { if (failedLoad) rebuild(failedLoad.theme, failedLoad.seed); else if (!app.snapshot().blockers.includes('context')) rebuild(st.theme, st.seed); } };
   document.addEventListener('click', (event) => {
     const target = event.target.closest && event.target.closest('button,[data-nav],[data-app-action],[data-city]'); if (!target || target.disabled) return;

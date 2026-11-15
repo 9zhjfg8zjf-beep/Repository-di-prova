@@ -19,8 +19,8 @@ MODULES = (
     ['bricks.js']
     + sorted(p.name for p in ROOT.iterdir() if re.fullmatch(r'mec\d+\.js', p.name))
     + ['catalogo.js', 'city.js', 'core.js', 'onboarding.js', 'journal.js',
-       'storage.js', 'app-state.js', 'world.js', 'fx.js', 'anim.js',
-       'poteri-fx.js', 'ui.js', 'main.js']
+       'adventure.js', 'storage.js', 'app-state.js', 'mobile.js', 'world.js', 'fx.js', 'anim.js',
+       'poteri-fx.js', 'adventure-world.js', 'ui.js', 'adventure-ui.js', 'main.js']
 )
 
 

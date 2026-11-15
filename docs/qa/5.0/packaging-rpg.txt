@@ -1,0 +1,13 @@
+test_privacy_and_plists_are_parseable_and_no_permissions_are_added (__main__.NativeMetadataTests) ... ok
+test_shared_scheme_runs_both_native_suites (__main__.NativeMetadataTests) ... ok
+test_check_detects_stale_html_without_repairing_it (__main__.OfflineBundleTests) ... ok
+test_check_rejects_a_modified_license_or_checksum (__main__.OfflineBundleTests) ... ok
+test_exact_bundle_and_license_with_deterministic_manifest (__main__.OfflineBundleTests) ... ok
+test_external_or_pwa_resources_and_unbuilt_sources_fail (__main__.OfflineBundleTests) ... ok
+test_missing_bundle_fails_check_without_creating_it (__main__.OfflineBundleTests) ... ok
+test_unexpected_bundle_files_are_preserved_and_reported (__main__.OfflineBundleTests) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.710s
+
+OK

@@ -106,9 +106,19 @@ G.shell = (() => {
     text('lobbyProgress','Fama ' + (model.fame || 0) + ', livello ' + model.level);
     text('play',model.session ? 'Riprendi' : 'Entra a ' + theme.nome); $('play').setAttribute('aria-label','Entra nel gioco');
     text('saveStatus',status.message || 'Progressi sul dispositivo'); text('settingsSaveStatus',status.message || 'Le preferenze si applicano subito.'); $('saveStatus').dataset.state = status.state || 'ready';
+    for(const id of ['atlasSaveStatus','dialogueSaveStatus']){text(id,status.message || 'Progressi sul dispositivo');$(id).dataset.state=status.state || 'ready';}
     const muted = prefs.muted == null ? !!model.muted : !!prefs.muted; text('mute',muted ? 'Audio no' : 'Audio sì'); text('menuMute',muted ? 'Audio no' : 'Audio sì');
     for (const input of $('settings').querySelectorAll('[data-pref]')) { const key = input.dataset.pref; if (prefs[key] == null) continue; if (input.type === 'checkbox') input.checked = !!prefs[key]; else input.value = prefs[key]; }
     if (prefs.sens != null) { $('sens').value = Math.round(prefs.sens * 100); text('sensV',Math.round(prefs.sens * 100) + '%'); }
+    for (const key of ['controlScale', 'controlOpacity']) text(key + 'V', Math.round(prefs[key] * 100) + '%');
+    text('stickRadiusV', Math.round(prefs.stickRadius) + ' px');
+    text('controlsPreviewSide', prefs.leftHanded ? 'Movimento a destra · poteri a sinistra' : 'Movimento a sinistra · poteri a destra');
+    const preview = $('controlsPreview');
+    if (preview) {
+      preview.style.setProperty('--preview-scale', prefs.controlScale || 1);
+      preview.style.setProperty('--preview-opacity', prefs.controlOpacity || 1);
+      html('previewPowers', r.slots.map((slot, i) => '<span class="preview-button pb' + i + '" style="--c:' + B.ELEM[slot.el].css + '">' + G.svg(B.ARCH[slot.id].ic) + '</span>').join(''));
+    }
     text('volumeV',Math.round((prefs.volume == null ? 1 : prefs.volume) * 100) + '%');
     const haptic = $('settings').querySelector('[data-pref=haptics]'); haptic.disabled = !model.nativeHaptics;
     text('hapticsNote',model.nativeHaptics ? 'Una risposta breve alle azioni importanti.' : 'Disponibile nell’app su dispositivi compatibili.');

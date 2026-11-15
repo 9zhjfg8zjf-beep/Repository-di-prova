@@ -1388,6 +1388,6 @@ const Core = (() => {
     }
   }
 
-  return { CELL, N, HALF, EYE, NODE_H, SAG, MOB, PSPEED, QINFO, create, step, setRecipe, cellOf, cellCenter, solidAt, opaqueAt, los, cablePoint, inTele, groundPoint, wakeBoss, bossCast, acceptQuest, pathCells, mkMob, run, canClone };
+  return { CELL, N, HALF, EYE, NODE_H, SAG, MOB, PSPEED, QINFO, create, step, setRecipe, cellOf, cellCenter, solidAt, opaqueAt, los, cablePoint, inTele, groundPoint, wakeBoss, bossCast, acceptQuest, gainFame, pathCells, mkMob, run, canClone };
 })();
 if (typeof module !== 'undefined') module.exports = Core;

@@ -45,6 +45,7 @@ jobs:
         run: |
           python3 -m venv .build/assets-venv
           .build/assets-venv/bin/python -m pip install -r scripts/requirements-assets.txt
+          .build/assets-venv/bin/python scripts/test_assets.py
           .build/assets-venv/bin/python scripts/generate_assets.py --check
 
   browser:

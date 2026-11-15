@@ -193,6 +193,36 @@ final class DITEUITests: XCTestCase {
         attachScreenshot("webgl-retry-restored-game")
     }
 
+    func testAtlasTracksAPlaceAndReturnsToPause() {
+        tap("Atlante")
+        let place = app.staticTexts.matching(NSPredicate(format: "label == %@", "Fonderia delle Ceneri")).firstMatch
+        XCTAssertTrue(place.waitForExistence(timeout: 15))
+        // WebKit exposes aria-pressed toggle buttons as native accessibility switches.
+        let follow = app.switches.matching(NSPredicate(format: "label == %@", "Segui sulla mappa")).firstMatch
+        XCTAssertTrue(follow.waitForExistence(timeout: 15))
+        XCTAssertTrue(follow.isHittable)
+        follow.tap()
+        waitForTrackedPlace()
+        attachScreenshot("atlas-place-tracked")
+        tap("Indietro")
+        tap("Entra nel gioco")
+        tap("Pausa")
+        let atlas = button("Atlante e memorie")
+        if !atlas.isHittable { app.webViews.firstMatch.swipeUp() }
+        tap("Atlante e memorie")
+        waitForTrackedPlace()
+        tap("Indietro")
+        waitForButton("Riprendi partita")
+        attachScreenshot("atlas-returned-to-pause")
+    }
+
+    private func waitForTrackedPlace() {
+        let tracked = app.switches.matching(NSPredicate(format: "label == %@", "Seguito")).firstMatch
+        let selected = NSPredicate(format: "exists == 1 AND hittable == 1 AND value == %@", "1")
+        let result = XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: selected, object: tracked)], timeout: 15)
+        XCTAssertEqual(result, .completed, "Il luogo seguito deve essere selezionato e raggiungibile")
+    }
+
     private func reducedMotionControl() -> XCUIElement {
         app.switches.matching(NSPredicate(format: "label == %@", "Movimento ridotto")).firstMatch
     }

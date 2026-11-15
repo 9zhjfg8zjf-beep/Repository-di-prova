@@ -1,7 +1,7 @@
 // Salvataggio del profilo: nessun oggetto, timer o riferimento del Core viene serializzato.
 const DiteStorage = (() => {
   const VERSION = 3, KEY = 'dite2', BACKUP_KEY = 'dite2.previous';
-  const PREFS = { muted: false, sens: 1, quality: 'auto', reducedMotion: false, reducedFlash: false, volume: 0.8, leftHanded: false, invertY: false, haptics: true };
+  const PREFS = { muted: false, sens: 1, quality: 'auto', reducedMotion: false, reducedFlash: false, volume: 0.8, leftHanded: false, invertY: false, haptics: true, controlScale: 1, controlOpacity: 1, stickRadius: 46 };
   const plain = (v) => !!v && typeof v === 'object' && !Array.isArray(v) && (Object.getPrototypeOf(v) === Object.prototype || Object.getPrototypeOf(v) === null);
   const number = (v, fallback, lo, hi, integer) => typeof v === 'number' && Number.isFinite(v) ? Math.max(lo, Math.min(hi, integer ? Math.trunc(v) : v)) : fallback;
   const string = (v, max) => typeof v === 'string' ? v.slice(0, max) : '';
@@ -42,6 +42,9 @@ const DiteStorage = (() => {
     }
     for (const key of Object.keys(PREFS)) if (typeof PREFS[key] === 'boolean') out[key] = typeof raw[key] === 'boolean' ? raw[key] : typeof defaults[key] === 'boolean' ? defaults[key] : PREFS[key];
     out.sens = number(raw.sens, PREFS.sens, 0.4, 2.2); out.volume = number(raw.volume, PREFS.volume, 0, 1); out.quality = ['auto', 'performance', 'quality'].includes(raw.quality) ? raw.quality : PREFS.quality;
+    out.controlScale = number(raw.controlScale, 1, 0.9, 1.15); out.controlOpacity = number(raw.controlOpacity, 1, 0.55, 1); out.stickRadius = number(raw.stickRadius, 46, 36, 64);
+    const adventure = typeof DiteAdventure !== 'undefined' ? DiteAdventure : require('./adventure.js');
+    out.adventure = adventure.normalize(raw.adventure);
     out.onboarding = defaults.normalizeOnboarding ? defaults.normalizeOnboarding(raw.onboarding) : onboarding(raw.onboarding);
     // Un profilo preesistente senza checkpoint non diventa un nuovo tutorial.
     if (!plain(raw.onboarding) || raw.onboarding.version !== 1) out.onboarding = null;

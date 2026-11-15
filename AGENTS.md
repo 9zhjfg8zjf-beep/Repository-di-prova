@@ -26,7 +26,7 @@ cd motore
 npm ci                           # three 0.128 e Playwright 1.56.1 fissati nel lockfile
 npx playwright install chromium-headless-shell # browser ufficiale; oppure CHROME=percorso di Chrome
 python3 build.py                 # crea dist/index.html e site/index.html
-node tbaseline.js all            # collaudo obbligatorio completo: 33 comandi, 14 Node + 19 browser/build
+node tbaseline.js all            # collaudo obbligatorio completo: 37 comandi, 16 Node + 21 browser/build
 # Si possono eseguire separatamente: node tbaseline.js node ; node tbaseline.js browser
 # I comandi individuali sotto servono a isolare un problema:
 node tstorage.js ; node tappstate.js # migrazioni, errori di persistenza e transizioni
@@ -51,7 +51,7 @@ Le prove nuove usano condizioni osservabili e avanzamento della simulazione: i s
 non equivalgono ai secondi di gioco quando il rendering software e lento.
 Le fotografie sono in `shots/`; i campioni `tpow` base e DSL hanno cartelle separate per non sovrascriversi.
 La regressione tipografica mobile richiede DejaVu Sans installato (`fonts-dejavu-core` su Debian/Ubuntu):
-verifica il font realmente usato dal browser e rifiuta un fallback silenzioso.
+verifica il font realmente usato dal browser e rifiuta un fallback silenzioso. Su Windows, `DITE_TEST_FONT` può indicare il TTF autentico senza installarlo nel sistema; il runner usa `python`, oppure `PYTHON`.
 
 Per calibrare solo i nuovi poteri: `node tbal.js scrivi nuovi`. Misura il contributo di danno, **non** il valore di
 controllo, cura, informazione e mobilita; conserva i fattori degli altri poteri. Dopo la generazione rifare le prove.
@@ -91,6 +91,8 @@ Nucleo di pura logica, provabile in Node, separato dal disegno (three.js r128).
 - `mec10.js … mec15.js` — 336 nuove meccaniche esplicite, marcate `edition: '3.2'`.
 - `mec99.js` — fattori di bilanciamento generati.
 - `catalogo.js` — famiglie e tag ricavati anche dai programmi annidati, ricerca, sei ricette introduttive.
+- `adventure.js`, `adventure-world.js`, `adventure-ui.js` — progressione dei luoghi, collisioni, disegno procedurale e atlante/dialoghi.
+- `mobile.js` — joystick e controllo adattivo della qualità, senza dipendenze DOM.
 - `city.js` — citta generate (temi dite, cocito, malebolge): strade, canali, arene, cavi, missioni.
 - `core.js` — simulazione: giocatore, creature, abitanti, missioni, boss, esecuzione dei programmi (`run`, `OPS`). Emette eventi.
 - `onboarding.js` — osserva movimento, mira, primario, abilita e accettazione di una missione reali; checkpoint e salto
@@ -115,11 +117,21 @@ Nucleo di pura logica, provabile in Node, separato dal disegno (three.js r128).
 - `POTERI_API.md` — contratti, limiti, stato e cleanup dei nuovi operatori.
 - `RICERCA_POTERI.md` — fonti primarie, matrice delle famiglie e lacune reali; non confondere un nome con una capacita implementata.
 
-Ordine dei file nel build: bricks, mec*, catalogo, city, core, onboarding, journal, storage, app-state,
-world, fx, anim, poteri-fx, ui, main. Tutto in `'use strict'`. Gli export CommonJS devono restare su una riga
+Ordine dei file nel build: bricks, mec*, catalogo, city, core, onboarding, journal, adventure, storage, app-state, mobile,
+world, fx, anim, poteri-fx, adventure-world, ui, adventure-ui, main. Tutto in `'use strict'`. Gli export CommonJS devono restare su una riga
 con guardia indipendente `if (typeof module !== 'undefined') ...`, rimossa dal build per il browser.
 
-## Stato: 4.0 pubblicata — collaudo e revisione visiva verificati
+## 5.0 — Le memorie
+
+Nove luoghi originali distribuiti fra Dite, Cocito e Malebolge: fonderia, archivio, specola, serra, chiostro, darsena, orto, mercato e teatro. Ogni luogo contiene custode, memoria da leggere, sigillo elementale, leva, reliquiario, risorsa e panca. Il sigillo risponde a un lancio riuscito, vicino e rivolto verso di esso: è una risonanza, non una simulazione universale dei materiali. Le grate cambiano davvero la collisione. Le ricompense non si ripetono cambiando città o rigenerando la mappa.
+
+L’atlante segue il luogo scelto, conserva le memorie e consente il viaggio verso luoghi già scoperti, solo con partenza e arrivo sicuri e senza missioni o trasformazioni in corso. Tre frammenti permettono una scelta persistente per città: titolo e luce dei luoghi cambiano. Le scorte curano fuori dal pericolo; le panche hanno un tempo di recupero.
+
+I comandi aggiungono dimensione, opacità e raggio del joystick configurabili, una zona morta e feedback immediato alla pressione. La qualità automatica scende e risale con isteresi usando il tempo reale dei fotogrammi. Un RAF precedente alla ripresa non può invertire il tempo di simulazione.
+
+La suite ora comprende 37 comandi: 16 Node e 21 browser/build, più packaging e iOS separati. Le prove nuove sono `tmobile_policy.js`, `tcontrols_browser.js`, `tadventure.js` e `tadventure_browser.js`. Collaudo locale verde: 16 prove Node e 21 browser/build, più 8 packaging e 4 asset. Gli esiti nativi correnti sono nella [CI della revisione 5.0](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/pull/2/checks); i risultati storici 4.0 sotto non valgono come collaudo della 5.0. [Evidenze locali](docs/qa/5.0/local.json). Nessuna certificazione di prestazioni su hardware fisico o equivalenza con un titolo AAA.
+
+## Stato storico: 4.0 pubblicata — collaudo e revisione visiva verificati
 
 Aggiornato il 13 novembre 2026. Pubblicazione web: **[4.0 pubblicata](https://9zhjfg8zjf-beep.github.io/Repository-di-prova/arena/)**.
 Deploy [Pages 43502528480](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43502528480) riuscito dal commit `fa40188750650989efa297216174234eb0425978`.
@@ -199,7 +211,7 @@ Calibrazione del danno eseguita sui 336 nuovi programmi; fattori dei 1007 preced
 
 ## Cosa manca
 
-Per distribuire la 4.0 nativa:
+Per distribuire la versione nativa:
 
 1. **Firma e distribuzione**: identificatore definitivo, Apple Developer/Team, certificati e provisioning,
    build distribuibile, TestFlight e revisione App Store. Una build unsigned non completa questi passaggi.

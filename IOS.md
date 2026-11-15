@@ -1,5 +1,12 @@
 # DITE — contenitore iOS e verifiche
 
+## 5.0
+
+Le nuove meccaniche e i confini delle prove sono in [ADVENTURE.md](docs/ADVENTURE.md). Collaudo locale verde: 16 Node, 21 browser/build, packaging 8/8 e asset 4/4. [Evidenze](docs/qa/5.0/local.json). Esiti dei simulatori e della ricostruzione Linux nella [CI della revisione 5.0](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/pull/2/checks).
+Target della candidata: **5.0, build 2**, iOS 17+, bundle offline aggiornato. La nuova prova UI verifica atlante, luogo seguito e ritorno alla pausa attraverso controlli reali. L’esecuzione Xcode e i relativi allegati sono tracciati nella [CI della revisione 5.0](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/pull/2/checks).
+
+## Baseline storica 4.0
+
 Aggiornato il 13 novembre 2026. Target applicazione **4.0, build 1**, deployment target iOS 17.
 Il contenuto del gioco incluso segue la versione visibile 4.0 del bundle generato.
 Pubblicazione web: **[4.0 pubblicata](https://9zhjfg8zjf-beep.github.io/Repository-di-prova/arena/)**.

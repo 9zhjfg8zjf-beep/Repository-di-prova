@@ -1,5 +1,11 @@
 # DITE — direzione mobile e preparazione iOS
 
+## 5.0
+
+Le nuove meccaniche e i confini delle prove sono in [ADVENTURE.md](docs/ADVENTURE.md). Collaudo locale verde: 16 Node, 21 browser/build, packaging 8/8 e asset 4/4. [Evidenze](docs/qa/5.0/local.json). Esiti dei simulatori e della ricostruzione Linux nella [CI della revisione 5.0](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/pull/2/checks).
+
+## Baseline storica 4.0
+
 Stato 4.0: collaudo completo e revisione visiva verificati. Aggiornato il 13 novembre 2026.
 Pubblicazione web: **[4.0 pubblicata](https://9zhjfg8zjf-beep.github.io/Repository-di-prova/arena/)**.
 Deploy [Pages 43502528480](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43502528480) riuscito dal commit `fa40188750650989efa297216174234eb0425978`.

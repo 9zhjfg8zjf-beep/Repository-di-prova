@@ -1,0 +1,10 @@
+Luogo dite 0
+Luogo dite 1
+Luogo dite 2
+Luogo cocito 0
+Luogo cocito 1
+Luogo cocito 2
+Luogo malebolge 0
+Luogo malebolge 1
+Luogo malebolge 2
+GDR browser: nove luoghi, dialoghi sospesi, nove cast touch, grate attraversate, reperti, tre scelte, atlante mobile/tablet, viaggio e ricaricamento; nessun errore
