@@ -1,8 +1,8 @@
 # DITE — direzione mobile e preparazione iOS
 
-## Candidata 5.0
+## 5.0
 
-Le nuove meccaniche e i confini delle prove sono in [ADVENTURE.md](docs/ADVENTURE.md). Collaudo locale verde: 16 Node, 21 browser/build, packaging 8/8 e asset 4/4. [Evidenze](docs/qa/5.0/local.json). Nuova CI nativa in attesa.
+Le nuove meccaniche e i confini delle prove sono in [ADVENTURE.md](docs/ADVENTURE.md). Collaudo locale verde: 16 Node, 21 browser/build, packaging 8/8 e asset 4/4. [Evidenze](docs/qa/5.0/local.json). Esiti dei simulatori e della ricostruzione Linux nella [CI della revisione 5.0](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/pull/2/checks).
 
 ## Baseline storica 4.0
 

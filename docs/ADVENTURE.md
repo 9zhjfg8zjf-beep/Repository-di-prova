@@ -6,7 +6,7 @@ L’atlante segue il luogo scelto, conserva le memorie e consente il viaggio ver
 
 I comandi aggiungono dimensione, opacità e raggio del joystick configurabili, una zona morta e feedback immediato alla pressione. La qualità automatica scende e risale con isteresi usando il tempo reale dei fotogrammi. Un RAF precedente alla ripresa non può invertire il tempo di simulazione.
 
-La suite ora comprende 37 comandi: 16 Node e 21 browser/build, più packaging e iOS separati. Le prove nuove sono `tmobile_policy.js`, `tcontrols_browser.js`, `tadventure.js` e `tadventure_browser.js`. Collaudo locale verde: 16 prove Node e 21 browser/build, più 8 packaging e 4 asset. La CI nativa della candidata resta da verificare; i risultati storici 4.0 sotto non valgono come collaudo della 5.0. [Evidenze locali](qa/5.0/local.json). Nessuna certificazione di prestazioni su hardware fisico o equivalenza con un titolo AAA.
+La suite ora comprende 37 comandi: 16 Node e 21 browser/build, più packaging e iOS separati. Le prove nuove sono `tmobile_policy.js`, `tcontrols_browser.js`, `tadventure.js` e `tadventure_browser.js`. Collaudo locale verde: 16 prove Node e 21 browser/build, più 8 packaging e 4 asset. Gli esiti nativi correnti sono nella [CI della revisione 5.0](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/pull/2/checks); i risultati storici 4.0 sotto non valgono come collaudo della 5.0. [Evidenze locali](qa/5.0/local.json). Nessuna certificazione di prestazioni su hardware fisico o equivalenza con un titolo AAA.
 
 ## Limiti delle prove
 

@@ -5,11 +5,11 @@ Il catalogo comprende 1343 meccaniche originali. Il gioco è pensato per il tele
 
 **[Gioca nel browser](https://9zhjfg8zjf-beep.github.io/Repository-di-prova/arena/)**
 
-## Candidata 5.0 — Le memorie
+## 5.0 — Le memorie
 
 Nove luoghi da esplorare, custodi e dialoghi, sigilli elementali e grate fisiche, reperti, scorte e tre scelte persistenti. Atlante con obiettivi e viaggio rapido verso luoghi scoperti. Comandi touch personalizzabili e qualità automatica con recupero. [Meccaniche e limiti](docs/ADVENTURE.md).
 
-Collaudo locale verde: **16 prove Node + 21 browser/build**, packaging **8/8** e asset **4/4**. [Evidenze e limiti](docs/qa/5.0/local.json). CI nativa della candidata in attesa; i risultati 4.0 sotto sono storici.
+Collaudo locale verde: **16 prove Node + 21 browser/build**, packaging **8/8** e asset **4/4**. [Evidenze e limiti](docs/qa/5.0/local.json). Esiti nativi nella [CI della revisione 5.0](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/pull/2/checks); i risultati 4.0 sotto sono storici.
 
 Baseline web precedente: **[4.0 pubblicata](https://9zhjfg8zjf-beep.github.io/Repository-di-prova/arena/)**.
 Deploy [Pages 43502528480](https://github.com/9zhjfg8zjf-beep/Repository-di-prova/actions/runs/43502528480) riuscito dal commit `fa40188750650989efa297216174234eb0425978`.
