@@ -1,0 +1,57 @@
+{
+  "version": "5.0",
+  "native_build": 2,
+  "date": "2026-11-15",
+  "environment": "Windows; Node 24.22.1; Playwright 1.56.1; Chromium Headless Shell 1194; SwiftShader; Python 3.12.10/Pillow 13.0.0 for artwork",
+  "node": {
+    "passed": 16,
+    "execution": "15-command runner plus tadventure.js individually"
+  },
+  "browser": {
+    "passed": 21,
+    "execution": "full runner; targeted exploration, save failure/recovery and atlas layout repeated after final changes"
+  },
+  "packaging_passed": 8,
+  "artwork_unit_passed": 4,
+  "native_bundle_check": "pass",
+  "native_project_check": "pass",
+  "artwork_exact_pixels_metadata_check": "pass",
+  "native_simulators": "pending CI",
+  "physical_devices": "not tested",
+  "coverage": {
+    "generation": "300 maps, 900 site placements with grid reachability; not 900 manual visits",
+    "rpg": "9 full interaction loops, actual touch casts, gate traversal, 3 endings, persistence and failed-save recovery",
+    "controls": "24 viewport/handedness/control-scale combinations; touch cancellation; stale RAF; preference reload",
+    "atlas_viewports": [
+      [
+        568,
+        320
+      ],
+      [
+        667,
+        375
+      ],
+      [
+        844,
+        390
+      ],
+      [
+        1024,
+        768
+      ]
+    ],
+    "render_resources": "stable repeated city rebuilds; not an FPS benchmark"
+  },
+  "limitations": [
+    "Software rendering and simulated touch do not establish phone performance.",
+    "Native compile and WebKit tests pending on this revision.",
+    "Narrative choices change titles and lighting; not branching campaigns.",
+    "Rune resonance detects successful aimed casts; not projectile-material simulation.",
+    "No AAA or SOTA certification."
+  ],
+  "sha256": {
+    "motore/dist/index.html": "84d4626cff1834c220ce735da192f7af946ef0295b9b01f1f54af37c31838e2f",
+    "arena/index.html": "aa177f03f4f2cc11c04301d04bbbdfc7afd6edb65cc85906762dc10309b50e0d",
+    "ios/DITE/Resources/Game/index.html": "84d4626cff1834c220ce735da192f7af946ef0295b9b01f1f54af37c31838e2f"
+  }
+}

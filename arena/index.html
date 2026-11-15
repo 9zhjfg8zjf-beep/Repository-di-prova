@@ -11,7 +11,7 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
-<title>DITE · 4.0</title>
+<title>DITE · 5.0</title>
 <style>
   :root { --cy: #3fe9ff; --mg: #ff3fd0; --am: #ffb23a; --rd: #ff4028; --gd: #ffd24a; --ink: #0a0608; --ui: 'Rajdhani', 'Segoe UI', system-ui, sans-serif; --ti: 'Cinzel', Georgia, serif; --el: #3fc8ff;
     --st: env(safe-area-inset-top, 0px); --sr: env(safe-area-inset-right, 0px); --sb: env(safe-area-inset-bottom, 0px); --sl: env(safe-area-inset-left, 0px); }
@@ -272,6 +272,52 @@
     .loadout-layout { grid-template-columns:1fr; overflow-y:auto; } #loadoutCards { max-height:180px; flex:none; } .kit-preview-wrap { min-height:330px; } .settings-panel,.guide-grid { grid-template-columns:1fr; } .pause-body { grid-template-columns:1fr; gap:18px; overflow:auto; } .pause-title .brand-mark { display:none; }
     #fBody { grid-template-columns:75px minmax(0,1fr); } #fWorkbench { grid-column:2; border:0; padding-left:0; max-height:220px; } #fSlotRail { grid-row:1/3; } #fPick { min-height:160px; } #fFooter { flex-wrap:wrap; } #fMsg { flex-basis:50%; } #fTop { gap:6px; } #fTop h2 { font-size:15px; } #fName { width:100px; } .screen-foot>p { font-size:11px; } .screen-foot .go-btn { min-width:130px; }
   }
+  /* La scala riguarda solo i poteri: HUD e testo di gioco restano a risoluzione piena. */
+  #btns { transform:scale(var(--control-scale,1)); transform-origin:bottom right; }
+  .left-handed #btns { transform-origin:bottom left; }
+  #btns .ab { opacity:calc(.65 * var(--control-opacity,1)); }
+  #btns .ab.ready,#btns .ab.act { opacity:var(--control-opacity,1); }
+  #btns .ab.pressed,#useBtn.pressed { opacity:1; border-color:#fff; box-shadow:0 0 0 3px #edbd7870,inset 0 0 22px #edbd7845; }
+  #joy { width:var(--stick-size,104px); height:var(--stick-size,104px); margin:calc(var(--stick-size,104px) / -2) 0 0 calc(var(--stick-size,104px) / -2); }
+  .control-preview { grid-column:1/-1; display:grid; grid-template-columns:minmax(180px,1fr) minmax(240px,1fr); gap:20px; align-items:center; padding:12px 0; border-bottom:1px solid var(--line); }
+  .control-preview b { font-size:14px; } .control-preview p { color:var(--muted); font-size:12px; line-height:1.5; margin:6px 0; }
+  #controlsPreview { height:128px; position:relative; border:1px solid #ffffff24; border-radius:15px; overflow:hidden; background:radial-gradient(ellipse at 50% 100%,#3a2d23,transparent 70%),#101317; }
+  #controlsPreview::before { content:'+'; position:absolute; left:50%; top:44%; color:#ffffff70; font:20px var(--ui); }
+  .preview-stick { position:absolute; width:46px; height:46px; border:1px solid #edbd7880; border-radius:50%; bottom:18px; left:25px; }
+  .preview-stick::after { content:''; position:absolute; inset:13px; background:#edbd78; border-radius:50%; }
+  #previewPowers { position:absolute; right:12px; bottom:12px; width:127px; height:95px; transform:scale(var(--preview-scale,1)); transform-origin:bottom right; opacity:var(--preview-opacity,1); }
+  .preview-button { position:absolute; width:32px; height:32px; border:1px solid var(--c); border-radius:50%; display:grid; place-items:center; background:#171b20; color:var(--c); }
+  .preview-button svg { width:15px; height:15px; } .pb0 { width:44px; height:44px; right:0; bottom:0; } .pb1 { right:49px; bottom:0; } .pb2 { right:52px; bottom:38px; } .pb3 { right:13px; bottom:52px; } .pb4 { width:40px; height:40px; right:86px; bottom:20px; }
+  .left-handed #controlsPreview { transform:scaleX(-1); } .left-handed #previewPowers svg { transform:scaleX(-1); }
+  @media(max-width:560px) { .control-preview { grid-template-columns:1fr; } }
+
+  #atlas,#dialogue { background:linear-gradient(125deg,#121c23,#151719 65%,#211c19); }
+  .adventure-save-status {font-size:11px;line-height:1.4;color:var(--muted);margin:8px 0 0;flex:none;}.adventure-save-status[data-state=temporary],.adventure-save-status[data-state=recovered] {color:var(--am);border-left:2px solid var(--am);padding-left:8px;}
+  .atlas-layout { display:grid; grid-template-columns:minmax(220px,.8fr) minmax(0,1.2fr); gap:28px; flex:1; min-height:0; padding-top:14px; }
+  .atlas-cartography { display:flex; flex-direction:column; min-height:0; align-items:center; justify-content:flex-start; overflow:auto; position:relative; border-right:1px solid var(--line); padding-right:24px; }
+  #atlasMap { flex:1; min-height:72px; width:min(100%,44vh); max-height:100%; aspect-ratio:1; object-fit:contain; border:1px solid #a9b8ae40; border-radius:12px; }
+  .atlas-cartography h3 { flex:none; font:500 25px var(--ti); margin:0 0 10px; }
+  .atlas-cartography p { flex:none; font-size:11px; color:var(--muted); text-align:center; line-height:1.4; margin:8px 0; }
+  .atlas-place { display:grid; grid-template-columns:35px 1fr; gap:9px; padding:14px 0; border-bottom:1px solid var(--line); }
+  .place-number { color:var(--place-color); font:500 25px var(--ti); }
+  .atlas-place .eyebrow { color:var(--place-color); font-size:10px; }
+  .atlas-place h3 { font:500 23px var(--ti); margin:4px 0; }.atlas-place p { margin:5px 0 10px; font-size:12px; color:var(--muted); }
+  .atlas-place .btn2 { margin:0 6px 5px 0; font-size:12px; }.atlas-place [aria-pressed=true] { border-color:var(--place-color); color:var(--place-color); }
+  .atlas-records { margin:20px 0 12px; border-top:1px solid var(--line); padding-top:14px; }.atlas-records summary { min-height:44px; cursor:pointer; font-size:14px; color:var(--am); }
+  #atlasMemories h3 { font-size:14px; } #atlasMemories p,#atlasEndings,.atlas-empty { font-size:13px; line-height:1.6; color:var(--muted); } #atlasMessage { color:#edbd78; font-size:12px; min-height:16px; }
+  .dialogue-shell { max-width:960px; }.dialogue-body { display:grid; grid-template-columns:.65fr 1.35fr; gap:36px; flex:1; min-height:0; padding:20px 0; }
+  .dialogue-portrait { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; background:radial-gradient(ellipse at center,color-mix(in srgb,var(--place-color) 16%,transparent),transparent 65%); border-right:1px solid var(--line); }
+  #dialogueEmblem { color:var(--place-color); border:1px solid color-mix(in srgb,var(--place-color) 40%,transparent); border-radius:50%; width:120px; height:120px; display:grid; place-items:center; box-shadow:0 0 0 14px #ffffff02,0 0 0 15px #ffffff05; }
+  #dialogueEmblem svg { width:64px; height:64px; } .dialogue-portrait p { color:var(--place-color); font-size:10px; letter-spacing:2px; margin-top:30px; text-transform:uppercase; }
+  #dialogueText { color:#e3ded4; font-size:17px; line-height:1.65; margin:0 0 18px; max-width:620px; }
+  .dialogue-choice { display:flex; justify-content:space-between; align-items:center; gap:12px; width:100%; text-align:left; min-height:48px; padding:12px 15px; margin-bottom:8px; border:1px solid #ffffff28; border-radius:8px; color:var(--paper); background:#ffffff05; font-size:14px; }
+  .dialogue-choice:hover,.dialogue-choice:focus-visible { border-color:var(--place-color); background:#ffffff0a; }.dialogue-choice>span { color:var(--place-color); font-size:18px; }
+  #dialogueMessage { color:var(--am); font-size:13px; line-height:1.5; margin:12px 0; } #remedyMessage { grid-column:1/-1; font-size:11px; line-height:1.35; color:var(--am); margin:0; }
+  .pause-actions { overflow-y:auto; max-height:calc(100dvh - var(--st) - var(--sb) - 44px); }.pause-actions .btn2 { min-height:44px; }
+  @media(orientation:landscape) and (max-height:480px) { .dialogue-body { gap:20px; padding:12px 0; }.dialogue-portrait { min-width:0; } #dialogueEmblem { width:80px; height:80px; }#dialogueEmblem svg { width:42px;height:42px; }#dialogueText { font-size:14px;line-height:1.5; }.dialogue-choice {font-size:13px;}.atlas-layout {gap:16px;padding-top:8px;}.atlas-cartography {padding-right:12px;}#atlasMap {width:min(100%,49vh);} .atlas-place h3 {font-size:20px;} }
+  #dialogueEmblem.has-portrait {width:min(100%,240px);height:auto;border:0;box-shadow:none;background:none;border-radius:0;}#dialogueEmblem .keeper-portrait {width:100%;height:min(50vh,260px);stroke-width:1;fill:none;} .has-portrait+p {margin-top:4px;}
+  @media(max-width:760px) { .lobby-tools {gap:4px;} .lobby-tools .btn2 {padding:8px;font-size:12px;} .atlas-layout {grid-template-columns:minmax(180px,.7fr) minmax(0,1.3fr);} }
+  @media(max-width:560px) { .atlas-layout {grid-template-columns:1fr;overflow:auto;} .atlas-cartography {min-height:230px;border:0;} .dialogue-body {grid-template-columns:1fr;} .dialogue-portrait {display:none;} }
 </style>
 </head>
 <body>
@@ -312,13 +358,13 @@
 <main id="home" class="overlay" aria-labelledby="homeTitle">
   <div class="screen-shell">
     <header class="screen-head">
-      <div class="brand"><svg class="brand-mark" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><g fill="currentColor"><path d="M244 476H332V756H244Z"/><path d="M244 452C244 340 328 246 438 183L483 248C398 306 332 372 332 452Z"/><path d="M512 144L575 216 512 288 449 216Z"/><path d="M780 452C780 340 696 246 586 183L541 248C626 306 692 372 692 452Z"/><path d="M692 476H780V756H692Z"/></g></svg><div><h1 id="homeTitle">DITE</h1><div class="sub">VERSIONE 4.0 · IL RIFUGIO</div></div></div>
-      <nav class="lobby-tools" aria-label="Rifugio"><button id="openJournal" class="btn2" type="button" data-nav="journal">Registro</button><button id="openGuide" class="btn2" type="button" data-nav="guide">Guida</button><button id="openSettings" class="icon-btn" type="button" data-nav="settings" aria-label="Impostazioni"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8a4 4 0 0 0 0-8zM12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg></button></nav>
+      <div class="brand"><svg class="brand-mark" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><g fill="currentColor"><path d="M244 476H332V756H244Z"/><path d="M244 452C244 340 328 246 438 183L483 248C398 306 332 372 332 452Z"/><path d="M512 144L575 216 512 288 449 216Z"/><path d="M780 452C780 340 696 246 586 183L541 248C626 306 692 372 692 452Z"/><path d="M692 476H780V756H692Z"/></g></svg><div><h1 id="homeTitle">DITE</h1><div class="sub">VERSIONE 5.0 · LE MEMORIE</div></div></div>
+      <nav class="lobby-tools" aria-label="Rifugio"><button id="openAtlas" class="btn2" type="button" data-nav="atlas">Atlante</button><button id="openJournal" class="btn2" type="button" data-nav="journal">Registro</button><button id="openGuide" class="btn2" type="button" data-nav="guide">Guida</button><button id="openSettings" class="icon-btn" type="button" data-nav="settings" aria-label="Impostazioni"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8a4 4 0 0 0 0-8zM12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg></button></nav>
     </header>
     <div class="lobby-stage">
       <section class="refuge-view" aria-labelledby="refugeTitle">
         <svg class="refuge-art" viewBox="0 0 420 250" aria-hidden="true"><path d="M-30 245H445M12 245V146l23-12 22 12v99M31 143V93l12-8 12 8v50M64 245V107l31-19 32 19v138M77 97V55l18-11 18 11v42M142 245V137l36-20 34 20v108M165 120V76l14-9 15 9v44M226 245V87l35-21 34 21v158M241 76V28l20-13 19 13v48M312 245V122l25-15 25 15v123M331 109V63l14-8 14 8v54M378 245V174l25-15 28 15v71"/><path d="M150 245v-52q30-52 60 0v52M155 245v-51q25-41 50 0v51M12 184l52-20M127 128l98-30M293 107l86 83M31 163l39-22"/><path class="windows" d="M87 124v11m16-19v11m-16 24v11m16-19v11m143-64v14m22-26v14m-22 30v14m22-26v14m-22 30v14m22-26v14m57 7v12m15-21v12m-15 23v12m15-21v12M22 173v9m20-18v9m-20 24v9m20-18v9M391 191v10m17-19v10"/><path class="city-floor" d="m10 245 130-42m-70 42 92-30m178 30-135-42m205 42-190-57"/></svg>
-        <div class="refuge-label"><span class="eyebrow">Oltre le mura</span><h2 id="refugeTitle">La città ti aspetta.</h2><p id="homeMsg">Cinque poteri. Una strada tua.<br>Aiuta gli abitanti e sfida i custodi.</p></div>
+        <div class="refuge-label"><span class="eyebrow">Oltre le mura</span><h2 id="refugeTitle">La città ti aspetta.</h2><p id="homeMsg">Cinque poteri. Una strada tua.<br>Scopri nove luoghi, parla con gli abitanti e cambia la città.</p></div>
       </section>
       <section class="lobby-kit" aria-label="Kit equipaggiato"><div id="hero"></div><div class="lobby-kit-actions"><button class="btn2 on" id="openLoadout" data-nav="loadout" type="button">Scegli kit</button><button class="btn2" id="openForge" type="button">Officina</button></div><span id="saveStatus" role="status"></span></section>
     </div>
@@ -326,16 +372,24 @@
   </div>
 </main>
 
-<section id="cityScreen" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="cityTitle"><div class="screen-shell"><header class="screen-head"><button class="icon-btn back-btn" type="button" data-nav="back" aria-label="Indietro">‹</button><div class="head-copy"><h2 id="cityTitle">Oltre il rifugio</h2><p>Tre città, strade sempre diverse.</p></div></header><div class="screen-content"><div id="cities" aria-label="Scegli una città"></div></div><footer class="screen-foot"><p id="cityStatus">Cambiare città ricomincia l’esplorazione. Il tuo kit e la tua Fama restano con te.</p><button class="btn2" id="newCity" type="button">Nuova pianta</button></footer></div></section>
+<section id="cityScreen" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="cityTitle"><div class="screen-shell"><header class="screen-head"><button class="icon-btn back-btn" type="button" data-nav="back" aria-label="Indietro">‹</button><div class="head-copy"><h2 id="cityTitle">Oltre il rifugio</h2><p>Tre città, strade sempre diverse.</p></div></header><div class="screen-content"><div id="cities" aria-label="Scegli una città"></div></div><footer class="screen-foot"><p id="cityStatus">Cambiare città ricomincia la sessione. Kit, Fama, scoperte e frammenti restano con te.</p><button class="btn2" id="newCity" type="button">Nuova pianta</button></footer></div></section>
 
 <section id="loadout" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="loadoutTitle"><div class="screen-shell"><header class="screen-head"><button class="icon-btn back-btn" type="button" data-nav="back" aria-label="Indietro">‹</button><div class="head-copy"><h2 id="loadoutTitle">Il tuo modo di combattere</h2><p>Scegli un kit, poi rendilo tuo in officina.</p></div></header><div class="loadout-layout"><div id="loadoutCards" aria-label="Kit pronti e salvati"></div><section class="kit-preview-wrap" aria-label="Anteprima del kit"><div id="loadoutPreview"></div><footer class="preview-foot"><span id="loadoutBudget"></span><button id="equipKit" class="go-btn" type="button">Equipaggia</button></footer></section></div></div></section>
 
 <section id="journalScreen" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="journalTitle"><div class="screen-shell"><header class="screen-head"><button class="icon-btn back-btn" type="button" data-nav="back" aria-label="Indietro">‹</button><div class="head-copy"><h2 id="journalTitle">Il tuo passaggio a Dite</h2><p>Le imprese registrate su questo dispositivo.</p></div></header><div class="journal-layout"><aside class="journal-totals"><div><strong id="journalMissions">0</strong><span>Missioni completate</span></div><div><strong id="journalBosses">0</strong><span>Custodi sconfitti</span></div><p>Il registro conserva i risultati delle tue esplorazioni, fino alle ultime 32 imprese.</p></aside><div class="screen-content journal-history"><h3 id="journalCount"></h3><ol id="journalEntries"></ol></div></div></div></section>
 
+
+<section id="atlas" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="atlasTitle"><div class="screen-shell"><header class="screen-head"><button class="icon-btn back-btn" type="button" data-nav="back" aria-label="Indietro">‹</button><div class="head-copy"><h2 id="atlasTitle">Atlante del viaggio</h2><p id="atlasSummary"></p></div><button class="btn2" type="button" data-nav="city">Cambia città</button></header><div class="atlas-layout"><aside class="atlas-cartography"><h3 id="atlasCity"></h3><canvas id="atlasMap" width="440" height="440" role="img" aria-label="Mappa della città: i tre numeri corrispondono ai luoghi elencati; il punto bianco è il giocatore."></canvas><p>Segui un luogo e raggiungilo a piedi.<br>Il viaggio rapido si apre dopo la scoperta, fuori dal pericolo e dalle missioni.</p></aside><div class="screen-content"><div id="atlasPlaces"></div><p id="atlasMessage" role="status"></p><details class="atlas-records"><summary>Memorie dei luoghi</summary><div id="atlasMemories"></div></details><p id="atlasEndings"></p></div></div><p id="atlasSaveStatus" class="adventure-save-status" role="status"></p></div></section>
+<section id="dialogue" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="dialogueTitle"><div class="screen-shell dialogue-shell"><header class="screen-head"><div class="head-copy"><span id="dialogueEyebrow" class="eyebrow"></span><h2 id="dialogueTitle"></h2></div><button class="btn2" id="dialogueClose" type="button">Torna in città</button></header><div class="dialogue-body"><aside class="dialogue-portrait" aria-hidden="true"><div id="dialogueEmblem"></div><p>Le memorie di Dite</p></aside><div class="screen-content"><p id="dialogueText"></p><div id="dialogueChoices"></div><p id="dialogueMessage" role="status"></p></div></div><p id="dialogueSaveStatus" class="adventure-save-status" role="status"></p></div></section>
+
 <section id="settings" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle"><div class="screen-shell"><header class="screen-head"><button class="icon-btn back-btn" type="button" data-nav="back" aria-label="Indietro">‹</button><div class="head-copy"><h2 id="settingsTitle">Impostazioni</h2><p>Il gioco, alla tua mano.</p></div></header><div class="settings-tabs" role="tablist" aria-label="Categorie impostazioni"><button class="btn2 on" role="tab" aria-selected="true" aria-controls="settingsControls" type="button" data-settings-tab="controls">Comandi</button><button class="btn2" role="tab" aria-selected="false" aria-controls="settingsAudio" type="button" data-settings-tab="audio">Audio</button><button class="btn2" role="tab" aria-selected="false" aria-controls="settingsComfort" type="button" data-settings-tab="comfort">Grafica e comfort</button></div><div class="screen-content">
-  <div id="settingsControls" class="settings-panel" role="tabpanel"><label class="setting wide"><span class="setting-copy"><b>Sensibilità visuale</b><small>La stessa risposta sullo schermo e sul tasto primario.</small></span><input id="sens" aria-label="Sensibilità visuale" type="range" min="40" max="220" step="5"><output id="sensV" for="sens">100%</output></label><label class="setting"><span class="setting-copy"><b>Comandi per mancini</b><small>Movimento a destra, poteri a sinistra.</small></span><input type="checkbox" aria-label="Comandi per mancini" data-pref="leftHanded"></label><label class="setting"><span class="setting-copy"><b>Inverti visuale verticale</b><small>Trascina in alto per guardare in basso.</small></span><input type="checkbox" aria-label="Inverti visuale verticale" data-pref="invertY"></label></div>
+  <div id="settingsControls" class="settings-panel" role="tabpanel">
+  <div class="control-preview"><div><b>Comandi su misura</b><p id="controlsPreviewSide">Movimento a sinistra · poteri a destra</p><p>Anteprima del tuo kit. Sui display piccoli i tasti si adattano allo spazio disponibile.</p></div><div id="controlsPreview" aria-hidden="true"><span class="preview-stick"></span><div id="previewPowers"></div></div></div>
+  <label class="setting wide"><span class="setting-copy"><b>Dimensione dei poteri</b><small>Più spazio per il pollice, oppure più visuale libera.</small></span><input id="controlScale" type="range" data-pref="controlScale" aria-label="Dimensione dei poteri" min="0.9" max="1.15" step="0.05"><output id="controlScaleV" for="controlScale">100%</output></label>
+  <label class="setting"><span class="setting-copy"><b>Visibilità dei poteri</b><small>Alla pressione il tasto torna pienamente visibile.</small></span><input id="controlOpacity" type="range" data-pref="controlOpacity" aria-label="Visibilità dei poteri" min="0.55" max="1" step="0.05"><output id="controlOpacityV" for="controlOpacity">100%</output></label>
+  <label class="setting"><span class="setting-copy"><b>Corsa del joystick</b><small>Breve: movimento rapido. Lunga: più precisione. Il centro filtra i piccoli tremori.</small></span><input id="stickRadius" type="range" data-pref="stickRadius" aria-label="Corsa del joystick" min="36" max="64" step="2"><output id="stickRadiusV" for="stickRadius">46 px</output></label><label class="setting wide"><span class="setting-copy"><b>Sensibilità visuale</b><small>La stessa risposta sullo schermo e sul tasto primario.</small></span><input id="sens" aria-label="Sensibilità visuale" type="range" min="40" max="220" step="5"><output id="sensV" for="sens">100%</output></label><label class="setting"><span class="setting-copy"><b>Comandi per mancini</b><small>Movimento a destra, poteri a sinistra.</small></span><input type="checkbox" aria-label="Comandi per mancini" data-pref="leftHanded"></label><label class="setting"><span class="setting-copy"><b>Inverti visuale verticale</b><small>Trascina in alto per guardare in basso.</small></span><input type="checkbox" aria-label="Inverti visuale verticale" data-pref="invertY"></label></div>
   <div id="settingsAudio" class="settings-panel hidden" role="tabpanel"><label class="setting wide"><span class="setting-copy"><b>Volume</b><small>Effetti e atmosfera della città.</small></span><input type="range" data-pref="volume" aria-label="Volume" min="0" max="1" step="0.05"><output id="volumeV">100%</output></label><div class="setting"><span class="setting-copy"><b>Audio del gioco</b><small>Puoi silenziare il gioco senza cambiare volume.</small></span><button id="mute" class="btn2" type="button">Audio sì</button></div><label class="setting"><span class="setting-copy"><b>Feedback tattile</b><small id="hapticsNote">Disponibile nell’app su dispositivi compatibili.</small></span><input type="checkbox" aria-label="Feedback tattile" data-pref="haptics"></label></div>
-  <div id="settingsComfort" class="settings-panel hidden" role="tabpanel"><label class="setting wide"><span class="setting-copy"><b>Qualità grafica</b><small>Prestazioni riduce il carico degli effetti. Le minacce restano visibili.</small></span><select data-pref="quality" aria-label="Qualità grafica"><option value="auto">Automatica</option><option value="performance">Prestazioni</option><option value="quality">Alta qualità</option></select></label><label class="setting"><span class="setting-copy"><b>Movimento ridotto</b><small>Limita oscillazioni e animazioni decorative.</small></span><input type="checkbox" aria-label="Movimento ridotto" data-pref="reducedMotion"></label><label class="setting"><span class="setting-copy"><b>Lampi ridotti</b><small>Attenua i bagliori a pieno schermo.</small></span><input type="checkbox" aria-label="Lampi ridotti" data-pref="reducedFlash"></label></div>
+  <div id="settingsComfort" class="settings-panel hidden" role="tabpanel"><label class="setting wide"><span class="setting-copy"><b>Qualità grafica</b><small>Automatica adatta il dettaglio al carico e lo recupera quando possibile. Prestazioni limita gli effetti. HUD e minacce restano leggibili.</small></span><select data-pref="quality" aria-label="Qualità grafica"><option value="auto">Automatica</option><option value="performance">Prestazioni</option><option value="quality">Alta qualità</option></select></label><label class="setting"><span class="setting-copy"><b>Movimento ridotto</b><small>Limita oscillazioni e animazioni decorative.</small></span><input type="checkbox" aria-label="Movimento ridotto" data-pref="reducedMotion"></label><label class="setting"><span class="setting-copy"><b>Lampi ridotti</b><small>Attenua i bagliori a pieno schermo.</small></span><input type="checkbox" aria-label="Lampi ridotti" data-pref="reducedFlash"></label></div>
   </div><footer class="screen-foot settings-foot"><p id="settingsSaveStatus" role="status">Le preferenze si applicano subito.</p><button class="btn2" type="button" data-app-action="reset-settings">Ripristina valori</button></footer></div></section>
 
 <section id="tips" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="tipsTitle"><div class="screen-shell"><header class="screen-head"><button class="icon-btn back-btn" id="tipsOk" type="button" aria-label="Indietro">‹</button><div class="head-copy"><h2 id="tipsTitle">Impara la città</h2><p>I tuoi cinque poteri, il tuo percorso.</p></div></header><div class="screen-content"><div class="guide-grid">
@@ -344,9 +398,10 @@
   <article class="guide-section"><span class="guide-number">03</span><div><h3>Gli altri quattro poteri</h3><p>Movimento, due abilità e una suprema. La suprema si carica colpendo. Gli stati attivi mostrano il comando per terminarli: ripremilo quando vuoi.</p><p class="guide-keyboard"><kbd>Spazio</kbd>, <kbd>Q</kbd>, <kbd>E</kbd>, <kbd>R</kbd> sulla tastiera.</p></div></article>
   <article class="guide-section"><span class="guide-number">04</span><div><h3>Abitanti e custodi</h3><p>Avvicinati a un abitante con il segno <b>!</b> e accetta una missione. La Fama ti dà più punti per i poteri. Nelle arene i colpi dei boss sono annunciati a terra: spostati prima che arrivino.</p></div></article>
   <article class="guide-section"><span class="guide-number">05</span><div><h3>Costruisci il tuo kit</h3><p>In officina ogni spazio ha il suo tipo di potere. Cerca una meccanica, poi scegli grado, elemento e innesto. La bozza diventa il tuo kit solo con Equipaggia.</p></div></article>
+  <article class="guide-section"><span class="guide-number">06</span><div><h3>I nove luoghi</h3><p>Apri l’Atlante dal rifugio o dalla pausa e segui un luogo. Avvicinati a custodi, libri, sigilli e leve: compare un tasto per interagire. Ascolta gli indizi, prepara l’elemento necessario e apri la camera. Reperti, scorte e memorie restano nel tuo viaggio anche cambiando città.</p></div></article>
   </div></div><footer class="screen-foot"><p>Il percorso guidato osserva le tue azioni, un passo alla volta.</p><button class="btn2" id="guideRestart" type="button">Ricomincia i passaggi</button><button class="go-btn" id="guideStart" type="button">Inizia il percorso</button></footer></div></section>
 
-<section id="menu" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="menuTitle"><div class="screen-shell pause-shell"><div class="pause-body"><div class="pause-title"><svg class="brand-mark" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><g fill="currentColor"><path d="M244 476H332V756H244Z"/><path d="M244 452C244 340 328 246 438 183L483 248C398 306 332 372 332 452Z"/><path d="M512 144L575 216 512 288 449 216Z"/><path d="M780 452C780 340 696 246 586 183L541 248C626 306 692 372 692 452Z"/><path d="M692 476H780V756H692Z"/></g></svg><span class="eyebrow">Il tempo si ferma</span><h2 id="menuTitle">Una tregua.</h2><div id="menuSub"></div><details id="menuPowers" class="pause-status hidden"><summary>Stati del potere <span id="menuPowerCount"></span></summary><ul id="menuPowerList"></ul></details><details id="menuEffects" class="pause-status hidden"><summary>Potenziamenti <span id="menuEffectCount"></span></summary><ul id="menuEffectList"></ul></details></div><nav class="pause-actions" aria-label="Menu di pausa"><button class="go-btn" id="resume" type="button" aria-label="Riprendi partita">Riprendi</button><button class="btn2" id="menuForge" type="button">Officina</button><button class="btn2" id="menuSettings" type="button" data-nav="settings" aria-label="Impostazioni">Impostazioni</button><button class="btn2" id="menuTips" type="button">Guida</button><button class="btn2" id="menuMute" type="button">Audio sì</button><button class="btn2" id="menuHome" type="button">Torna al rifugio</button></nav></div></div></section>
+<section id="menu" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="menuTitle"><div class="screen-shell pause-shell"><div class="pause-body"><div class="pause-title"><svg class="brand-mark" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><g fill="currentColor"><path d="M244 476H332V756H244Z"/><path d="M244 452C244 340 328 246 438 183L483 248C398 306 332 372 332 452Z"/><path d="M512 144L575 216 512 288 449 216Z"/><path d="M780 452C780 340 696 246 586 183L541 248C626 306 692 372 692 452Z"/><path d="M692 476H780V756H692Z"/></g></svg><span class="eyebrow">Il tempo si ferma</span><h2 id="menuTitle">Una tregua.</h2><div id="menuSub"></div><details id="menuPowers" class="pause-status hidden"><summary>Stati del potere <span id="menuPowerCount"></span></summary><ul id="menuPowerList"></ul></details><details id="menuEffects" class="pause-status hidden"><summary>Potenziamenti <span id="menuEffectCount"></span></summary><ul id="menuEffectList"></ul></details></div><nav class="pause-actions" aria-label="Menu di pausa"><button class="go-btn" id="resume" type="button" aria-label="Riprendi partita">Riprendi</button><button class="btn2" id="menuForge" type="button">Officina</button><button class="btn2" id="menuSettings" type="button" data-nav="settings" aria-label="Impostazioni">Impostazioni</button><button class="btn2" id="menuTips" type="button">Guida</button><button class="btn2" id="menuMute" type="button">Audio sì</button><button class="btn2" id="menuAtlas" type="button" data-nav="atlas">Atlante e memorie</button><button class="btn2" id="useRemedy" type="button">Rimedio · <span id="remedyCount">0</span></button><p id="remedyMessage" role="status"></p><button class="btn2" id="menuHome" type="button">Torna al rifugio</button></nav></div></div></section>
 
 <section id="forge" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="forgeTitle"><header id="fTop"><div><span class="eyebrow">La tua bozza</span><h2 id="forgeTitle">Officina</h2></div><label for="fName" class="sr-only">Nome del kit</label><input id="fName" type="text" maxlength="18" placeholder="Nome del kit" enterkeyhint="done" autocomplete="off" autocapitalize="words" spellcheck="false"><button class="btn2 hidden" id="fKeyboardDone" type="button" aria-label="Chiudi tastiera">Fine</button><button class="btn2" id="fCancel" type="button">Annulla</button></header><div id="fBody"><nav class="fcol" id="fSlotRail" aria-label="I cinque spazi del kit"><div id="fSlots"></div></nav><section class="fcol" id="fPick" aria-label="Catalogo dei poteri"></section><aside class="fcol" id="fWorkbench" aria-label="Dettaglio e creazione"><div id="fDetail"></div><section class="forge-recipes"><h3 class="sec">Componi da una descrizione</h3><label for="fDesc" class="sr-only">Descrizione del kit</label><textarea id="fDesc" placeholder="Esempio: controlla il ghiaccio, scatta e protegge gli alleati" autocomplete="off" spellcheck="false"></textarea><div class="row"><button class="chip" id="fCompose" type="button">Componi</button><button class="chip" id="fRandom" type="button">Sorprendimi</button></div><h3 class="sec">Kit pronti</h3><div class="row" id="fPresets"></div><h3 class="sec" id="fSavedT">I tuoi kit</h3><div id="fSaved"></div></section></aside></div><footer id="fFooter"><div id="fBud"><div class="lab"><span>Punti kit</span><span id="fBudTxt"></span></div><div class="bar"><div id="fBudFill"></div></div></div><div id="fMsg" role="status" aria-live="polite"></div><button class="btn2" id="fSave" type="button">Salva</button><button class="go-btn" id="fUse" type="button">Equipaggia</button></footer></section>
 
@@ -5501,7 +5556,7 @@ const Core = (() => {
     }
   }
 
-  return { CELL, N, HALF, EYE, NODE_H, SAG, MOB, PSPEED, QINFO, create, step, setRecipe, cellOf, cellCenter, solidAt, opaqueAt, los, cablePoint, inTele, groundPoint, wakeBoss, bossCast, acceptQuest, pathCells, mkMob, run, canClone };
+  return { CELL, N, HALF, EYE, NODE_H, SAG, MOB, PSPEED, QINFO, create, step, setRecipe, cellOf, cellCenter, solidAt, opaqueAt, los, cablePoint, inTele, groundPoint, wakeBoss, bossCast, acceptQuest, gainFame, pathCells, mkMob, run, canClone };
 })();
 
 // Percorso introduttivo: osserva azioni del Core, senza modificarne lo stato.
@@ -5665,10 +5720,156 @@ const Journal = (() => {
 })();
 if (typeof G !== 'undefined') G.Journal = Journal;
 
+// Esplorazione persistente. Il Core continua a possedere combattimento e movimento.
+const DiteAdventure = (() => {
+  'use strict';
+  const BOOK = {
+    dite: [
+      { name:'Fonderia delle Ceneri', kind:'forge', keeper:'Alighiero', role:'Custode delle fornaci', element:'gelo', color:'#ed9d55', relic:'Cuore di scoria', herb:'Salvia di cenere', story:'La fornace ha smesso di ascoltare chi la accende. Non serve altro fuoco: raffredda il sigillo, poi apri la grata. Dentro riposa il primo frammento della città.', lore:'Le fornaci non bruciavano anime: custodivano i ricordi che nessuno voleva perdere. Quando i custodi tacquero, il calore rimase senza misura.' },
+      { name:'Archivio dei Nomi', kind:'archive', keeper:'Lia', role:'Rilegatrice dei ricordi', element:'luce', color:'#e1bd82', relic:'Nome senza voce', herb:'Inchiostro vivo', story:'Qui conserviamo i nomi di chi attraversa le mura. Una pagina è scomparsa dietro la grata. La luce rimette in ordine le lettere del sigillo.', lore:'Ogni scaffale ha un posto vuoto. Non è una dimenticanza: un archivio completo non lascerebbe spazio a chi deve ancora arrivare.' },
+      { name:'Specola del Vespro', kind:'observatory', keeper:'Brunetto', role:'Lettore di orbite', element:'folgore', color:'#b9a0ff', relic:'Astrolabio infranto', herb:'Polvere di stelle', story:'Le orbite sono ferme da anni. Un impulso di folgore al sigillo ridarà movimento alla macchina. Tre frammenti possono cambiare il destino di Dite.', lore:'La specola non predice il futuro. Mostra quante strade restano aperte. Questa notte, per la prima volta, ne è apparsa una nuova.' },
+    ],
+    cocito: [
+      { name:'Serra del Disgelo', kind:'garden', keeper:'Matelda', role:'Giardiniera dell’inverno', element:'fuoco', color:'#83d9ba', relic:'Seme d’inverno', herb:'Menta di brina', story:'Le radici sono vive sotto il ghiaccio. Scalda il sigillo con il fuoco, senza distruggere il giardino. Dietro la grata c’è l’ultimo seme della prima estate.', lore:'Le foglie crescono verso il basso per cercare il tepore della terra. I giardinieri hanno imparato a leggere le stagioni nelle radici.' },
+      { name:'Chiostro del Silenzio', kind:'cloister', keeper:'Piccarda', role:'Custode delle campane', element:'vento', color:'#b8d4f5', relic:'Voce di cristallo', herb:'Fiore di silenzio', story:'La campana non ha perduto la voce: le manca il respiro. Porta il vento al sigillo. Ascolta ciò che cambia prima di varcare il passaggio.', lore:'Nessuno qui ha fatto voto di tacere. Il silenzio è uno spazio lasciato agli altri, non un ordine imposto a sé stessi.' },
+      { name:'Darsena delle Stelle', kind:'docks', keeper:'Ulisse', role:'Cartografo dei ghiacci', element:'luce', color:'#8cc8ff', relic:'Bussola immobile', herb:'Sale lunare', story:'Le barche aspettano una rotta. La bussola dietro il sigillo cerca luce, non nord. Raccogli i tre frammenti e scegli a chi affidare il viaggio.', lore:'Sotto il ghiaccio si vede un cielo diverso. I marinai tracciano le rotte osservando le stelle ai propri piedi.' },
+    ],
+    malebolge: [
+      { name:'Orto degli Alchimisti', kind:'garden', keeper:'Arnaldo', role:'Coltivatore di rimedi', element:'veleno', color:'#a5ce67', relic:'Ampolla del mutamento', herb:'Radice amara', story:'Una goccia cambia il rimedio in veleno. Il nostro sigillo riconosce entrambi. Porta l’elemento veleno alla vasca e libera l’ampolla.', lore:'Ogni vaso reca due nomi: quello della malattia e quello della cura. Spesso sono la stessa parola, con una dose diversa.' },
+      { name:'Mercato Sommerso', kind:'docks', keeper:'Forese', role:'Mercante delle cose perdute', element:'gelo', color:'#ddbb6a', relic:'Moneta senza padrone', herb:'Loto di pece', story:'La pressione tiene chiusa la grata. Il gelo può fermare la macchina abbastanza a lungo. Quella moneta non si compra: si restituisce.', lore:'Qui si scambiano oggetti perduti, mai persone. Il prezzo di ogni merce è il racconto del viaggio che l’ha portata fin qui.' },
+      { name:'Teatro degli Echi', kind:'theatre', keeper:'Sordello', role:'Regista delle voci', element:'ombra', color:'#cf9bdf', relic:'Maschera sincera', herb:'Petalo d’eco', story:'Il palcoscenico ripete le voci più forti. L’ombra può spegnere il sigillo e lasciare parlare le altre. Dopo il terzo frammento, la scelta sarà tua.', lore:'Le maschere non nascondono il volto. Permettono di pronunciare una verità che, a viso aperto, non si riuscirebbe ancora a dire.' },
+    ],
+  };
+  const THEMES = Object.keys(BOOK), TYPES = ['keeper','lore','rune','lever','chest','herb','rest'];
+  const plain = x => !!x && typeof x === 'object' && !Array.isArray(x);
+  const initial = () => ({ version:1, cities:{}, supplies:0, tracked:null });
+  function normalize(raw) {
+    const out = initial();
+    for (const theme of THEMES) {
+      const old = plain(raw) && raw.version === 1 && plain(raw.cities) && plain(raw.cities[theme]) ? raw.cities[theme] : {};
+      out.cities[theme] = { ending:['share','preserve'].includes(old.ending) ? old.ending : '', sites:[] };
+      for (let i=0;i<3;i++) { const v = Array.isArray(old.sites) && plain(old.sites[i]) ? old.sites[i] : {};
+        const site = {}; for (const key of ['discovered','met','read','charged','opened','claimed','harvested']) site[key] = v[key] === true;
+        // Dipendenze chiuse: dati malformati non generano ricompense retroattive.
+        if (site.claimed) site.opened = site.charged = site.discovered = true;
+        if (site.opened) site.charged = true;
+        out.cities[theme].sites.push(site);
+      }
+      if (!out.cities[theme].sites.every(v => v.claimed)) out.cities[theme].ending = '';
+    }
+    if (plain(raw) && raw.version === 1) {
+      out.supplies = typeof raw.supplies === 'number' && Number.isFinite(raw.supplies) ? Math.max(0,Math.min(9,Math.floor(raw.supplies))) : 0;
+      if (plain(raw.tracked) && THEMES.includes(raw.tracked.theme) && Number.isInteger(raw.tracked.site) && raw.tracked.site >= 0 && raw.tracked.site < 3) out.tracked = { theme:raw.tracked.theme, site:raw.tracked.site };
+    }
+    return out;
+  }
+  function attach(s, raw) {
+    const progress = normalize(raw), theme = s.city.theme.id;
+    const fields = s.city.fields.slice().sort((a,b) => Math.hypot(a.x-s.city.spawn.x,a.z-s.city.spawn.z)-Math.hypot(b.x-s.city.spawn.x,b.z-s.city.spawn.z));
+    if (fields.length < 3) throw Error('Servono tre luoghi liberi per l’esplorazione');
+    const sites = BOOK[theme].map((entry,i) => ({ ...entry, id:i, x:fields[i].x, z:fields[i].z, progress:progress.cities[theme].sites[i] }));
+    s.city.props = s.city.props.filter(p => !sites.some(site => Math.abs(p.x-site.x) < 8 && Math.abs(p.z-site.z) < 8));
+    const objects = [], add = (site,type,dx,dz) => objects.push({ id:site.id+':'+type, site:site.id,type,x:site.x+dx,z:site.z+dz });
+    for (const site of sites) {
+      add(site,'keeper',-4,-4); add(site,'lore',4,-4); add(site,'rune',0,-2.5); add(site,'lever',3, -1.5);
+      add(site,'chest',0,3); add(site,'herb',-4,2.5); add(site,'rest',4,2.5);
+      for (const x of [-4,0,4]) s.city.props.push({x:site.x+x,z:site.z+6,hx:2,hz:.4,adventure:true});
+      for (const x of [-6,6]) for (const z of [1.5,4.5]) s.city.props.push({x:site.x+x,z:site.z+z,hx:.4,hz:1.5,adventure:true});
+      for (const x of [-4,4]) s.city.props.push({x:site.x+x,z:site.z,hx:2,hz:.35,adventure:true});
+      site.gate = {x:site.x,z:site.z,hx:2,hz:.35,adventure:true};
+      if (!site.progress.opened) s.city.props.push(site.gate);
+    }
+    s.adventure = { progress, sites, objects, revision:0, seenRevision:-1, target:null, restUntil:0, primaryCasts:s.stats.casts[0] };
+    return s.adventure;
+  }
+  const snapshot = s => normalize(s.adventure.progress);
+  const changed = s => { s.adventure.revision++; };
+  const ready = s => s.player.dead <= 0 && !['phase','possession','ride','leap','flight','dash','form'].some(key=>s.player[key]);
+  function visible(s,x,z,core) {
+    const p=s.player;if(!core.los(s,p.x,p.z,x,z))return false;
+    // The world grid does not contain the physical walls of these chambers.
+    const dx=x-p.x,dz=z-p.z,steps=Math.ceil(Math.hypot(dx,dz)/.15);
+    for(let i=1;i<steps;i++){const q=i/steps,px=p.x+dx*q,pz=p.z+dz*q;if(s.city.props.some(w=>w.adventure&&Math.abs(px-w.x)<w.hx&&Math.abs(pz-w.z)<w.hz))return false;}
+    return true;
+  }
+  function nearest(s, core) {
+    if (!s.adventure || !ready(s)) return null;
+    const p=s.player;
+    return s.adventure.objects.filter(o => {
+      const dx=o.x-p.x,dz=o.z-p.z,d=Math.hypot(dx,dz);
+      return d < 3.5 && (d < .5 || (-Math.sin(p.yaw)*dx-Math.cos(p.yaw)*dz)/d > .62) && visible(s,o.x,o.z,core);
+    }).sort((a,b)=>Math.hypot(a.x-p.x,a.z-p.z)-Math.hypot(b.x-p.x,b.z-p.z))[0] || null;
+  }
+  function label(s,o) { const site=s.adventure.sites[o.site]; return ({ keeper:'Parla con '+site.keeper,lore:'Leggi il reperto',rune:site.progress.charged?'Sigillo accordato':'Esamina il sigillo',lever:site.progress.opened?'Passaggio aperto':'Aziona la grata',chest:site.progress.claimed?'Reliquiario vuoto':'Apri il reliquiario',herb:site.progress.harvested?'Risorsa raccolta':'Raccogli '+site.herb,rest:'Riposa sulla panca' })[o.type]; }
+  function tick(s, events, core) {
+    const a=s.adventure; if (!a) return;
+    const continuous = s.stats.casts[0] > a.primaryCasts && (s.player.beam.on || s.player.cone);
+    a.primaryCasts = s.stats.casts[0];
+    const elements = events.filter(e=>e.type==='cast').map(e=>String(e.el).split('+')[0]);
+    if (continuous) elements.push(s.kit[0].el.split('+')[0]);
+    for (const site of a.sites) {
+      const v=site.progress;
+      if (!v.discovered && Math.hypot(s.player.x-site.x,s.player.z-site.z)<13) { v.discovered=true; changed(s); s.events.push({type:'discovery',title:site.name}); }
+      if (!v.charged && ready(s)) {
+        const target=a.objects.find(o=>o.site===site.id&&o.type==='rune'),p=s.player,dx=target.x-p.x,dz=target.z-p.z,d=Math.hypot(dx,dz);
+        // Risonanza dichiarata: un cast riuscito, vicino al sigillo e rivolto verso di esso.
+        // Non spaccia un evento di cast per una collisione di proiettile.
+        if (d<7 && d>.1 && Math.abs(p.pitch)<.65 && (-Math.sin(p.yaw)*dx-Math.cos(p.yaw)*dz)/d>.92 && visible(s,target.x,target.z,core) && elements.includes(site.element)) {
+          v.charged=true; changed(s); s.events.push({type:'resonance',title:site.name,el:site.element,x:target.x,z:target.z});
+        }
+      }
+    }
+    a.target=nearest(s,core);
+    if (a.target) s.hint.use={kind:'adventure',id:a.target.id,label:label(s,a.target)};
+  }
+  function view(s,id) {
+    const a=s.adventure,o=a.objects.find(o=>o.id===id); if (!o) return null;
+    const site=a.sites[o.site],v=site.progress,city=a.progress.cities[s.city.theme.id];
+    let title=site.name,eyebrow='',text='',choices=[];
+    if (o.type==='keeper') {
+      title=site.keeper; eyebrow=site.role+' · '+site.name; text=site.story;
+      choices=[{id:'track',label:'Segna questo luogo sull’atlante'},{id:'ask',label:'Raccontami questo luogo'}];
+      if (v.claimed) text='Hai recuperato '+site.relic+'. '+site.keeper+' riconosce il tuo passaggio. '+site.lore;
+      if (city.sites.every(v=>v.claimed)) {
+        text=city.ending ? (city.ending==='share'?'I frammenti sono tornati agli abitanti. Il luogo ora porta la luce della città.':'I frammenti sono custoditi nell’archivio. Il luogo ora porta il colore della memoria.') : 'I tre frammenti sono riuniti. Puoi condividerli con gli abitanti, oppure preservarli nell’archivio. La scelta resta nel tuo viaggio; cambia il titolo e la luce dei luoghi, non cancella poteri o missioni.';
+        choices=city.ending ? [{id:'track',label:'Rivedi il luogo nell’atlante'}] : [{id:'share',label:'Condividi con gli abitanti · titolo Custode dei legami'},{id:'preserve',label:'Preserva nell’archivio · titolo Custode della memoria'}];
+      }
+    } else if (o.type==='lore') { title='Memoria del luogo';eyebrow=site.name;text=site.lore;choices=[{id:'read',label:v.read?'Riletto · torna in città':'Conserva nel diario'}]; }
+    else if(o.type==='rune') { title='Sigillo di '+site.element;eyebrow=site.name;text=v.charged?'Il sigillo risponde. La leva accanto alla grata ora può aprire il passaggio.':'Avvicinati, guarda il sigillo e lancia un potere di '+site.element+'. La risonanza di un cast riuscito entro sette passi lo accorda. Se manca quell’elemento, cambialo nell’officina.';choices=[{id:'forge',label:'Prepara i poteri nell’officina'},{id:'track',label:'Segna il luogo'}]; }
+    else if(o.type==='lever') { title='Grata del reliquiario';text=v.opened?'Il passaggio è aperto.':v.charged?'Il meccanismo è pronto. Aprendo la grata potrai entrare nella camera.':'La leva è bloccata: accorda prima il sigillo davanti al passaggio.';choices=v.charged&&!v.opened?[{id:'open',label:'Apri il passaggio'}]:[]; }
+    else if(o.type==='chest') { title=site.relic;eyebrow=site.name;text=v.claimed?'Hai già recuperato questo frammento. È registrato nel tuo viaggio.':!v.opened?'La camera è ancora sigillata.':'Il frammento attende nel reliquiario. Recuperalo per completare questo luogo: +18 Fama.';choices=!v.claimed&&v.opened?[{id:'claim',label:'Recupera il frammento · +18 Fama'}]:[]; }
+    else if(o.type==='herb') { title=site.herb;text=v.harvested?'Hai già raccolto questa risorsa.':a.progress.supplies>=9?'La borsa contiene già nove scorte. Usa un rimedio dalla pausa prima di raccoglierne altre.':'Una risorsa per i tuoi rimedi. Ogni scorta ripristina 35 punti vita dalla pausa, fuori dal combattimento.';choices=!v.harvested&&a.progress.supplies<9?[{id:'harvest',label:'Raccogli una scorta'}]:[]; }
+    else { title='Una sosta';text='Riprendi fiato e recupera tutta la vita. Devi essere al sicuro: nessun nemico entro dodici passi. La panca si può usare ogni trenta secondi di gioco.';choices=[{id:'rest',label:'Riposa e recupera'}]; }
+    return {id,title,eyebrow:eyebrow||site.name,text,choices,color:site.color};
+  }
+  function safe(s,x=s.player.x,z=s.player.z) { return !s.boss && !s.mobs.some(e=>e.team==='e'&&!e.dead&&Math.hypot(e.x-x,e.z-z)<12) && !s.turrets.some(t=>t.state==='hostile'&&Math.hypot(t.x-x,t.z-z)<12); }
+  function travel(s,id) {
+    const site=s.adventure.sites[id],p=s.player;
+    if(!site||!site.progress.discovered||!ready(s)||s.quest||p.grab||p.captive||p.anchor||p.mem||!safe(s)||!safe(s,site.x,site.z-6))return {ok:false,message:'Viaggio non disponibile: termina la missione, rilascia i poteri attivi e assicurati che partenza e arrivo siano al sicuro.'};
+    p.x=site.x;p.z=site.z-6;p.cam.x=p.x;p.cam.z=p.z;p.hist.length=0;return {ok:true};
+  }
+  function act(s,id,action,core) {
+    const a=s.adventure,o=a.objects.find(o=>o.id===id);
+    if (!o || !ready(s) || Math.hypot(o.x-s.player.x,o.z-s.player.z)>4 || !visible(s,o.x,o.z,core)) return {ok:false,message:'Avvicinati di nuovo al luogo.'};
+    const site=a.sites[o.site],v=site.progress,city=a.progress.cities[s.city.theme.id];
+    if (action==='track') { a.progress.tracked={theme:s.city.theme.id,site:site.id};v.met=o.type==='keeper'||v.met;changed(s);return {ok:true,message:'Luogo segnato sull’atlante.'}; }
+    if (action==='ask'&&o.type==='keeper') { v.met=true;v.read=true;changed(s);return {ok:true,message:site.lore,stay:true}; }
+    if (action==='read'&&o.type==='lore') {v.read=true;changed(s);return {ok:true,message:'Memoria aggiunta al diario.'};}
+    if (action==='open'&&o.type==='lever'&&v.charged&&!v.opened) {v.opened=true;s.city.props=s.city.props.filter(p=>p!==site.gate);changed(s);return {ok:true,message:'La grata si apre. Entra nella camera.'};}
+    if (action==='claim'&&o.type==='chest'&&v.opened&&!v.claimed&&s.player.z>site.z+.8) {v.claimed=true;changed(s);core.gainFame(s,18,'esplorazione');return {ok:true,message:'Frammento recuperato · +18 Fama'};}
+    if (action==='harvest'&&o.type==='herb'&&!v.harvested&&a.progress.supplies<9) {v.harvested=true;a.progress.supplies++;changed(s);return {ok:true,message:'Una scorta aggiunta alla borsa.'};}
+    if (action==='rest'&&o.type==='rest') {if(!safe(s))return {ok:false,message:'Ci sono minacce vicine. Trova prima un momento sicuro.'};if(s.t<a.restUntil)return {ok:false,message:'Attendi '+Math.ceil(a.restUntil-s.t)+' secondi prima di riposare ancora.'};s.player.hp=s.player.maxHp;a.restUntil=s.t+30;return {ok:true,message:'Vita recuperata.'};}
+    if (['share','preserve'].includes(action)&&o.type==='keeper'&&!city.ending&&city.sites.every(v=>v.claimed)) {city.ending=action;changed(s);core.gainFame(s,30,'esplorazione');return {ok:true,message:'Scelta effettuata · +30 Fama'};}
+    return {ok:false,message:'Questa azione non è disponibile.'};
+  }
+  function remedy(s) {const a=s.adventure;if(!ready(s)||!safe(s)||a.progress.supplies<1||s.player.hp>=s.player.maxHp)return {ok:false,message:'Serve una scorta, vita da recuperare e nessuna minaccia vicina.'};a.progress.supplies--;s.player.hp=Math.min(s.player.maxHp,s.player.hp+35);changed(s);return {ok:true,message:'Rimedio usato · fino a 35 vita recuperata.'};}
+  return {BOOK,TYPES,normalize,attach,snapshot,nearest,label,tick,view,act,remedy,safe,travel};
+})();
+
 // Salvataggio del profilo: nessun oggetto, timer o riferimento del Core viene serializzato.
 const DiteStorage = (() => {
   const VERSION = 3, KEY = 'dite2', BACKUP_KEY = 'dite2.previous';
-  const PREFS = { muted: false, sens: 1, quality: 'auto', reducedMotion: false, reducedFlash: false, volume: 0.8, leftHanded: false, invertY: false, haptics: true };
+  const PREFS = { muted: false, sens: 1, quality: 'auto', reducedMotion: false, reducedFlash: false, volume: 0.8, leftHanded: false, invertY: false, haptics: true, controlScale: 1, controlOpacity: 1, stickRadius: 46 };
   const plain = (v) => !!v && typeof v === 'object' && !Array.isArray(v) && (Object.getPrototypeOf(v) === Object.prototype || Object.getPrototypeOf(v) === null);
   const number = (v, fallback, lo, hi, integer) => typeof v === 'number' && Number.isFinite(v) ? Math.max(lo, Math.min(hi, integer ? Math.trunc(v) : v)) : fallback;
   const string = (v, max) => typeof v === 'string' ? v.slice(0, max) : '';
@@ -5709,6 +5910,9 @@ const DiteStorage = (() => {
     }
     for (const key of Object.keys(PREFS)) if (typeof PREFS[key] === 'boolean') out[key] = typeof raw[key] === 'boolean' ? raw[key] : typeof defaults[key] === 'boolean' ? defaults[key] : PREFS[key];
     out.sens = number(raw.sens, PREFS.sens, 0.4, 2.2); out.volume = number(raw.volume, PREFS.volume, 0, 1); out.quality = ['auto', 'performance', 'quality'].includes(raw.quality) ? raw.quality : PREFS.quality;
+    out.controlScale = number(raw.controlScale, 1, 0.9, 1.15); out.controlOpacity = number(raw.controlOpacity, 1, 0.55, 1); out.stickRadius = number(raw.stickRadius, 46, 36, 64);
+    const adventure = typeof DiteAdventure !== 'undefined' ? DiteAdventure : require('./adventure.js');
+    out.adventure = adventure.normalize(raw.adventure);
     out.onboarding = defaults.normalizeOnboarding ? defaults.normalizeOnboarding(raw.onboarding) : onboarding(raw.onboarding);
     // Un profilo preesistente senza checkpoint non diventa un nuovo tutorial.
     if (!plain(raw.onboarding) || raw.onboarding.version !== 1) out.onboarding = null;
@@ -5791,8 +5995,8 @@ if (typeof G !== 'undefined') G.initStorage = function () {
 
 // Stato dell'applicazione, indipendente da DOM, rendering e simulazione.
 const DiteAppState = (() => {
-  const SCREENS = ['boot', 'lobby', 'city', 'loadout', 'forge', 'journal', 'loading', 'playing', 'pause', 'settings', 'guide', 'error'];
-  const PANELS = new Set(['city', 'loadout', 'forge', 'journal', 'settings', 'guide']);
+  const SCREENS = ['boot', 'lobby', 'city', 'loadout', 'forge', 'journal', 'loading', 'playing', 'pause', 'settings', 'guide', 'atlas', 'dialogue', 'error'];
+  const PANELS = new Set(['city', 'loadout', 'forge', 'journal', 'settings', 'guide', 'atlas', 'dialogue']);
   function create() {
     let screen = 'boot', hasSession = false, reason = '';
     const history = [], blockers = new Set(), listeners = new Set();
@@ -5841,6 +6045,48 @@ const DiteAppState = (() => {
   return { SCREENS: SCREENS.slice(), create };
 })();
 if (typeof G !== 'undefined') G.AppState = DiteAppState;
+
+// Politiche mobile pure: nessun clock, DOM o stato di gioco nascosto.
+const DiteMobile = (() => {
+  function stick(dx, dy, radius) {
+    const distance = Math.hypot(dx, dy), dead = radius * 0.08;
+    if (distance <= dead) return { x: 0, y: 0 };
+    const strength = Math.min(1, (distance - dead) / (radius - dead));
+    return { x: dx / distance * strength, y: dy / distance * strength };
+  }
+  function quality(maxRatio) {
+    const ceiling = Math.max(0.7, Math.min(2, maxRatio));
+    const levels = [];
+    for (let ratio = ceiling; ratio > 1; ratio = Math.max(1, ratio - 0.25)) levels.push({ ratio, bloom: true });
+    levels.push({ ratio: Math.min(1, ceiling), bloom: true }, { ratio: Math.min(1, ceiling), bloom: false });
+    for (const ratio of [0.85, 0.7]) if (ratio < ceiling) levels.push({ ratio, bloom: false });
+    let index = 0, elapsed = 0, frames = 0, stable = 0, warmup = 1, recoveryDelay = 12, probe = false;
+    const snapshot = () => ({ ...levels[index], level: index });
+    function reset() { elapsed = frames = stable = 0; warmup = 1; }
+    function sample(seconds) {
+      if (!Number.isFinite(seconds) || seconds <= 0) return null;
+      // Una sospensione non e un campione di rendimento della GPU.
+      if (seconds > 1) { reset(); return null; }
+      if (warmup > 0) { warmup -= seconds; return null; }
+      elapsed += seconds; frames++;
+      if (elapsed < 2 || frames < 8) return null;
+      const mean = elapsed / frames, span = elapsed; elapsed = frames = 0;
+      if (mean > 0.024) {
+        stable = 0;
+        if (index < levels.length - 1) {
+          index++; if (probe) recoveryDelay = Math.min(60, recoveryDelay * 2);
+          probe = false; warmup = 1; return snapshot();
+        }
+      } else if (mean < 0.018) {
+        stable += span;
+        if (stable >= recoveryDelay && index > 0) { index--; stable = 0; warmup = 1; probe = true; return snapshot(); }
+      } else stable = 0;
+      return null;
+    }
+    return { sample, reset, snapshot };
+  }
+  return { stick, quality };
+})();
 
 // MOTORE - costruzione della citta' a partire dalla mappa generata. Tutto da codice: geometrie, texture, insegne.
 G.PAL = {
@@ -6125,6 +6371,7 @@ G.buildWorld = function (city) {
 
   // ---------- Arche nei campi ----------
   for (const t of city.props) {
+    if (t.adventure) continue;
     put('stone', STONE, box(t.hx * 2, 0.9, t.hz * 2, t.x, 0.45, t.z));
     put('stone', STONE, box(t.hx * 2 + 0.2, 0.22, t.hz * 2 + 0.2, t.x + (t.hx > 1 ? 0.5 : 0), 1.05, t.z + (t.hx > 1 ? 0 : 0.5)));
     put('neonOr', null, box(t.hx * 2 - 0.3, 0.1, t.hz * 2 - 0.3, t.x, 0.92, t.z));
@@ -7112,6 +7359,121 @@ G.buildPowerFx = function (s) {
   };
 };
 
+// Nove luoghi originali; geometria statica unita per materiale, stato dinamico minimo.
+G.buildAdventure = function (s) {
+  const a=s.adventure, scene=G.scene, groups=[];
+  const cube=new THREE.BoxGeometry(1,1,1), cylinder=new THREE.CylinderGeometry(1,1,1,10), sphere=new THREE.IcosahedronGeometry(1,1), ring=new THREE.TorusGeometry(1,.045,5,32), roof=new THREE.ConeGeometry(1,1,4),arch=new THREE.TorusGeometry(1,.12,6,20,Math.PI);
+  const allGeo=[cube,cylinder,sphere,ring,roof,arch], staticByMaterial=new Map();
+  const materials=[];
+  function mat(color, glow=false) { const m=glow?new THREE.MeshBasicMaterial({color}):new THREE.MeshStandardMaterial({color,roughness:.8,metalness:.18}); materials.push(m);return m; }
+  const stone=mat('#667078'), dark=mat('#222b31'), gold=mat('#ad8551'), wood=mat('#58463c'), paper=mat('#c8b690');
+  function put(parent,geo,m,x,y,z,sx,sy,sz,staticMesh=true,rotation=0) {
+    const mesh=new THREE.Mesh(geo,m);mesh.position.set(x,y,z);mesh.scale.set(sx,sy,sz);if(typeof rotation==='object')mesh.rotation.set(rotation.x||0,rotation.y||0,rotation.z||0);else mesh.rotation.y=rotation;
+    if(staticMesh){mesh.updateMatrix();const copy=(geo.index?geo.toNonIndexed():geo.clone()).applyMatrix4(mesh.matrix);if(!staticByMaterial.has(m))staticByMaterial.set(m,[]);staticByMaterial.get(m).push(copy);}
+    else parent.add(mesh);return mesh;
+  }
+  function label(text,x,y,z,color,width=7) {
+    const canvas=document.createElement('canvas');canvas.width=512;canvas.height=96;const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#12171ee8';ctx.fillRect(0,0,512,96);ctx.strokeStyle=color;ctx.lineWidth=3;ctx.strokeRect(2,2,508,92);
+    ctx.fillStyle='#f5ebd5';ctx.font='600 27px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,256,48,490);
+    const texture=G.ownTexture(new THREE.CanvasTexture(canvas)),m=new THREE.SpriteMaterial({map:texture,depthTest:true});
+    const sp=new THREE.Sprite(m);sp.position.set(x,y,z);sp.scale.set(width,width*96/512,1);scene.add(sp);return sp;
+  }
+  for(const site of a.sites){
+    const x=site.x,z=site.z, tint=mat(site.color), glow=mat(site.color,true), group=new THREE.Group();group.position.set(x,0,z);scene.add(group);
+    const box=(m,dx,y,dz,w,h,d,rot=0)=>put(scene,cube,m,x+dx,y,z+dz,w,h,d,true,rot);
+    const col=(m,dx,y,dz,r,h)=>put(scene,cylinder,m,x+dx,y,z+dz,r,h,r);
+    box(dark,0,.035,1,15,.07,14); // pavimento a livello della strada, nessun gradino fittizio
+    for(const dx of [-6,6])for(const dz of [0,6]){col(stone,dx,2.5,dz,.45,5);box(gold,dx,5,dz,1.2,.22,1.2);}
+    box(stone,0,5.2,0,13,.45,.85);box(stone,0,5.2,6,13,.45,.85);
+    for(const dx of [-4,0,4])box(dark,dx,1.4,6,4,2.8,.8);
+    for(const dx of [-6,6])box(dark,dx,1.4,3,.8,2.8,6);
+    for(const dx of [-4,4])box(stone,dx,1.4,0,4,2.8,.7);
+    for(const dx of [-6,6])box(glow,dx,4.2,0,.1,.7,.95);
+    label(site.name,x,5.9,z-1.6,site.color);
+    // Ogni sagoma ha una funzione riconoscibile dalla strada.
+    if(site.kind==='forge'){
+      for(const dx of [-4,4]){col(dark,dx,5,5,1.1,10);col(gold,dx,8.7,5,1.25,.3);col(tint,dx,10,5,1.3,.35);box(glow,dx,1.3,4.1,.5,1.2,.05);for(let h=2;h<9;h+=2)box(gold,dx,h,3.9,1.2,.15,.1);}
+      for(const dx of [-4,4]){box(wood,dx,3.7,0,3.5,1,.9);box(glow,dx,3.7,-.49,2.8,.08,.05);}
+      col(dark,0,.5,-3,1.3,.8);col(glow,0,.96,-3,1.05,.08);
+    }else if(site.kind==='archive'){
+      put(scene,roof,dark,x,7.2,z+3,10,3.5,6,true,Math.PI/4);
+      for(const dx of [-4,4])for(let j=0;j<7;j++)box(j%2?paper:tint,dx-1.1+j*.35,3.8,-.44,.23,1.6,.15);
+      for(const dx of [-5,5])for(let row=0;row<3;row++){
+        box(wood,dx,1+row*.8,3,1,.12,4.7);
+        for(let j=0;j<9;j++)box(j%2?paper:tint,dx,1.35+row*.8,1+j*.45,.7,.6,.25,(j%3-1)*.08);
+      }
+      box(gold,0,5.7,3,4,.15,4);col(glow,0,5.3,3,.16,.8);
+    }else if(site.kind==='observatory'){
+      const orbit=new THREE.Group();orbit.position.set(0,8.5,3);group.add(orbit);
+      for(let i=0;i<3;i++){const m=put(orbit,ring,glow,0,0,0,2+i*.4,2+i*.4,2+i*.4,false);m.rotation.x=i*.7;m.rotation.z=i*.8;}
+      put(orbit,sphere,tint,0,0,0,.5,.5,.5,false);group.userData.orbit=orbit;
+      col(stone,0,4,5,.45,8);box(gold,0,6,3,7,.18,5);
+    }else if(site.kind==='garden'){
+      for(const dx of [-4,4])for(const dz of [1.6,4.6]){
+        col(wood,dx,2,dz,.2,4);put(scene,sphere,tint,x+dx,4.3,z+dz,1.5,2,1.5);
+        box(stone,dx,.25,dz,2.2,.5,1.8);
+      }
+      for(let i=0;i<4;i++)put(scene,arch,gold,x,4.5,z+i*2,6,3.5,1);
+      if(s.city.theme.id==='malebolge')for(const dx of [-4,4]){col(tint,dx,6.8,3,.6,1.7);col(gold,dx,7.8,3,.25,.5);}
+    }else if(site.kind==='cloister'){
+      for(const dx of [-1.6,1.6])col(paper,dx,7.2,3,.2,5);
+      put(scene,roof,dark,x,10,z+3,3.4,2,3.4,true,Math.PI/4);
+      put(scene,arch,paper,x,4.1,z-.5,2.2,2,1);
+      for(const dx of [-4,4])for(const dz of [1,3,5]){col(stone,dx,2,dz,.25,4);box(paper,dx,4,dz,.8,.15,.8);}
+      const bell=put(group,cylinder,gold,0,8,3,.9,1.1,.9,false);group.userData.bell=bell;
+      for(const dx of [-2,2])box(glow,dx,2.5,5.5,.3,2,.1);
+    }else if(site.kind==='docks'){
+      box(tint,0,.09,4,9,.1,2.5);
+      for(let i=0;i<10;i++)box(wood,-4.5+i,.2,2.5,.7,.2,5);
+      for(const dx of [-4,4]){box(wood,dx,.7,4,1.3,.8,3.1);col(gold,dx,5,4,.12,10);box(paper,dx+.6,7.6,4,2.5,3,.06);box(gold,dx+.6,9.2,4,3,.1,.1);}
+      if(s.city.theme.id==='malebolge')for(const dx of [-4,4]){box(tint,dx,4.5,-1,3.5,.2,3);for(let i=0;i<5;i++)box(paper,dx-1.4+i*.7,4.52,-1,.3,.2,3);}
+    }else{
+      box(tint,0,6.5,1,12,1.8,2);box(gold,0,7.5,1,13,.2,2.5);
+      for(const dx of [-3,3]){put(scene,sphere,paper,x+dx,6.6,z-.1,.75,.8,.25);box(dark,dx-.25,6.8,-.35,.12,.12,.05);box(dark,dx+.25,6.8,-.35,.12,.12,.05);box(dark,dx,6.3,-.35,.3,.1,.05);}
+      box(wood,0,.1,4,10,.2,3);
+      for(const dx of [-4,4]){box(tint,dx,3.2,5,2,4,.12);put(scene,sphere,paper,x+dx,3,z+4.8,.5,.7,.2);}
+      for(const dx of [-3,0,3])box(wood,dx,.45,1.8,1.8,.9,.6);
+    }
+    const gate=new THREE.Group();group.add(gate);
+    for(let i=-3;i<=3;i++)put(gate,cube,gold,i*.55,1.7,0,.09,3.4,.16,false);
+    for(const y of [.3,3.1])put(gate,cube,gold,0,y,0,3.8,.15,.2,false);
+    // Nine bars move as one gate: one draw per chamber, not nine.
+    const bars=gate.children.map(mesh=>{mesh.updateMatrix();return mesh.geometry.clone().applyMatrix4(mesh.matrix);});
+    const gateGeometry=THREE.BufferGeometryUtils.mergeBufferGeometries(bars,false);
+    gate.clear();gate.add(new THREE.Mesh(gateGeometry,gold));for(const geo of bars)geo.dispose();
+    const rune=new THREE.Group();rune.position.set(0,1,-2.5);group.add(rune);
+    put(rune,cylinder,dark,0,-.5,0,.65,.8,.65,false);
+    const gem=put(rune,sphere,glow,0,.4,0,.36,.5,.36,false);
+    const chest=new THREE.Group();chest.position.set(0,.5,3);group.add(chest);
+    put(chest,cube,wood,0,0,0,1.6,.85,.8,false);
+    const lid=put(chest,cube,gold,0,.5,0,1.7,.15,.9,false);
+    const herb=put(group,sphere,tint,-4,.4,2.5,.55,.7,.55,false);
+    box(wood,4,.65,2.5,2,.18,.65);for(const dx of [3.3,4.7])box(gold,dx,.3,2.5,.15,.6,.5);
+    box(stone,4,.7,-4,1,.9,.7);box(paper,4,1.2,-4,1.05,.08,.8);
+    col(dark,3,.4,-1.5,.25,.8);const lever=put(group,cube,gold,3,1,-1.5,.12,.9,.12,false);lever.rotation.z=.5;
+    // Abitante dedicato: vesti, volto e cappuccio originali, senza texture remote.
+    put(scene,cylinder,tint,x-4,.85,z-4,.35,1.5,.35);put(scene,sphere,paper,x-4,1.8,z-4,.28,.32,.28);
+    put(scene,sphere,dark,x-4,1.98,z-3.94,.36,.22,.34);
+    for(const dx of [-.42,.42])put(scene,cylinder,tint,x-4+dx,1,z-4,.1,.8,.1);
+    label(site.keeper,x-4,2.65,z-4,site.color,2.6);
+    groups.push({site,group,gate,gem,lid,herb,lever,glow});
+  }
+  for(const [material,list]of staticByMaterial){const merged=THREE.BufferGeometryUtils.mergeBufferGeometries(list,false);scene.add(new THREE.Mesh(merged,material));for(const g of list)g.dispose();}
+  // Le primitive degli oggetti dinamici appartengono a questa scena.
+  for(const geo of allGeo)if(!groups.some(g=>{let used=false;g.group.traverse(o=>{if(o.geometry===geo)used=true;});return used;}))geo.dispose();
+  G.adventureViews=groups;
+};
+G.syncAdventure = function (s,dt,t) {
+  if(!G.adventureViews)return;
+  for(const v of G.adventureViews){const p=v.site.progress,ending=s.adventure.progress.cities[s.city.theme.id].ending;
+    v.gate.position.y=p.opened?3.7:0;v.gem.scale.set(.36,.5,.36).multiplyScalar(p.charged?1.25:1);if(!G.renderPrefs.reducedMotion)v.gem.rotation.y=t*.35;
+    v.lid.rotation.x=p.claimed?-1.1:0;v.herb.visible=!p.harvested;v.lever.rotation.z=p.opened?-.5:.5;
+    v.glow.color.set(ending==='share'?'#82dabb':ending==='preserve'?'#b7a1ee':p.charged?'#e8d8aa':v.site.color);
+    if(v.group.userData.orbit&&!G.renderPrefs.reducedMotion)v.group.userData.orbit.rotation.y=t*.12;
+  }
+};
+
 // MOTORE - icone, memoria locale, officina dei personaggi.
 G.ICON = {
   orb: 'M12 7a5 5 0 1 0 0 10a5 5 0 0 0 0-10zM3 12h3M18 12h3', bolt: 'M13 2 5 13h6l-1 9 9-12h-6z', beam: 'M3 12h14M17 8l4 4-4 4M3 8v8', cone: 'M4 12 20 5v14z',
@@ -7220,9 +7582,19 @@ G.shell = (() => {
     text('lobbyProgress','Fama ' + (model.fame || 0) + ', livello ' + model.level);
     text('play',model.session ? 'Riprendi' : 'Entra a ' + theme.nome); $('play').setAttribute('aria-label','Entra nel gioco');
     text('saveStatus',status.message || 'Progressi sul dispositivo'); text('settingsSaveStatus',status.message || 'Le preferenze si applicano subito.'); $('saveStatus').dataset.state = status.state || 'ready';
+    for(const id of ['atlasSaveStatus','dialogueSaveStatus']){text(id,status.message || 'Progressi sul dispositivo');$(id).dataset.state=status.state || 'ready';}
     const muted = prefs.muted == null ? !!model.muted : !!prefs.muted; text('mute',muted ? 'Audio no' : 'Audio sì'); text('menuMute',muted ? 'Audio no' : 'Audio sì');
     for (const input of $('settings').querySelectorAll('[data-pref]')) { const key = input.dataset.pref; if (prefs[key] == null) continue; if (input.type === 'checkbox') input.checked = !!prefs[key]; else input.value = prefs[key]; }
     if (prefs.sens != null) { $('sens').value = Math.round(prefs.sens * 100); text('sensV',Math.round(prefs.sens * 100) + '%'); }
+    for (const key of ['controlScale', 'controlOpacity']) text(key + 'V', Math.round(prefs[key] * 100) + '%');
+    text('stickRadiusV', Math.round(prefs.stickRadius) + ' px');
+    text('controlsPreviewSide', prefs.leftHanded ? 'Movimento a destra · poteri a sinistra' : 'Movimento a sinistra · poteri a destra');
+    const preview = $('controlsPreview');
+    if (preview) {
+      preview.style.setProperty('--preview-scale', prefs.controlScale || 1);
+      preview.style.setProperty('--preview-opacity', prefs.controlOpacity || 1);
+      html('previewPowers', r.slots.map((slot, i) => '<span class="preview-button pb' + i + '" style="--c:' + B.ELEM[slot.el].css + '">' + G.svg(B.ARCH[slot.id].ic) + '</span>').join(''));
+    }
     text('volumeV',Math.round((prefs.volume == null ? 1 : prefs.volume) * 100) + '%');
     const haptic = $('settings').querySelector('[data-pref=haptics]'); haptic.disabled = !model.nativeHaptics;
     text('hapticsNote',model.nativeHaptics ? 'Una risposta breve alle azioni importanti.' : 'Disponibile nell’app su dispositivi compatibili.');
@@ -7342,6 +7714,43 @@ G.initForge = function () {
     isOpen:() => !$('forge').classList.contains('hidden')
   };
 };
+
+G.adventureUI = (() => {
+  const $=id=>document.getElementById(id), esc=G.esc;
+  function portrait(s,id,color){
+    const i=Number(id.split(':')[0]),skin=['#b98e72','#c3a28a','#ae877b'][i],hood=['#33313d','#283b40','#393040'][i];
+    return '<svg class="keeper-portrait" viewBox="0 0 240 260" aria-hidden="true"><defs><linearGradient id="portraitLight" x2="0" y2="1"><stop stop-color="'+color+'" stop-opacity=".2"/><stop offset="1" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs><circle cx="120" cy="110" r="88" fill="url(#portraitLight)"/><circle cx="120" cy="110" r="85" fill="none" stroke="'+color+'" stroke-opacity=".45"/><path d="M30 254 45 194 82 172 70 125 73 77 120 32 167 77 170 125 158 172 195 194 210 254Z" fill="'+hood+'" stroke="'+color+'" stroke-opacity=".7"/><path d="M79 100 97 75 143 75 161 100 154 145 136 164 105 164 86 145Z" fill="'+skin+'"/><path d="M78 103 120 57 162 103 151 75 120 46 89 75Z" fill="#181d28"/><path d="m89 109 18-4m26 0 18 4m-34 7-4 18h13m-19 13q14 8 27 0" fill="none" stroke="#473c3c" stroke-width="3" stroke-linecap="round"/><path d="M46 196 84 171 120 205 156 171 194 196 177 254H63Z" fill="'+color+'" fill-opacity=".22"/><path d="m84 171 36 34 36-34m-36 34v49" fill="none" stroke="'+color+'" stroke-width="2"/><path d="m120 215 9 10-9 10-9-10Z" fill="'+color+'"/><circle cx="99" cy="114" r="2" fill="#1d2027"/><circle cx="141" cy="114" r="2" fill="#1d2027"/></svg>';
+  }
+  function dialog(s,id,message) {
+    const v=DiteAdventure.view(s,id);if(!v)return;
+    $('dialogueTitle').textContent=v.title;$('dialogueEyebrow').textContent=v.eyebrow;$('dialogueText').textContent=v.text;
+    $('dialogueMessage').textContent=message||'';$('dialogue').style.setProperty('--place-color',v.color);
+    $('dialogueChoices').innerHTML=v.choices.map(c=>'<button class="dialogue-choice" type="button" data-adventure-action="'+c.id+'">'+esc(c.label)+'<span aria-hidden="true">↗</span></button>').join('');
+    const keeper=id.split(':')[1]==='keeper';$('dialogueEmblem').classList.toggle('has-portrait',keeper);
+    $('dialogueEmblem').innerHTML=keeper?portrait(s,id,v.color):G.svg(({rune:'orb',chest:'crown',lore:'eye',herb:'heal',rest:'heal',lever:'release'})[id.split(':')[1]]);
+  }
+  function atlas(s) {
+    const a=s.adventure, progress=a.progress, theme=s.city.theme.id;
+    let discoveries=0,relics=0;for(const c of Object.values(progress.cities))for(const v of c.sites){discoveries+=Number(v.discovered);relics+=Number(v.claimed);}
+    $('atlasSummary').textContent=discoveries+'/9 luoghi scoperti · '+relics+'/9 frammenti · '+progress.supplies+' scorte';
+    $('atlasCity').textContent=s.city.nome;
+    const map=$('atlasMap'),ctx=map.getContext('2d'),size=map.width,k=size/s.city.N,mm=v=>(v+s.city.HALF)/(s.city.HALF*2)*size;
+    ctx.fillStyle='#111920';ctx.fillRect(0,0,size,size);
+    for(let z=0;z<s.city.N;z++)for(let x=0;x<s.city.N;x++){const tile=s.city.map[z][x];ctx.fillStyle=tile==='#'?'#28343b':tile==='~'?'#395968':tile==='='?'#ab9975':'#172027';ctx.fillRect(x*k,z*k,k+.5,k+.5);}
+    for(const site of a.sites){const tracked=progress.tracked&&progress.tracked.theme===theme&&progress.tracked.site===site.id;ctx.fillStyle=site.progress.claimed?'#8ddcb5':site.color;ctx.beginPath();ctx.arc(mm(site.x),mm(site.z),tracked?12:9,0,Math.PI*2);ctx.fill();ctx.fillStyle='#111';ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(site.id+1),mm(site.x),mm(site.z));}
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(mm(s.player.x),mm(s.player.z),5,0,7);ctx.fill();
+    $('atlasPlaces').innerHTML=a.sites.map(site=>{
+      const v=site.progress,tracked=progress.tracked&&progress.tracked.theme===theme&&progress.tracked.site===site.id;
+      const state=v.claimed?'Frammento recuperato':v.opened?'Entra nella camera':v.charged?'Aziona la grata':v.discovered?'Accorda il sigillo · '+site.element:'Da esplorare';
+      return '<article class="atlas-place" style="--place-color:'+site.color+'"><div class="place-number">0'+(site.id+1)+'</div><div><span class="eyebrow">'+esc(state)+'</span><h3>'+esc(site.name)+'</h3><p>'+esc(site.role)+' · '+esc(site.keeper)+'</p><button type="button" class="btn2" data-track-site="'+site.id+'" aria-pressed="'+!!tracked+'">'+(tracked?'Seguito':'Segui sulla mappa')+'</button>'+(v.discovered?'<button type="button" class="btn2" data-travel-site="'+site.id+'">Raggiungi il luogo</button>':'')+'</div></article>';
+    }).join('');
+    const notes=[];for(const [key,entries] of Object.entries(DiteAdventure.BOOK))entries.forEach((entry,i)=>{const v=progress.cities[key].sites[i];if(v.read)notes.push('<article><h3>'+esc(entry.name)+'</h3><p>'+esc(entry.lore)+'</p></article>');});
+    $('atlasMemories').innerHTML=notes.length?notes.join(''):'<p class="atlas-empty">Leggi i reperti o ascolta i custodi per conservare qui le memorie dei nove luoghi.</p>';
+    const endings=Object.entries(progress.cities).filter(([,c])=>c.ending);
+    $('atlasEndings').textContent=endings.length?endings.map(([theme,c])=>City.THEMES[theme].nome+' · '+(c.ending==='share'?'Custode dei legami':'Custode della memoria')).join(' / '):'Tre frammenti per città. Poi torna da un custode per scegliere a chi affidarli.';
+  }
+  return {dialog,atlas};
+})();
 
 // MOTORE - lato schermo: resa, comandi, interfaccia, suoni, ciclo principale.
 G.start = function () {
@@ -7480,8 +7889,8 @@ G.start = function () {
     if (!active()) return;
     if (e.pointerId === look.id && !locked) { turn(e.clientX - look.x, e.clientY - look.y, e.pointerType === 'mouse' ? 0.004 : 0.0062); look.x = e.clientX; look.y = e.clientY; return; }
     if (e.pointerId !== joy.id) return;
-    let dx = e.clientX - joy.ox, dy = e.clientY - joy.oy; const d = Math.hypot(dx, dy), R = 46; if (d > R) { dx = (dx / d) * R; dy = (dy / d) * R; }
-    joy.x = dx / R; joy.y = dy / R; knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+    let dx = e.clientX - joy.ox, dy = e.clientY - joy.oy; const d = Math.hypot(dx, dy), R = st.stickRadius; if (d > R) { dx = (dx / d) * R; dy = (dy / d) * R; }
+    const movement = DiteMobile.stick(dx, dy, R); joy.x = movement.x; joy.y = movement.y; knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
   });
   const ptrEnd = (e) => { if (e.pointerType === 'mouse') fireMouse = false; if (e.pointerId === look.id) look.id = null; if (e.pointerId === joy.id) { joy.id = null; joy.x = joy.y = 0; joyEl.style.display = 'none'; } };
   canvas.addEventListener('pointerup', ptrEnd); canvas.addEventListener('pointercancel', ptrEnd); canvas.addEventListener('lostpointercapture', ptrEnd);
@@ -7534,9 +7943,20 @@ G.start = function () {
     }
   }, true);
 
+  // Feedback immediato anche prima del prossimo frame WebGL, separato dal cast riuscito.
+  const pressedPointers = new Map();
+  for (const button of [...BT, $('useBtn')]) button.addEventListener('pointerdown', event => {
+    if (!active()) return; pressedPointers.set(event.pointerId, button); button.classList.add('pressed');
+  });
+  const releaseFeedback = event => {
+    const button = pressedPointers.get(event.pointerId); pressedPointers.delete(event.pointerId);
+    if (button && !Array.from(pressedPointers.values()).includes(button)) button.classList.remove('pressed');
+  };
+  for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) document.addEventListener(type, releaseFeedback, true);
   const inp = { mx: 0, my: 0, yaw: 0, pitch: 0, fire: false, b: [false, false, false, false, false], use: false };
   function resetInput() {
     if (menuGesture) menuGesture.cancelled = true;
+    for (const button of pressedPointers.values()) button.classList.remove('pressed'); pressedPointers.clear();
     const captures = [[canvas, joy.id], [canvas, look.id], [b0, zp.id]];
     joy.id = look.id = zp.id = null; joy.x = joy.y = 0; fireBtn = fireMouse = false; keys.clear();
     buf.fill(0); fresh.fill(false); useBuf = 0; useFresh = false; inp.mx = inp.my = 0; inp.fire = inp.use = false; inp.b.fill(false); acc = 0;
@@ -7599,6 +8019,7 @@ G.start = function () {
     mg.drawImage(baseMap, 0, 0);
     s.city.arenas.forEach((A, i) => { const stt = s.arenas[i]; mg.strokeStyle = css(B.BOSSES[A.boss].el); mg.globalAlpha = stt.status === 'sealed' && stt.t <= 0 ? 1 : 0.35; mg.lineWidth = 2; mg.beginPath(); mg.arc(mm(A.x), mm(A.z), 6, 0, 7); mg.stroke(); mg.globalAlpha = 1; });
     for (const tu of s.turrets) { mg.fillStyle = tu.state === 'owned' ? '#3fe9ff' : tu.state === 'idle' ? '#77778a' : tu.state === 'reboot' ? '#ffb23a' : '#ff3018'; mg.fillRect(mm(tu.x) - 1.5, mm(tu.z) - 1.5, 3, 3); }
+    for (const site of s.adventure ? s.adventure.sites : []) { mg.strokeStyle = site.progress.claimed ? '#8ddcb5' : site.color; mg.lineWidth = 1.5; mg.strokeRect(mm(site.x)-3,mm(site.z)-3,6,6); }
     for (const g of s.givers) { const on = g.offer && !s.quest; mg.fillStyle = on ? '#ffd24a' : s.quest && s.quest.giver === g.id ? '#7dffb0' : '#6a6470'; mg.beginPath(); mg.arc(mm(g.x), mm(g.z), on ? 3.2 : 2.2, 0, 7); mg.fill(); }
     for (const c of s.npcs) if (c.st === 'follow') { mg.fillStyle = '#7dffb0'; mg.fillRect(mm(c.x) - 1, mm(c.z) - 1, 2, 2); }
     for (const e of s.mobs) { if (e.spawn > 0 || e.dead || e.captive) continue; mg.fillStyle = e.team === 'a' ? (e.charm > 0 ? '#ff3fd0' : '#7dffb0') : '#ff4028'; mg.beginPath(); mg.arc(mm(e.x), mm(e.z), C.MOB[e.kind].heavy ? 2.6 : 1.6, 0, 7); mg.fill(); }
@@ -7699,6 +8120,8 @@ G.start = function () {
     for (const ev of s.events) {
       G.powerEvent(ev);
       switch (ev.type) {
+        case 'discovery': banner('Luogo scoperto', ev.title, 'gd'); break;
+        case 'resonance': banner('Sigillo accordato', 'Aziona la leva per aprire il passaggio', 'gd'); G.ring(ev.x,.2,ev.z,.4,2,.8,ec(ev.el)); chime(660,990); break;
         case 'cast': {
           const h = G.hands;
           if (ev.slot > 0) haptic('light');
@@ -7844,6 +8267,7 @@ G.start = function () {
     G.beaconMat.color.setHex(st.reducedMotion || st.reducedFlash || Math.sin(t * 3) > 0.2 ? 0xff2a18 : 0x3a0806);
     G.towerLight.intensity = 1.1 + (st.reducedMotion || st.reducedFlash ? 0 : Math.sin(t * 2) * 0.3) + (G.hypT > 0 ? 1.5 : 0);
 
+    G.syncAdventure(s,dt,t);
     G.syncMobs(s, dt, t); G.syncNpcs(s, dt, t); G.syncGivers(s, t); G.syncTurrets(s, dt, t); G.syncBoss(s, dt, t); G.syncSeals(s, t); G.syncTeles(s, t); G.syncThings(s, dt, t); G.animZones(s, dt, t); G.animMobs(s, dt); G.syncBeacon(s, t); G.syncOrbs(s, t, dt); G.drawScreens(dt, t);
     G.nodeGlows.forEach((sp, i) => { const on = s.hint.node === i; sp.scale.setScalar((on ? 5 : 2.4) + (st.reducedMotion ? 0 : Math.sin(t * 5 + i) * 0.4)); sp.material.color.setHex(on ? 0xffffff : 0x55f0ff); });
     if (active() && riding && Math.random() < 0.7) G.burst(p.cam.x, p.cam.y - 0.4, p.cam.z, 1, 0xbfefff, 2, 0, 0.3, 0.06, 0.5);
@@ -7894,6 +8318,11 @@ G.start = function () {
     let txt = '';
     if (riding) txt = 'guarda dove andare · ripremi per scendere'; else if (hnt.node >= 0) txt = 'cavo a portata'; else if (hnt.screen >= 0 && s.kit.some((K, i) => K.kind === 'charm' && s.ready[i])) txt = 'schermo vicino: ipnosi in onda';
     else if (s.boss && s.boss.out > 0.5) txt = 'torna nell\'arena o il boss si riaddormenta'; else if (s.quest && s.quest.type === 'ripetitori' && s.quest.hold > 0) txt = 'resta nel cerchio';
+    const tracked = s.adventure.progress.tracked;
+    if (!txt && tracked && tracked.theme === s.city.theme.id) {
+      const site=s.adventure.sites[tracked.site], dx=site.x-p.x,dz=site.z-p.z, angle=Math.atan2(-dx,-dz)-yaw, side=Math.atan2(Math.sin(angle),Math.cos(angle));
+      txt=(Math.abs(side)<.35?'↑ ':side>0?'← ':'→ ')+site.name+' · '+Math.round(Math.hypot(dx,dz))+' m';
+    }
     if (hintEl.textContent !== txt) hintEl.textContent = txt;
     if (!riding && hnt.node >= 0) { const n = s.city.nodes[hnt.node]; project(n.x, n.y, n.z, scr); if (scr.ok) { nodeMark.style.display = 'block'; nodeMark.style.left = scr.x + 'px'; nodeMark.style.top = scr.y + 'px'; } else nodeMark.style.display = 'none'; } else nodeMark.style.display = 'none';
     // tasto contestuale
@@ -7902,10 +8331,16 @@ G.start = function () {
     // missione
     const q = s.quest, qp = $('quest');
     if (q) { qp.classList.remove('none'); setTxt('qTitle', q.titolo.toUpperCase()); setTxt('qLine', q.line || ''); const tm = q.time > 0 ? Math.ceil(q.time) : 0; setTxt('qTime', tm ? Math.floor(tm / 60) + ':' + String(tm % 60).padStart(2, '0') : ''); $('qTime').classList.toggle('low', tm > 0 && tm <= 10); }
+    else if(tracked&&tracked.theme===s.city.theme.id){
+      const site=s.adventure.sites[tracked.site],v=site.progress;
+      qp.classList.remove('none');setTxt('qTitle',site.name);setTxt('qTime','');
+      setTxt('qLine',v.claimed?'Frammento recuperato · scegli il prossimo luogo nell’atlante':v.opened?'Entra e recupera il frammento':v.charged?'Aziona la leva accanto alla grata':'Accorda il sigillo con '+site.element);
+    }
     else { qp.classList.add('none'); setTxt('qTitle', 'MISSIONE'); setTxt('qTime', ''); setTxt('qLine', 'Cerca chi ha un ! sopra la testa'); }
     // segnale dell'obiettivo: sullo schermo se e' davanti, sul bordo se e' altrove
     let ox = null, oz = 0;
     if (q && q.obj && !(q.type === 'pubblico' && q.line[0] === 'A')) { ox = q.obj.x; oz = q.obj.z; if (q.type === 'scorta' && q.obj2 && Math.hypot(q.obj2.x - p.x, q.obj2.z - p.z) > 11) { ox = q.obj2.x; oz = q.obj2.z; } }
+    else if(!q&&!s.boss&&tracked&&tracked.theme===s.city.theme.id){const site=s.adventure.sites[tracked.site];ox=site.x;oz=site.z;}
     else if (!q && !s.boss) { let bd = 1e9; for (const g of s.givers) if (g.offer) { const d = Math.hypot(g.x - p.x, g.z - p.z); if (d < bd) { bd = d; ox = g.x; oz = g.z; } } }
     if (ox !== null && !dead) {
       const d = Math.hypot(ox - p.x, oz - p.z); project(ox, 2.6, oz, scr); let x = scr.x, y = scr.y; const m = 46;
@@ -7921,12 +8356,22 @@ G.start = function () {
     drawMini(dt, t);
   }
 
-  // adattamento automatico della qualita' se il dispositivo arranca
-  let slowT = 0, appliedQuality = null;
-  function quality(dt) {
+  // Il controller usa il tempo reale dei frame, non il delta limitato della simulazione.
+  let appliedQuality = null, autoQuality = DiteMobile.quality(Math.min(window.devicePixelRatio || 1, coarse ? 1.5 : 2));
+  function quality(seconds) {
     if (window.__dite.lockQ || st.quality !== 'auto') return;
-    if (dt > 0.03) slowT += dt; else slowT = Math.max(0, slowT - dt * 0.5);
-    if (slowT > 1.6) { slowT = 0; if (pxr > 1.01) { pxr = Math.max(1, pxr - 0.25); renderer.setPixelRatio(pxr); composer.setPixelRatio(pxr); resize(true); } else if (useBloom) { useBloom = false; bloom.enabled = false; } }
+    const next = autoQuality.sample(seconds); if (!next) return;
+    useBloom = next.bloom; bloom.enabled = useBloom;
+    if (pxr !== next.ratio) { pxr = next.ratio; renderer.setPixelRatio(pxr); composer.setPixelRatio(pxr); resize(true); }
+  }
+  function fitControls() {
+    const buttons = $('btns'); if (!buttons) return;
+    const edge = parseFloat(getComputedStyle(buttons)[st.leftHanded ? 'left' : 'right']) || 12;
+    const fit = Math.max(0.9, Math.min(st.controlScale, (W / 2 - edge - 16) / 253, (Hh - 150) / 190));
+    document.body.style.setProperty('--control-scale', fit);
+    document.body.style.setProperty('--control-opacity', st.controlOpacity);
+    document.body.style.setProperty('--stick-size', (st.stickRadius * 2 + 12) + 'px');
+    buttons.dataset.scale = fit.toFixed(3);
   }
   function invalidate() { dirty = true; if (!raf) raf = requestAnimationFrame(frame); }
   function renderOnce(options = {}) {
@@ -7938,7 +8383,8 @@ G.start = function () {
   }
   function frame(now) {
     raf = 0;
-    const dt = Math.min(0.05, (now - last) / 1000 || 0); last = now;
+    // A pending RAF can carry a timestamp older than an explicit resume.
+    const realDt = Math.max(0, (now - last) / 1000 || 0), dt = Math.min(0.05, realDt); last = now;
     if (canvas.clientWidth !== W || canvas.clientHeight !== Hh) resize();
     if (active()) visualTime += dt; const t = visualTime;
     if (!s || !graphicsReady) return;
@@ -7948,16 +8394,21 @@ G.start = function () {
       else {
         acc += dt; let n = 0;
         while (acc >= STEP && n < 4) {
-          const e0 = s.events.length; C.step(s, STEP, readInput());
+          const e0 = s.events.length, input = readInput();
+          const object = input.use ? DiteAdventure.nearest(s,C) : null;
+          if (object) input.use = false;
+          C.step(s, STEP, input);
           const events = s.events.slice(e0);
+          DiteAdventure.tick(s,events,C); persistAdventure();
           if (guide) guide.observe(s, inp, events); if (journal) journal.observe(s, events);
           for (const ev of events) { if ((ev.type === 'cast' || ev.type === 'fizzle' || ev.type === 'release') && ev.slot > 0) buf[ev.slot] = 0; else if (ev.type === 'ride' || ev.type === 'drop') buf[1] = 0; }
           if (inp.use) useBuf = 0; useFresh = false; for (let k = 1; k < 5; k++) fresh[k] = false;
           acc -= STEP; n++;
+          if (object) { openDialogue(object.id); break; }
         }
         if (n === 4) acc = 0;
       }
-      handleEvents(t); quality(dt); updateView(dt, t); renderCoach(); renderOnce();
+      handleEvents(t); quality(realDt); updateView(dt, t); renderCoach(); renderOnce();
     } else if (dirty && !app.snapshot().blockers.includes('context')) { updateView(0, t); renderOnce(); }
     if (active() && !raf) raf = requestAnimationFrame(frame);
   }
@@ -7968,14 +8419,15 @@ G.start = function () {
     const portrait = h > w;
     document.body.classList.toggle('portrait', portrait); app.setBlocker('portrait', portrait);
     if ($('rotateGuard')) $('rotateGuard').classList.toggle('hidden', !portrait);
-    if (!force) resetInput(); invalidate();
+    fitControls();
+    if (!force) { resetInput(); autoQuality.reset(); } invalidate();
   }
   window.addEventListener('resize', () => resize());
   window.addEventListener('orientationchange', () => { if (active()) app.suspend('orientation'); resize(); });
   if (window.visualViewport) window.visualViewport.addEventListener('resize', () => resize());
 
   // ---------- Citta', schermate e sessione ----------
-  const panels = { lobby: 'home', pause: 'menu', city: 'cityScreen', loadout: 'loadout', forge: 'forge', journal: 'journalScreen', settings: 'settings', guide: 'tips', loading: 'loading', error: 'appError' };
+  const panels = { lobby: 'home', pause: 'menu', city: 'cityScreen', loadout: 'loadout', forge: 'forge', journal: 'journalScreen', settings: 'settings', guide: 'tips', atlas:'atlas', dialogue:'dialogue', loading: 'loading', error: 'appError' };
   const focusMemory = new Map(); let previousScreen = 'boot', loadToken = 0, failedLoad = null;
   let coachLayoutQueued = false, coachLayoutKey = '';
   const mode = () => ({ kind: coarse ? 'touch' : 'keyboard', movementSide: st.leftHanded ? 'right' : 'left' });
@@ -8038,7 +8490,7 @@ G.start = function () {
       if (typing(document.activeElement)) document.activeElement.blur();
     }
     running = value.hasSession && !['lobby', 'city', 'loadout', 'loading', 'boot'].includes(value.screen);
-    if (!value.playing || changed) resetInput();
+    if (!value.playing || changed) { resetInput(); autoQuality.reset(); }
     if (!value.playing) {
       suspendAudio(); sceneTimers.length = notices.length = 0; noticeLeft = noticePriority = 0; $('banner').className = '';
     }
@@ -8048,6 +8500,8 @@ G.start = function () {
     if (s && $('menuSub')) $('menuSub').textContent = (st.recipe.nome || 'Senza nome') + ' · ' + s.city.nome + ' · Fama ' + s.fame;
     renderBonuses(s && s.player, value.screen === 'pause');
     if (value.screen === 'pause') renderPowerDetails();
+    if (s && value.screen === 'atlas') G.adventureUI.atlas(s);
+    if (s && $('remedyCount')) $('remedyCount').textContent = s.adventure.progress.supplies;
     renderHome(); renderCoach(); nativeState(value); last = performance.now(); invalidate();
     if (changed) {
       const remembered = focusMemory.get(value.screen), panel = $(panels[value.screen]);
@@ -8064,10 +8518,11 @@ G.start = function () {
   function loadCity(theme, seed) {
     if (!City.THEMES[theme] || !Number.isInteger(seed) || seed < 1 || seed > 99999) return false;
     const next = C.create({ seed, theme, recipe: st.recipe, fame: st.fame });
+    DiteAdventure.attach(next, st.adventure);
     const oldState = s, oldScene = G.scene;
     resetInput(); graphicsReady = false; sceneEpoch++; sceneTimers.length = notices.length = 0; noticeLeft = noticePriority = 0; $('banner').className = ''; pend.clear();
     try {
-      G.buildWorld(next.city); G.buildFx(next); G.buildAnim(next); G.buildPowerFx(next);
+      G.buildWorld(next.city); G.buildFx(next); G.buildAnim(next); G.buildPowerFx(next); G.buildAdventure(next);
     } catch (error) {
       if (G.scene && G.scene !== oldScene) G.disposeWorld(G.scene);
       // I dati di partita precedenti rimangono in RAM; Ricostruisci riprova solo la grafica.
@@ -8124,10 +8579,12 @@ G.start = function () {
     if (st.reducedMotion) { shake = kick = bobT = 0; fov = W > Hh ? 72 : 92; cam.fov = fov; cam.updateProjectionMatrix(); }
     if (appliedQuality !== st.quality) {
       appliedQuality = st.quality; pxr = Math.min(window.devicePixelRatio || 1, st.quality === 'performance' ? 1 : coarse ? 1.5 : 2);
-      useBloom = st.quality !== 'performance'; bloom.enabled = useBloom; slowT = 0;
+      autoQuality = DiteMobile.quality(pxr);
+      useBloom = st.quality !== 'performance'; bloom.enabled = useBloom;
       renderer.setPixelRatio(pxr); composer.setPixelRatio(pxr); resize(true);
     }
     document.body.classList.toggle('left-handed', st.leftHanded); document.body.classList.toggle('reduce-motion', st.reducedMotion); document.body.classList.toggle('reduce-flash', st.reducedFlash);
+    fitControls();
     if (master) master.gain.value = muted ? 0 : st.volume;
     if ($('sens')) $('sens').value = Math.round(st.sens * 100); if ($('sensV')) $('sensV').textContent = Math.round(st.sens * 100) + '%';
     renderHome(); renderCoach(); invalidate();
@@ -8135,7 +8592,7 @@ G.start = function () {
   function setPreference(key, value) {
     if (!Object.prototype.hasOwnProperty.call(DiteStorage.PREFS, key)) return false;
     const normalized = DiteStorage.normalize({ ...st, [key]: value }, B); st[key] = normalized[key];
-    if (key === 'leftHanded' || key === 'invertY' || key === 'sens') resetInput();
+    if (key === 'leftHanded' || key === 'invertY' || key === 'sens' || key === 'controlScale' || key === 'stickRadius') resetInput();
     applyPreferences(); G.save(); return true;
   }
   function startGuide(restart) {
@@ -8143,6 +8600,32 @@ G.start = function () {
     if (guide.start(s, { restart: !!restart, mode: mode().kind })) { st.onboarding = guide.snapshot(); G.save(); }
     begin(); renderCoach();
   }
+  let dialogueId = null;
+  function persistAdventure() {
+    const a=s&&s.adventure;if(!a||a.seenRevision===a.revision)return;
+    st.adventure=DiteAdventure.snapshot(s);st.fame=s.fame;a.seenRevision=a.revision;G.save();
+  }
+  function openDialogue(id) { dialogueId=id; app.go('dialogue',{returnTo:'pause'}); G.adventureUI.dialog(s,id); }
+  document.addEventListener('click',event=>{
+    const button=event.target.closest('button');if(!button||!s)return;
+    if(button.dataset.adventureAction){
+      const action=button.dataset.adventureAction;
+      if(action==='forge'){openForge();return;}
+      const result=DiteAdventure.act(s,dialogueId,action,C);persistAdventure();renderHome();
+      G.adventureUI.dialog(s,dialogueId,result.message);invalidate();return;
+    }
+    if(button.dataset.trackSite!==undefined){
+      const id=Number(button.dataset.trackSite);if(!s.adventure.sites[id])return;
+      s.adventure.progress.tracked={theme:s.city.theme.id,site:id};s.adventure.revision++;persistAdventure();G.adventureUI.atlas(s);return;
+    }
+    if(button.dataset.travelSite!==undefined){
+      const result=DiteAdventure.travel(s,Number(button.dataset.travelSite));
+      if(!result.ok){$('atlasMessage').textContent=result.message;return;}
+      yaw=Math.PI;pitch=0;resetInput();begin();return;
+    }
+    if(button.id==='dialogueClose')begin();
+    if(button.id==='useRemedy'){const result=DiteAdventure.remedy(s);persistAdventure();$('remedyMessage').textContent=result.message;$('remedyCount').textContent=s.adventure.progress.supplies;invalidate();}
+  });
   const actions = { play: begin, resume: begin, menuBtn: openMenu, openForge, menuForge: openForge, menuHome: () => navigate('lobby'), menuTips: () => navigate('guide'), openGuide: () => navigate('guide'), tipsOk: () => { st.tips = true; G.save(); navigate('back'); }, mute: () => setPreference('muted', !st.muted), menuMute: () => setPreference('muted', !st.muted), newCity: () => rebuild(st.theme, 1 + Math.floor(Math.random() * 99999)), guideStart: () => startGuide(false), guideRestart: () => startGuide(true), guideSkip: () => { if (guide) guide.skip(); renderCoach(); }, guideHelp: () => { app.go('pause'); navigate('guide'); }, errorRetry: () => { if (failedLoad) rebuild(failedLoad.theme, failedLoad.seed); else if (!app.snapshot().blockers.includes('context')) rebuild(st.theme, st.seed); } };
   document.addEventListener('click', (event) => {
     const target = event.target.closest && event.target.closest('button,[data-nav],[data-app-action],[data-city]'); if (!target || target.disabled) return;

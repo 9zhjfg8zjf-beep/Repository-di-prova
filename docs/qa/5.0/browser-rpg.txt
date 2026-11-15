@@ -1,0 +1,244 @@
+
+PROVA build.py
+dist/index.html: 1440 KiB; sha256 b594159689cf6196be396af4bdd9283200e49bdb1003f9203d6f6d451ec3787c
+site/index.html: 1440 KiB; sha256 67c2e06149d2e72d800bb7106fc3357898febc10e6b134eaf5cc892f03bd876d
+PASS: build.py
+
+PROVA tpow.js
+0 dardo scatto+possente nova+ampio zona sovraccarico+esplosivo | {"casts":"6,1,1,1,1","fizz":0,"mobs":"s435 s495 t554 b495","res":0}
+1 sciame+rimbalzo balzo+vampirico trappola scudo+calamita cataclisma+marchiante | {"casts":"10,2,2,2,2","fizz":0,"mobs":"s159 s198 t374 b308","res":0}
+2 catena+ammazzagiganti salto cura+risonante ipnosi+stordente pioggia | {"casts":"16,3,2,3,3","fizz":1,"mobs":"s+483 s+524 t+559 b189","res":0}
+3 raggio condotto+benedetto terrore+frenetico catene dominio+possente | {"casts":"29,3,3,4,4","fizz":1,"mobs":"s+536 s+600 t+600 b573","res":1}
+4 soffio+ampio corsa+eco presa spinta+rimbalzo tempo+vampirico | {"casts":"40,4,4,5,5","fizz":1,"mobs":"s523 s523 t523 b483","res":8}
+5 artigli+critico velo evoca+marchiante esca+ammazzagiganti colosso | {"casts":"49,5,5,6,6","fizz":1,"mobs":"s461 s496 t600 b553 c+300 s+40 s+40 s+40 e+70","res":5}
+6 mortaio rampino+stordente possesso+contagio marchio eclissi+benedetto | {"casts":"51,5,5,7,7","fizz":3,"mobs":"s458 s487 t581 b562","res":8}
+7 pompa+frenetico passo+rapido orbite fulmine+ampio singolarita+eco | {"casts":"53,6,6,8,8","fizz":3,"mobs":"s315 s325 t392 b299","res":43}
+8 mitraglia+esplosivo scia risucchio+vampirico bolla+critico esercito | {"casts":"61,7,7,9,9","fizz":3,"mobs":"s58 s118 t125 b88 s+60 s+60 s+60 s+60 s+60","res":73}
+9 razzo carica+ammazzagiganti torretta+falciante onda meteorite+stordente | {"casts":"63,8,8,10,10","fizz":3,"mobs":"s171 s297 t390 b304 t+90","res":48}
+10 boomerang+contagio ritirata+persistente tentacolo scambio+frenetico ira+rapido | {"casts":"65,9,9,10,11","fizz":4,"mobs":"s421 s421 t600 b318","res":22}
+11 rimbalzo+possente riavvolgi pozzo+eco barriera+esplosivo giudizio | {"casts":"68,10,10,11,12","fizz":4,"mobs":"t467","res":98}
+12 globo ancora+critico totem+calamita stendardo fenice+ammazzagiganti | {"casts":"70,10,11,12,13","fizz":4,"mobs":"s445 s463 t433 b447","res":8}
+13 frusta+falciante scatto+risonante sisma grappolo+contagio turbine+persistente | {"casts":"73,11,12,13,14","fizz":4,"mobs":"s372 s396 t407 b286","res":34}
+14 martello+benedetto balzo meteora+rapido polimorfo+possente baluardo | {"casts":"75,12,13,14,15","fizz":4,"mobs":"s324 s347 t600 b415","res":25}
+15 lancia salto+esplosivo levita+rimbalzo specchio sovraccarico+critico | {"casts":"86,13,14,15,16","fizz":4,"mobs":"s460 s531 t486 b457","res":0}
+16 getto+calamita condotto+marchiante gabbia provoca+falciante cataclisma+risonante | {"casts":"95,13,15,16,17","fizz":4,"mobs":"s317 s317 t317 b317","res":0}
+17 dardo+stordente corsa sacrificio+persistente adrenalina+benedetto pioggia | {"casts":"102,14,16,17,18","fizz":4,"mobs":"s459 s561 t360 b360","res":0}
+18 sciame velo+possente gemello+ampio schiera dominio+esplosivo | {"casts":"106,15,17,18,19","fizz":4,"mobs":"s+546 s+546 t+600 b542 s+220 e+70 e+70 e+70","res":1}
+nessun errore
+PASS: tpow.js
+
+PROVA X=1 tpow.js
+0 spillo passo_del_trib borsa_di_pluto riserva_dell_a tesoro_di_plut | {"casts":"4,1,1,1,1","fizz":0,"mobs":"s573 s586 t586 b573","res":0}
+1 segnatore soglia_rifusa perno_dei_sett scorie_dopo_la pioggia_moneta | {"casts":"7,2,2,2,2","fizz":0,"mobs":"s511 s600 t600 b600","res":1}
+2 ventaglio_di_l atterraggio_in riflettore_del braccio_fiacco processione_de | {"casts":"10,3,3,3,3","fizz":0,"mobs":"s468 s475 t496 b468","res":4}
+3 granata_a_mano porta_senza_cu febbre_del_ves mandato_del_ri catena_dei_deb | {"casts":"12,3,4,3,4","fizz":2,"mobs":"s406 s450 t474 b438","res":3}
+4 disco_taglient varco_del_socc cortile_risana infermiere_del ora_del_ritorn | {"casts":"14,3,5,3,5","fizz":4,"mobs":"s526 s526 t600 b524","res":5}
+5 proiettile_omb strappo_conged maschera_del_c staffetta_dell ridotto_del_ve | {"casts":"17,4,6,3,5","fizz":6,"mobs":"s498 s600 t600 b600","res":100}
+6 sputo_acido raccolta_delle perno_del_giga sentinella_sos santuario_sosp | {"casts":"20,4,6,3,6","fizz":9,"mobs":"s499 s600 t600 b600","res":2}
+7 lanciadardi_a_ passo_del_bast riflesso_del_d sigillo_lancia tre_testimoni_ | {"casts":"22,5,6,4,7","fizz":10,"mobs":"s514 s561 t582 b579 c+75 c+75 c+75","res":5}
+8 lama_boomerang ritirata_incor scambio_col_fa compagnia_del_ osservatorio_d | {"casts":"24,6,6,5,8","fizz":11,"mobs":"s497 s521 t563 b490 c+55 c+55","res":3}
+9 pugno_pesante ritirata_del_g cerchio_della_ implosione raggio_rotante | {"casts":"26,7,7,6,9","fizz":11,"mobs":"s335 s332 t557 b436","res":32}
+10 mazzata_storde specchio_in_tr linea_di_sutur fulmine_a_ciel terremoto_supr | {"casts":"28,8,8,7,10","fizz":11,"mobs":"s370 s370 t429 b361 c+55 c+55","res":29}
+11 anello_taglien ritirata_del_v schiaffo_del_v colpo_dell_unt pioggia_di_lam | {"casts":"30,9,9,8,11","fizz":11,"mobs":"s496 s430 t491 b456","res":21}
+12 auto_mira varco_del_cart catena_del_ter palla_di_canno forma_spettral | {"casts":"33,10,10,9,12","fizz":11,"mobs":"s507 s495 t588 b565","res":4}
+13 colpo_telluric scatto_che_con bomba_a_orolog nube_di_spore frenesia | {"casts":"35,11,11,10,13","fizz":11,"mobs":"s494 s497 t515 b500","res":12}
+14 taglio_a_croce scatto_doppio aura_velenosa fontana_di_sch ogni_morte_una | {"casts":"38,12,12,11,14","fizz":11,"mobs":"s366 s375 t528 b295","res":20}
+15 tre_tempi scatto_che_rub tenaglia_di_gh fumo_soporifer legione | {"casts":"41,13,13,12,15","fizz":11,"mobs":"s189 s433 t600 b436 s+60 s+60 s+60 s+60 s+60 s+60 s+60 s+60","res":15}
+16 lama_e_pistola scatto_del_pre kamikaze muro_che_esplo corte_reale | {"casts":"44,14,14,13,16","fizz":11,"mobs":"s445 s561 t587 b525 c+260 a+45 a+45 g+60 b+30 b+30 m+100 m+100 m+100 m+100","res":7}
+17 colpo_in_corsa scatto_di_paur postazione_for pelle_di_pietr dominio_assolu | {"casts":"47,15,15,14,17","fizz":11,"mobs":"s+498 s+600 t+583 b538 t+90 m+160 m+160","res":3}
+18 giustiziere_de triplo_fendent berserk colpo_di_reni mano_del_gigan | {"casts":"51,16,16,15,18","fizz":11,"mobs":"s406 s418 t450 b521","res":25}
+19 colpo_dall_omb capriola_con_g colpi_che_marc mietitore carica_inarres | {"casts":"55,17,17,16,19","fizz":11,"mobs":"s223 s407 t407 b407","res":35}
+20 trottola varco_esplosiv pelle_elettric poteri_che_cur pioggia_di_gia | {"casts":"57,18,18,17,20","fizz":11,"mobs":"s64 s106 t600 b270","res":58}
+21 lanciafiamme varco_con_esca respiro_di_bri strattone_e_pu disco_della_fi | {"casts":"67,19,19,18,21","fizz":11,"mobs":"s343 s333 t600 b333 e+70","res":31}
+22 raggio_che_cur agguato_e_marc scambio_di_pos furto disintegratore | {"casts":"77,20,20,19,22","fizz":11,"mobs":"s205 s211 t600 b115","res":51}
+23 laser_da_cecch varco_e_raffic dispersione paura_che_ucci mare_di_lava | {"casts":"85,21,21,19,23","fizz":12,"mobs":"s448 s477 t535 b328","res":20}
+24 urlo varco_tossico se_e_avvelenat in_corsa_o_da_ capro_del_mond | {"casts":"87,22,22,20,24","fizz":12,"mobs":"s433 s443 t467","res":44}
+25 tiro_al_piatte passo_nel_vuot bersaglio_inse onda_avanti_e_ motore_perpetu | {"casts":"89,23,23,21,25","fizz":12,"mobs":"s392 s489 t523 b481","res":18}
+26 pugno_e_onda salto_stordent sequenza_del_d segnaposto passo_del_dio | {"casts":"91,24,24,22,26","fizz":12,"mobs":"s562 s562 t588 b562","res":2}
+27 ventaglio_inve balzo_rapido carica_e_fende uscita_di_scen ultimo_baluard | {"casts":"92,24,25,22,26","fizz":13,"mobs":"s600 s600 t600 b554","res":100}
+28 parata_di_calc salto_del_re colpo_e_orbite ventaglio_di_g scambio_di_ani | {"casts":"93,25,26,23,27","fizz":13,"mobs":"s259 s295 t318 b278","res":9}
+29 dazio_di_piomb corsa_bruciant bomba_a_rimbal esca_e_bombard assedio | {"casts":"94,26,27,24,28","fizz":13,"mobs":"s521 s560 t600 b555 t+90 t+90 m+160 m+160 m+160 m+160 m+160 e+70","res":5}
+30 labbro_reciso corsa_frenetic ultimo_respiro colpi_che_ruba cometa_cavalca | {"casts":"95,27,27,24,29","fizz":13,"mobs":"s442 s457 t467 b499","res":24}
+31 chiodo_del_let segno_e_ritorn scatti_che_cur colpo_proporzi colpo_cura_scu | {"casts":"96,28,28,25,30","fizz":13,"mobs":"s305 s336 t398 b398","res":8}
+32 filo_che_attec ombra_in_avant epidemia luce_accecante boia_dei_fermi | {"casts":"97,29,29,26,31","fizz":13,"mobs":"s273 s274 t276 b277 e+70","res":54}
+33 lama_che_avanz via_d_uscita colpo_che_divi scudo_condivis parola_di_pote | {"casts":"98,30,30,27,32","fizz":13,"mobs":"s376 s572 t579 b572 g+60","res":10}
+nessun errore
+PASS: X=1 tpow.js
+
+PROVA tanim.js forme
+nessun errore
+PASS: tanim.js forme
+
+PROVA tanim.js colpi
+nessun errore
+PASS: tanim.js colpi
+
+PROVA tanim.js linee
+nessun errore
+PASS: tanim.js linee
+
+PROVA tanim.js zone
+nessun errore
+PASS: tanim.js zone
+
+PROVA tend.js
+vittoria verificata: {"frames":44,"fame":30,"arena":"cleared","wins":1,"stored":30}
+ritorno verificato: {"frames":91,"hp":100,"maxHp":100,"dead":0,"x":13,"z":12,"spawn":{"x":13,"z":12},"deaths":1,"event":true}
+città 0 cocito {"geo":73,"tex":70,"calls":313}
+città 1 malebolge {"geo":84,"tex":75,"calls":355}
+città 2 dite {"geo":79,"tex":73,"calls":293}
+città 3 cocito {"geo":73,"tex":70,"calls":313}
+città 4 malebolge {"geo":84,"tex":75,"calls":355}
+città 5 dite {"geo":79,"tex":73,"calls":293}
+città 6 cocito {"geo":73,"tex":70,"calls":313}
+città 7 malebolge {"geo":84,"tex":75,"calls":355}
+città 8 dite {"geo":79,"tex":73,"calls":293}
+nessun errore
+PASS: tend.js
+
+PROVA tquest.js
+missione verificata: {"type":"consegna","frames":2,"progress":["dentro il raggio di consegna"],"reward":8,"fame":8}
+missione verificata: {"type":"caccia","frames":137,"progress":[4,3,2,0],"reward":12,"fame":20}
+missione verificata: {"type":"corsa","frames":7,"progress":[1,2,3,4,5,6,7],"reward":10,"fame":30}
+missione verificata: {"type":"ripetitori","frames":351,"progress":[1,2,3],"reward":12,"fame":42}
+missione verificata: {"type":"pubblico","frames":30,"progress":[{"invited":4,"arrived":4}],"reward":12,"fame":54}
+missione verificata: {"type":"scorta","frames":2007,"progress":[{"path":26,"total":26,"ambushes":3}],"reward":16,"fame":70}
+sei tipi completati: {"quests":6,"failures":0,"fame":70,"stored":70}
+nessun errore
+PASS: tquest.js
+
+PROVA ttips.js
+guida contestuale, ritorno alla pausa, sensibilità e sospensione verificati; nessun errore
+PASS: ttips.js
+
+PROVA tour.js boss
+0 {"hp":3600,"cast":"","teles":[],"mobs":12}
+1 {"hp":3600,"cast":"","teles":[],"mobs":12}
+2 {"hp":3600,"cast":"Corsia di brace","teles":[],"mobs":12}
+3 {"hp":3600,"cast":"","teles":[],"mobs":12}
+4 {"hp":3600,"cast":"","teles":[],"mobs":12}
+5 {"hp":3600,"cast":"Chiama gli sgherri","teles":[],"mobs":15}
+nessun errore
+PASS: tour.js boss
+
+PROVA tour.js temi
+cocito {"pxr":1,"useBloom":true,"calls":253,"tris":57042,"geo":86,"tex":76,"renderFrames":86,"lastRender":17168.700000047684,"scheduledEffects":0,"audio":"running","activeParticles":6,"drawnParticles":6,"particleVisible":true,"particleMatrixVersion":14,"particleColorVersion":9,"zones":0,"telegraphs":0,"impacts":0}
+malebolge {"pxr":1,"useBloom":true,"calls":277,"tris":50912,"geo":92,"tex":79,"renderFrames":200,"lastRender":33267.700000047684,"scheduledEffects":0,"audio":"running","activeParticles":0,"drawnParticles":0,"particleVisible":false,"particleMatrixVersion":0,"particleColorVersion":0,"zones":0,"telegraphs":0,"impacts":0}
+nessun errore
+PASS: tour.js temi
+
+PROVA tour.js officina
+{"nome":"Prova","desc":"un ninja di ghiaccio invisibile che lancia lame e ferma il tempo","slots":[{"id":"lancia_mine","el":"gelo","t":1},{"id":"velo","el":"gelo","t":1},{"id":"geyser_a_tempo","el":"gelo","t":1},{"id":"fermo_immagine","el":"gelo","t":1},{"id":"tempo","el":"gelo","t":1}]}
+nessun errore
+PASS: tour.js officina
+
+PROVA tofficina.js
+officina touch: 1343 poteri, 336 nuovi; paginazione, ricerca, filtri, budget e salvataggio OK; istruzioni corpo 4/4; 6 ricette pronte; nessun errore
+PASS: tofficina.js
+
+PROVA tvis.js
+portali {"result":true,"count":1,"hud":"","mimic":null}
+barriera {"result":true,"count":1,"hud":"","mimic":null}
+magnetismo {"result":true,"count":1,"hud":"","mimic":null}
+legami {"result":true,"count":2,"hud":"","mimic":null}
+stati {"result":true,"count":5,"hud":"","mimic":null}
+assorbimento {"result":true,"count":1,"hud":"Energia · 75Assorbe · 8 s","mimic":null}
+imitazione {"result":true,"count":0,"hud":"Imitazione · Tiro","mimic":"tiro"}
+nessun errore
+PASS: tvis.js
+
+PROVA tcorpo_browser.js
+taglia: input, grafica, rilascio e cleanup verdi
+fase: input, grafica, rilascio e cleanup verdi
+volo: input, grafica, rilascio e cleanup verdi
+possessione: input, grafica, rilascio e cleanup verdi
+patto: input, grafica, rilascio e cleanup verdi
+stasi: input, grafica, rilascio e cleanup verdi
+nessun errore
+PASS: tcorpo_browser.js
+
+PROVA tsensi_browser.js
+scan: palazzo opaco, outline/minimappa, colpi bloccati e cleanup verdi
+clone: modelli, nessun fuoco autonomo, repliche dannose, vulnerabilita e cleanup verdi
+mimic: input reale, ARTIGLIO/icona/HUD e ripristino Dardo alla scadenza verdi
+nessun errore
+PASS: tsensi_browser.js
+
+PROVA tmobile_browser.js
+audio: tap reali, resume/suspend senza effetto o rifiutati finiti, promesse tardive riconciliate e nessuna ripresa involontaria
+bootstrap: WebGL assente notifica ready/error nativi, nessun loop, retry ricarica e avvia davvero
+coach font: {"font":"system","leftHanded":false,"actualFonts":[{"familyName":"Segoe UI Semibold","postScriptName":"SegoeUI-Semibold","isCustomFont":false,"glyphCount":10}],"labels":[{"name":"Cataclisma","clientWidth":59,"scrollWidth":59,"font":"600 11px / 11.55px -apple-system, BlinkMacSystemFont, \"Segoe UI\", system-ui, sans-serif","fontSize":11,"padding":"0px 3px","width":59.4375},{"name":"Nova","clientWidth":32,"scrollWidth":32,"font":"600 11px / 11.55px -apple-system, BlinkMacSystemFont, \"Segoe UI\", system-ui, sans-serif","fontSize":11,"padding":"0px 3px","width":32.15625},{"name":"Scudo","clientWidth":37,"scrollWidth":37,"font":"600 11px / 11.55px -apple-system, BlinkMacSystemFont, \"Segoe UI\", system-ui, sans-serif","fontSize":11,"padding":"0px 3px","width":36.78125},{"name":"Scatto","clientWidth":37,"scrollWidth":37,"font":"600 11px / 11.55px -apple-system, BlinkMacSystemFont, \"Segoe UI\", system-ui, sans-serif","fontSize":11,"padding":"0px 3px","width":37.359375},{"name":"Dardo","clientWidth":37,"scrollWidth":37,"font":"600 11px / 11.55px -apple-system, BlinkMacSystemFont, \"Segoe UI\", system-ui, sans-serif","fontSize":11,"padding":"0px 3px","width":36.8125}]}
+coach font: {"font":"system","leftHanded":true,"actualFonts":[{"familyName":"Segoe UI Semibold","postScriptName":"SegoeUI-Semibold","isCustomFont":false,"glyphCount":10}],"labels":[{"name":"Cataclisma","clientWidth":59,"scrollWidth":59,"font":"600 11px / 11.55px -apple-system, BlinkMacSystemFont, \"Segoe UI\", system-ui, sans-serif","fontSize":11,"padding":"0px 3px","width":59.4375},{"name":"Nova","clientWidth":32,"scrollWidth":32,"font":"600 11px / 11.55px -apple-system, BlinkMacSystemFont, \"Segoe UI\", system-ui, sans-serif","fontSize":11,"padding":"0px 3px","width":32.15625},{"name":"Scudo","clientWidth":37,"scrollWidth":37,"font":"600 11px / 11.55px -apple-system, BlinkMacSystemFont, \"Segoe UI\", system-ui, sans-serif","fontSize":11,"padding":"0px 3px","width":36.78125},{"name":"Scatto","clientWidth":37,"scrollWidth":37,"font":"600 11px / 11.55px -apple-system, BlinkMacSystemFont, \"Segoe UI\", system-ui, sans-serif","fontSize":11,"padding":"0px 3px","width":37.359375},{"name":"Dardo","clientWidth":37,"scrollWidth":37,"font":"600 11px / 11.55px -apple-system, BlinkMacSystemFont, \"Segoe UI\", system-ui, sans-serif","fontSize":11,"padding":"0px 3px","width":36.8125}]}
+coach font: {"font":"dejavu","leftHanded":false,"actualFonts":[{"familyName":"DejaVu Sans","postScriptName":"DejaVuSans","isCustomFont":true,"glyphCount":10}],"labels":[{"name":"Cataclisma","clientWidth":67,"scrollWidth":67,"font":"600 11px / 11.55px \"DejaVu Sans\", sans-serif","fontSize":11,"padding":"0px 3px","width":66.828125},{"name":"Nova","clientWidth":34,"scrollWidth":34,"font":"600 11px / 11.55px \"DejaVu Sans\", sans-serif","fontSize":11,"padding":"0px 3px","width":34.21875},{"name":"Scudo","clientWidth":40,"scrollWidth":40,"font":"600 11px / 11.55px \"DejaVu Sans\", sans-serif","fontSize":11,"padding":"0px 3px","width":39.71875},{"name":"Scatto","clientWidth":41,"scrollWidth":41,"font":"600 11px / 11.55px \"DejaVu Sans\", sans-serif","fontSize":11,"padding":"0px 3px","width":41.140625},{"name":"Dardo","clientWidth":39,"scrollWidth":39,"font":"600 11px / 11.55px \"DejaVu Sans\", sans-serif","fontSize":11,"padding":"0px 3px","width":39.265625}]}
+coach font: {"font":"dejavu","leftHanded":true,"actualFonts":[{"familyName":"DejaVu Sans","postScriptName":"DejaVuSans","isCustomFont":true,"glyphCount":10}],"labels":[{"name":"Cataclisma","clientWidth":67,"scrollWidth":67,"font":"600 11px / 11.55px \"DejaVu Sans\", sans-serif","fontSize":11,"padding":"0px 3px","width":66.828125},{"name":"Nova","clientWidth":34,"scrollWidth":34,"font":"600 11px / 11.55px \"DejaVu Sans\", sans-serif","fontSize":11,"padding":"0px 3px","width":34.21875},{"name":"Scudo","clientWidth":40,"scrollWidth":40,"font":"600 11px / 11.55px \"DejaVu Sans\", sans-serif","fontSize":11,"padding":"0px 3px","width":39.71875},{"name":"Scatto","clientWidth":41,"scrollWidth":41,"font":"600 11px / 11.55px \"DejaVu Sans\", sans-serif","fontSize":11,"padding":"0px 3px","width":41.140625},{"name":"Dardo","clientWidth":39,"scrollWidth":39,"font":"600 11px / 11.55px \"DejaVu Sans\", sans-serif","fontSize":11,"padding":"0px 3px","width":39.265625}]}
+coach missione: {"rects":{"guideCoach":{"x":56,"y":137.15625,"width":260.5,"height":96,"top":137.15625,"right":316.5,"bottom":233.15625,"left":56,"visible":true},"quest":{"x":54,"y":84.375,"width":164,"height":46.78125,"top":84.375,"right":218,"bottom":131.15625,"left":54,"visible":true},"joy":{"x":58,"y":262,"width":104,"height":104,"top":262,"right":162,"bottom":366,"left":58,"visible":true},"b0":{"x":523,"y":254,"width":88,"height":88,"top":254,"right":611,"bottom":342,"left":523,"visible":true},"b1":{"x":449,"y":278,"width":64,"height":64,"top":278,"right":513,"bottom":342,"left":449,"visible":true},"b2":{"x":442,"y":202,"width":64,"height":64,"top":202,"right":506,"bottom":266,"left":442,"visible":true},"b3":{"x":520,"y":174,"width":64,"height":64,"top":174,"right":584,"bottom":238,"left":520,"visible":true},"b4":{"x":358,"y":221,"width":80,"height":80,"top":221,"right":438,"bottom":301,"left":358,"visible":true},"useBtn":{"x":186.796875,"y":294,"width":160,"height":48,"top":294,"right":346.796875,"bottom":342,"left":186.796875,"visible":true},"guideSkip":{"x":254.5,"y":141.15625,"width":56,"height":44,"top":141.15625,"right":310.5,"bottom":185.15625,"left":254.5,"visible":true},"guideHelp":{"x":254.5,"y":185.15625,"width":56,"height":44,"top":185.15625,"right":310.5,"bottom":229.15625,"left":254.5,"visible":true},"xh":{"x":322.5,"y":176.5,"width":22,"height":22,"top":176.5,"right":344.5,"bottom":198.5,"left":322.5,"visible":true},"boss":{"x":0,"y":0,"width":0,"height":0,"top":0,"right":0,"bottom":0,"left":0,"visible":false},"bossCast":{"x":0,"y":0,"width":0,"height":0,"top":0,"right":0,"bottom":0,"left":0,"visible":false},"banner":{"x":0,"y":67.5,"width":667,"height":45,"top":67.5,"right":667,"bottom":112.5,"left":0,"visible":true}},"collisions":[],"clipped":[],"layout":"side","livePowers":{"bank":0,"absorb":false,"mimic":null,"form":null,"captive":false,"scan":false,"clones":0},"boss":null,"banner":{"text":"ConsegnaPorta il pacco prima che scada il tempo.","opacity":"0"},"leftHanded":false,"pointer":30,"checkpoint":{"version":1,"step":0,"skipped":false},"sameQuest":true,"quest":{"type":"consegna","giver":0,"obj":{"x":-36,"z":60},"time":26.210647678207245},"questText":"Consegna il pacco","questNone":false}
+coach missione: {"rects":{"guideCoach":{"x":350.5,"y":137.15625,"width":260.5,"height":96,"top":137.15625,"right":611,"bottom":233.15625,"left":350.5,"visible":true},"quest":{"x":449,"y":84.375,"width":164,"height":46.78125,"top":84.375,"right":613,"bottom":131.15625,"left":449,"visible":true},"joy":{"x":505,"y":262,"width":104,"height":104,"top":262,"right":609,"bottom":366,"left":505,"visible":true},"b0":{"x":56,"y":254,"width":88,"height":88,"top":254,"right":144,"bottom":342,"left":56,"visible":true},"b1":{"x":154,"y":278,"width":64,"height":64,"top":278,"right":218,"bottom":342,"left":154,"visible":true},"b2":{"x":161,"y":202,"width":64,"height":64,"top":202,"right":225,"bottom":266,"left":161,"visible":true},"b3":{"x":83,"y":174,"width":64,"height":64,"top":174,"right":147,"bottom":238,"left":83,"visible":true},"b4":{"x":229,"y":221,"width":80,"height":80,"top":221,"right":309,"bottom":301,"left":229,"visible":true},"useBtn":{"x":320.1875,"y":294,"width":160,"height":48,"top":294,"right":480.1875,"bottom":342,"left":320.1875,"visible":true},"guideSkip":{"x":549,"y":141.15625,"width":56,"height":44,"top":141.15625,"right":605,"bottom":185.15625,"left":549,"visible":true},"guideHelp":{"x":549,"y":185.15625,"width":56,"height":44,"top":185.15625,"right":605,"bottom":229.15625,"left":549,"visible":true},"xh":{"x":322.5,"y":176.5,"width":22,"height":22,"top":176.5,"right":344.5,"bottom":198.5,"left":322.5,"visible":true},"boss":{"x":0,"y":0,"width":0,"height":0,"top":0,"right":0,"bottom":0,"left":0,"visible":false},"bossCast":{"x":0,"y":0,"width":0,"height":0,"top":0,"right":0,"bottom":0,"left":0,"visible":false},"banner":{"x":0,"y":67.5,"width":667,"height":45,"top":67.5,"right":667,"bottom":112.5,"left":0,"visible":true}},"collisions":[],"clipped":[],"layout":"side","livePowers":{"bank":0,"absorb":false,"mimic":null,"form":null,"captive":false,"scan":false,"clones":0},"boss":null,"banner":{"text":"ConsegnaPorta il pacco prima che scada il tempo.","opacity":"0"},"leftHanded":true,"pointer":37,"checkpoint":{"version":1,"step":0,"skipped":false},"sameQuest":true,"quest":{"type":"consegna","giver":0,"obj":{"x":-36,"z":60},"time":23.843981011540713},"questText":"Consegna il pacco","questNone":false}
+coach denso: {"rects":{"guideCoach":{"x":221.5,"y":64,"width":224,"height":96,"top":64,"right":445.5,"bottom":160,"left":221.5,"visible":true},"quest":{"x":54,"y":147.90625,"width":164,"height":46.78125,"top":147.90625,"right":218,"bottom":194.6875,"left":54,"visible":true},"joy":{"x":58,"y":262,"width":104,"height":104,"top":262,"right":162,"bottom":366,"left":58,"visible":true},"b0":{"x":523,"y":254,"width":88,"height":88,"top":254,"right":611,"bottom":342,"left":523,"visible":true},"b1":{"x":449,"y":278,"width":64,"height":64,"top":278,"right":513,"bottom":342,"left":449,"visible":true},"b2":{"x":442,"y":202,"width":64,"height":64,"top":202,"right":506,"bottom":266,"left":442,"visible":true},"b3":{"x":520,"y":174,"width":64,"height":64,"top":174,"right":584,"bottom":238,"left":520,"visible":true},"b4":{"x":358,"y":221,"width":80,"height":80,"top":221,"right":438,"bottom":301,"left":358,"visible":true},"useBtn":{"x":0,"y":0,"width":0,"height":0,"top":0,"right":0,"bottom":0,"left":0,"visible":false},"guideSkip":{"x":383.5,"y":68,"width":56,"height":44,"top":68,"right":439.5,"bottom":112,"left":383.5,"visible":true},"guideHelp":{"x":383.5,"y":112,"width":56,"height":44,"top":112,"right":439.5,"bottom":156,"left":383.5,"visible":true},"xh":{"x":322.5,"y":176.5,"width":22,"height":22,"top":176.5,"right":344.5,"bottom":198.5,"left":322.5,"visible":true},"boss":{"x":226.78125,"y":6,"width":213.4375,"height":35,"top":6,"right":440.21875,"bottom":41,"left":226.78125,"visible":true},"bossCast":{"x":227.78125,"y":40,"width":211.4375,"height":18,"top":40,"right":439.21875,"bottom":58,"left":227.78125,"visible":true},"banner":{"x":0,"y":67.5,"width":667,"height":49,"top":67.5,"right":667,"bottom":116.5,"left":0,"visible":true}},"collisions":[],"clipped":[],"layout":"center","livePowers":{"bank":75,"absorb":true,"mimic":"tiro","form":0.6,"captive":true,"scan":true,"clones":2},"boss":{"key":"malacoda","cast":"Pioggia di tizzoni","attackSerial":1},"banner":{"text":"MALACODAil Fornaio","opacity":"1"},"leftHanded":false,"pointer":44,"checkpoint":{"version":1,"step":0,"skipped":false},"sameQuest":true,"quest":{"type":"consegna","giver":0,"obj":{"x":-36,"z":60},"time":21.67731434487417},"questText":"Consegna il pacco","questNone":false}
+coach denso: {"rects":{"guideCoach":{"x":221.5,"y":64,"width":224,"height":96,"top":64,"right":445.5,"bottom":160,"left":221.5,"visible":true},"quest":{"x":449,"y":147.90625,"width":164,"height":46.78125,"top":147.90625,"right":613,"bottom":194.6875,"left":449,"visible":true},"joy":{"x":505,"y":262,"width":104,"height":104,"top":262,"right":609,"bottom":366,"left":505,"visible":true},"b0":{"x":56,"y":254,"width":88,"height":88,"top":254,"right":144,"bottom":342,"left":56,"visible":true},"b1":{"x":154,"y":278,"width":64,"height":64,"top":278,"right":218,"bottom":342,"left":154,"visible":true},"b2":{"x":161,"y":202,"width":64,"height":64,"top":202,"right":225,"bottom":266,"left":161,"visible":true},"b3":{"x":83,"y":174,"width":64,"height":64,"top":174,"right":147,"bottom":238,"left":83,"visible":true},"b4":{"x":229,"y":221,"width":80,"height":80,"top":221,"right":309,"bottom":301,"left":229,"visible":true},"useBtn":{"x":0,"y":0,"width":0,"height":0,"top":0,"right":0,"bottom":0,"left":0,"visible":false},"guideSkip":{"x":383.5,"y":68,"width":56,"height":44,"top":68,"right":439.5,"bottom":112,"left":383.5,"visible":true},"guideHelp":{"x":383.5,"y":112,"width":56,"height":44,"top":112,"right":439.5,"bottom":156,"left":383.5,"visible":true},"xh":{"x":322.5,"y":176.5,"width":22,"height":22,"top":176.5,"right":344.5,"bottom":198.5,"left":322.5,"visible":true},"boss":{"x":226.78125,"y":6,"width":213.4375,"height":35,"top":6,"right":440.21875,"bottom":41,"left":226.78125,"visible":true},"bossCast":{"x":227.78125,"y":40,"width":211.4375,"height":18,"top":40,"right":439.21875,"bottom":58,"left":227.78125,"visible":true},"banner":{"x":0,"y":67.5,"width":667,"height":49,"top":67.5,"right":667,"bottom":116.5,"left":0,"visible":true}},"collisions":[],"clipped":[],"layout":"center","livePowers":{"bank":75,"absorb":true,"mimic":"tiro","form":0.6,"captive":true,"scan":true,"clones":2},"boss":{"key":"malacoda","cast":"Pioggia di tizzoni","attackSerial":1},"banner":{"text":"MALACODAil Fornaio","opacity":"1"},"leftHanded":true,"pointer":51,"checkpoint":{"version":1,"step":0,"skipped":false},"sameQuest":true,"quest":{"type":"consegna","giver":0,"obj":{"x":-36,"z":60},"time":20.46064767820757},"questText":"Consegna il pacco","questNone":false}
+coach: profilo nuovo, font di sistema e DejaVu reale, due lati via impostazioni, nomi interi, safe area/joystick/poteri distinti, Salta ripristina il suggerimento e Ricomincia preserva la missione visibile
+menu pen: {"omitOriginalTerminal":false,"screen":{"screen":"playing","returnTo":null,"history":[],"hasSession":true,"playing":true,"blockers":[],"reason":""},"events":[{"type":"pointerdown","id":3,"pointerType":"pen","primary":true,"trusted":true,"target":"menuBtn","x":811,"y":31,"joyId":null},{"type":"pointerup","id":3,"pointerType":"pen","primary":true,"trusted":true,"target":"menu","x":811,"y":31,"joyId":null},{"type":"pointerdown","id":3,"pointerType":"pen","primary":true,"trusted":true,"target":"resume","x":595,"y":85,"joyId":null},{"type":"pointerup","id":3,"pointerType":"pen","primary":true,"trusted":true,"target":"resume","x":595,"y":85,"joyId":null}],"clicks":[{"target":"","id":3,"trusted":true,"prevented":true},{"target":"resume","id":3,"trusted":true,"prevented":false}]}
+menu pen: {"omitOriginalTerminal":true,"screen":{"screen":"playing","returnTo":null,"history":[],"hasSession":true,"playing":true,"blockers":[],"reason":""},"events":[{"type":"pointerdown","id":3,"pointerType":"pen","primary":true,"trusted":true,"target":"menuBtn","x":811,"y":31,"joyId":null},{"type":"pointerup","id":3,"pointerType":"pen","primary":true,"trusted":true,"target":"menu","x":811,"y":31,"joyId":null,"omittedByFixture":true},{"type":"pointerdown","id":3,"pointerType":"pen","primary":true,"trusted":true,"target":"resume","x":595,"y":85,"joyId":null},{"type":"pointerup","id":3,"pointerType":"pen","primary":true,"trusted":true,"target":"resume","x":595,"y":85,"joyId":null}],"clicks":[{"target":"","id":3,"trusted":true,"prevented":false},{"target":"resume","id":3,"trusted":true,"prevented":false}]}
+menu: ID penna riusato con/senza perdita simulata, pointerup senza click, nessun click-through, nuovo tap, multitouch in entrambi gli ordini, drag/cancel/blur, mouse/Enter/Space e click accessibile verdi
+navigation: ritorni annidati, gioco fermo, draw esplicito e ripresa verdi
+input pause: movimento/tiro, reset e ripresa esplicita verdi
+input blur: movimento/tiro, reset e ripresa esplicita verdi
+input hidden: movimento/tiro, reset e ripresa esplicita verdi
+input native: movimento/tiro, reset e ripresa esplicita verdi
+input pagehide: movimento/tiro, reset e ripresa esplicita verdi
+input rotate: movimento/tiro, reset e ripresa esplicita verdi
+input rotazione180: orientationchange trusted a dimensioni uguali, reset, gioco fermo, ripresa manuale e resize landscape senza pausa verdi
+input finestra: layout alto con orientamento fisico invariato, guard, reset, simulazione ferma, allargamento e ripresa manuale verdi
+input capture: got/lost trusted e nessun tiro residuo verdi
+input sensibilità: canvas e primario equivalenti, rapporto quattro verificato
+input: multi-touch reale, capture, sospensioni/rotazione/context loss e sensibilità condivisa verdi
+storage: kit invalido/budget respinti, quota piena conserva RAM e precedente, recupero salvato verde
+loading: doppio tap ignorato, errore conserva mondo/profilo, recupero e salvataggio dopo successo verdi
+journal: colpo reale nel frame app, vittoria/premio persistiti, voce visibile e ritorno verdi
+bonuses:8 bonus e7 stati Core, HUD sintetico667 senza overlap joystick/missione, dettagli completi, Tab e apertura persistente verdi
+counter: {"text":"FAMA 999999 · LIV 6","span":{"x":457,"y":17.25,"width":103,"height":27.5,"top":17.25,"right":560,"bottom":44.75,"left":457},"button":{"x":568,"y":9,"width":44,"height":44,"top":9,"right":612,"bottom":53,"left":568},"fragments":[{"text":"FAMA ","x":457,"y":17.25,"width":33.359375,"height":13,"top":17.25,"right":490.359375,"bottom":30.25,"left":457},{"text":"999999","x":490.359375,"y":17.25,"width":42,"height":13,"top":17.25,"right":532.359375,"bottom":30.25,"left":490.359375},{"text":" · LIV ","x":532.359375,"y":17.25,"width":27.390625,"height":13,"top":17.25,"right":559.75,"bottom":30.25,"left":532.359375},{"text":"6","x":457,"y":31,"width":7,"height":13,"top":31,"right":464,"bottom":44,"left":457}],"outside":[],"font":"700 11px / 13.75px \"DejaVu Sans\", sans-serif","whiteSpace":"normal","leftHanded":false,"actualFonts":[{"familyName":"DejaVu Sans","postScriptName":"DejaVuSans","isCustomFont":true,"glyphCount":6}]}
+counter: {"text":"FAMA 999999 · LIV 6","span":{"x":65,"y":17.25,"width":103,"height":27.5,"top":17.25,"right":168,"bottom":44.75,"left":65},"button":{"x":176,"y":9,"width":44,"height":44,"top":9,"right":220,"bottom":53,"left":176},"fragments":[{"text":"FAMA ","x":65,"y":17.25,"width":33.359375,"height":13,"top":17.25,"right":98.359375,"bottom":30.25,"left":65},{"text":"999999","x":98.359375,"y":17.25,"width":42,"height":13,"top":17.25,"right":140.359375,"bottom":30.25,"left":98.359375},{"text":" · LIV ","x":140.359375,"y":17.25,"width":27.390625,"height":13,"top":17.25,"right":167.75,"bottom":30.25,"left":140.359375},{"text":"6","x":65,"y":31,"width":7,"height":13,"top":31,"right":72,"bottom":44,"left":65}],"outside":[],"font":"700 11px / 13.75px \"DejaVu Sans\", sans-serif","whiteSpace":"normal","leftHanded":true,"actualFonts":[{"familyName":"DejaVu Sans","postScriptName":"DejaVuSans","isCustomFont":true,"glyphCount":6}]}
+counter: {"text":"FAMA 1000000000 · LIV 6","span":{"x":457,"y":10.375,"width":103,"height":41.25,"top":10.375,"right":560,"bottom":51.625,"left":457},"button":{"x":568,"y":9,"width":44,"height":44,"top":9,"right":612,"bottom":53,"left":568},"fragments":[{"text":"FAMA ","x":457,"y":10.375,"width":29.859375,"height":13,"top":10.375,"right":486.859375,"bottom":23.375,"left":457},{"text":"1000000000","x":457,"y":24.125,"width":70,"height":13,"top":24.125,"right":527,"bottom":37.125,"left":457},{"text":" · LIV ","x":527,"y":24.125,"width":27.390625,"height":13,"top":24.125,"right":554.390625,"bottom":37.125,"left":527},{"text":"6","x":457,"y":37.875,"width":7,"height":13,"top":37.875,"right":464,"bottom":50.875,"left":457}],"outside":[],"font":"700 11px / 13.75px \"DejaVu Sans\", sans-serif","whiteSpace":"normal","leftHanded":false,"actualFonts":[{"familyName":"DejaVu Sans","postScriptName":"DejaVuSans","isCustomFont":true,"glyphCount":10}]}
+counter: {"text":"FAMA 1000000000 · LIV 6","span":{"x":65,"y":10.375,"width":103,"height":41.25,"top":10.375,"right":168,"bottom":51.625,"left":65},"button":{"x":176,"y":9,"width":44,"height":44,"top":9,"right":220,"bottom":53,"left":176},"fragments":[{"text":"FAMA ","x":65,"y":10.375,"width":29.859375,"height":13,"top":10.375,"right":94.859375,"bottom":23.375,"left":65},{"text":"1000000000","x":65,"y":24.125,"width":70,"height":13,"top":24.125,"right":135,"bottom":37.125,"left":65},{"text":" · LIV ","x":135,"y":24.125,"width":27.390625,"height":13,"top":24.125,"right":162.390625,"bottom":37.125,"left":135},{"text":"6","x":65,"y":37.875,"width":7,"height":13,"top":37.875,"right":72,"bottom":50.875,"left":65}],"outside":[],"font":"700 11px / 13.75px \"DejaVu Sans\", sans-serif","whiteSpace":"normal","leftHanded":true,"actualFonts":[{"familyName":"DejaVu Sans","postScriptName":"DejaVuSans","isCustomFont":true,"glyphCount":10}]}
+counter: Fama 999999 e limite 1e9, DejaVu reale e due lati; frammenti di testo contenuti, Pausa distinta e target 44 px
+nessun errore
+PASS: tmobile_browser.js
+
+PROVA trendering.js
+ciclo memoria 0 dite 88 70
+ciclo memoria 1 dite 88 70
+ciclo memoria 2 dite 88 70
+ciclo memoria 3 cocito 88 71
+ciclo memoria 4 malebolge 75 61
+ciclo memoria 5 dite 88 70
+ciclo memoria 6 cocito 88 71
+ciclo memoria 7 malebolge 75 61
+ciclo memoria 8 dite 88 70
+memoria dopo draw reale [{"theme":"dite","geo":88,"tex":70},{"theme":"dite","geo":88,"tex":70},{"theme":"dite","geo":88,"tex":70},{"theme":"cocito","geo":88,"tex":71},{"theme":"malebolge","geo":75,"tex":61},{"theme":"dite","geo":88,"tex":70},{"theme":"cocito","geo":88,"tex":71},{"theme":"malebolge","geo":75,"tex":61},{"theme":"dite","geo":88,"tex":70}]
+pool particelle {"alive":{"count":7,"visible":true,"draws":1},"empty":{"count":0,"visible":false,"version":2,"after":2,"colorVersion":2,"colorAfter":2,"draws":1},"resumed":{"count":3,"visible":true,"draws":2,"color":26367,"scale":[0.22067064110448226,0.2206706375368173,0.22067063114369811]}}
+zona mossa e cresciuta {"before":{"x":-36,"z":66,"r":2,"center":[-36,1.06,66],"size":[4,2,4]},"after":{"x":-36,"z":64.00000000000011,"r":2.9999999999999964,"center":[-36,1.5599999999999983,64.00000000000011],"size":[6,2.9999999999999964,6],"draws":3}}
+canali senza poteri [{"theme":"dite","white":0,"colored":0.311850353892821},{"theme":"cocito","white":0.016248736097067746,"colored":0.3083923154701719},{"theme":"malebolge","white":0.00019211324570273002,"colored":0.3665015166835187}]
+sovrapposizione esplicita {"setup":{"fury":20,"phoenix":19.983333333333334,"orbit":6.983333333333333,"zones":3},"impact":{"white":0.00033367037411526795,"colored":0.5169362992922144},"persistent":{"white":0,"colored":0.3253387259858443}}
+impatti bassi e dal cielo [{"power":"sisma","heights":[0.31,0.31,0.31,0.31],"count":4,"draws":{"14":1,"15":1,"16":1,"17":1},"booms":[{"sky":false,"x":-30,"z":67,"r":3},{"sky":false,"x":-33.4,"z":67,"r":3},{"sky":false,"x":-36.8,"z":67,"r":3},{"sky":false,"x":-40.2,"z":67,"r":3}]},{"power":"meteora","heights":[29.897037037037038],"count":1,"draws":{"19":1},"booms":[{"sky":true,"x":-33,"z":67,"r":5}]},{"power":"giudizio","heights":[29.32302083333333],"count":1,"draws":{"21":1},"booms":[{"sky":true,"x":-33,"z":67,"r":3}]}]
+effetti davanti alla camera [{"name":"empty","bloom":false,"changed":0,"white":0,"draws":{}},{"name":"empty","bloom":true,"changed":0,"white":0,"draws":{}},{"name":"own-close","bloom":false,"changed":0.04149414941494149,"white":0,"draws":{"shots":8}},{"name":"own-close","bloom":true,"changed":0.043474347434743474,"white":0,"draws":{"shots":16}},{"name":"own-far","bloom":false,"changed":0.01885688568856886,"white":0.0015189018901890189,"draws":{"shots":8}},{"name":"own-far","bloom":true,"changed":0.023694869486948694,"white":0.00432043204320432,"draws":{"shots":16}},{"name":"enemy-close","bloom":false,"changed":0.06999324932493249,"white":0,"draws":{"shots":2}},{"name":"enemy-close","bloom":true,"changed":0.06999324932493249,"white":0,"draws":{"shots":4}},{"name":"enemy-far","bloom":false,"changed":0.004489198919891989,"white":0,"draws":{"shots":4}},{"name":"enemy-far","bloom":true,"changed":0.004489198919891989,"white":0,"draws":{"shots":8}},{"name":"bolts-close","bloom":false,"changed":0.04068406840684068,"white":0,"draws":{"core":8,"halo":8}},{"name":"bolts-close","bloom":true,"changed":0.04068406840684068,"white":0,"draws":{"core":16,"halo":16}},{"name":"bolts-far","bloom":false,"changed":0.04617461746174618,"white":0,"draws":{"core":8,"halo":8}},{"name":"bolts-far","bloom":true,"changed":0.04617461746174618,"white":0,"draws":{"core":16,"halo":16}}]
+comfort {"still":2,"unchanged":2,"hypnosis":3,"ended":4,"particles":14,"paused":{"before":{"activeParticles":0,"drawnParticles":0,"particleVisible":false,"particleMatrixVersion":1,"particleColorVersion":1,"zones":0,"telegraphs":0,"impacts":0},"after":{"activeParticles":0,"drawnParticles":0,"particleVisible":false,"particleMatrixVersion":1,"particleColorVersion":1,"zones":1,"telegraphs":0,"impacts":0}}}
+nessun errore
+PASS: trendering.js
+
+PROVA tcontrols_browser.js
+Comandi: persistenza, 24 layout con safe area, joystick reale, multitouch e reset in pausa; nessun errore
+PASS: tcontrols_browser.js
+
+PROVA tadventure_browser.js
+Luogo dite 0
+Luogo dite 1
+Luogo dite 2
+Luogo cocito 0
+Luogo cocito 1
+Luogo cocito 2
+Luogo malebolge 0
+Luogo malebolge 1
+Luogo malebolge 2
+GDR browser: nove luoghi, dialoghi sospesi, nove cast touch, grate attraversate, reperti, tre scelte, atlante mobile/tablet, viaggio e ricaricamento; nessun errore
+PASS: tadventure_browser.js
+
+Suite browser: 21 prove verdi.

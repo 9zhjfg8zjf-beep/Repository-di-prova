@@ -1,0 +1,243 @@
+
+PROVA tstorage.js
+ok un profilo assente e leggibile è nuovo; i default sono validi e indipendenti
+ok valori JSON validi ma di forma errata non rompono il profilo
+ok numeri e preferenze vengono limitati, senza coercizioni o proprietà estranee
+ok il normalizzatore browser non trasforma checkpoint assenti o corrotti in una nuova guida
+ok le cinque posizioni, gli elementi, i gradi e gli innesti sono validati davvero
+ok kit salvati validi, copie indipendenti e limite dodici
+ok gli identificatori duplicati restano univoci anche se collidono con quelli generati
+ok la migrazione conserva esattamente il raw precedente prima di scrivere schema 3
+ok un backup già presente non viene sovrascritto
+ok JSON corrotto recupera backup valido e non si presenta come primo avvio
+ok dati corrotti senza backup restano recuperabili e conservati fino al salvataggio
+ok recuperato significa dati reali preservati, mentre native corrotto senza payload resta temporaneo
+ok quota piena conserva profilo precedente e kit in RAM, senza dichiarare salvato
+ok se non si può creare il backup, la migrazione non sovrascrive il vecchio raw
+ok accesso vietato o storage assente producono stato temporaneo, mai onboarding nuovo
+ok sottoscrizione e unsubscribe osservano risultati reali delle scritture
+ok native: solo ack della scrittura pendente rende il profilo salvato
+ok native: rifiuto, eccezione e timeout restano temporanei con dati in RAM
+ok native: ack sincrono non lascia falsi pending e snapshot inviato indipendente
+Storage: 19 prove verdi, 0 fallite.
+PASS: tstorage.js
+
+PROVA tappstate.js
+ok non si gioca senza sessione e rimuoverla ferma il gioco
+ok guida e impostazioni annidate tornano al chiamante senza riprendere la partita
+ok officina dalla lobby torna alla lobby, dalla pausa torna alla pausa
+ok registro e impostazioni conservano il ritorno fino alla lobby
+ok destinazione esplicita e doppio tap non duplicano lo storico
+ok impedimenti multipli sono indipendenti e la loro rimozione non riprende
+ok sospendere un pannello conserva la bozza e toglie il ritorno automatico al gioco
+ok sessione persa dentro un pannello non può essere ripresa dallo storico
+ok caricamento ed errore non simulano; i nomi sconosciuti non cambiano stato
+ok snapshot indipendenti e unsubscribe non cambiano la macchina
+ok sequenze miste conservano gli invarianti di sessione, blocker e navigazione
+Router: 11 prove verdi, 0 fallite.
+PASS: tappstate.js
+
+PROVA tmobile_policy.js
+mobile: joystick senza deriva, profili persistenti, discesa/recupero 3 DPR, pausa e anti-oscillazione verificati
+PASS: tmobile_policy.js
+
+PROVA tonboarding.js
+ok ricetta introduttiva valida, economica e indipendente dal catalogo
+ok checkpoint normalizzato senza inventare passaggi da dati malformati
+ok nessuna guida attiva o completamento automatico solo creando il controller
+ok tempo e input contro un muro non equivalgono a camminare
+ok camminata reale supera il primo passo e salva un solo checkpoint
+ok teletrasporto e movimento senza input non danno credito alla camminata
+ok lo yaw di ingresso non completa la mira; una rotazione successiva si
+ok mira conta il movimento angolare anche attraversando meno/piu pi greco
+ok il Dardo deve essere emesso con input di fuoco
+ok Catena senza bersaglio non supera il passo con il solo contatore cast
+ok raggio e soffio continui valgono per emissioni reali senza evento cast0
+ok abilita richiede un cast accettato; cooldown e fizzle non bastano
+ok ultimo passo soltanto dopo accettazione di una missione vera, senza premio tutorial
+ok saltare conserva il passo, riprendere e riavviare hanno significati distinti
+ok cambio citta ribasa posizione e mira senza cancellare checkpoint
+ok morte, snapshot e lettura del modello non alterano il Core
+ok testi riflettono tastiera e lato effettivo del movimento
+ok riavviare durante una missione riconosce quella gia accettata dopo le quattro azioni
+18 prove onboarding superate
+PASS: tonboarding.js
+
+PROVA tjournal.js
+ok dati vuoti o vecchia Fama non diventano vittorie inventate
+ok normalizzazione limita dati e usa titoli canonici, senza campi di simulazione
+ok inizio missione, danni e tempo non sono un risultato completato
+ok missione conclusa registra il risultato e la Fama effettivamente concessa
+ok doppio feed dello stesso batch non duplica cronologia o premi
+ok fallimento e cambio citta non diventano completamenti
+ok vittoria boss e rivincita conservano il premio reale ridotto
+ok boss ancora vivo o ritirata non aumentano il contatore
+ok cronologia resta entro32 risultati, mentre i contatori continuano
+ok lettura, serializzazione e feed non modificano Core o catalogo
+ok ID salvati estremi non producono numeri non finiti al risultato seguente
+11 prove registro superate
+PASS: tjournal.js
+
+PROVA tprog.js
+meccaniche in tutto: 1343 {"P":206,"M":197,"S":680,"U":260} | scritte nel linguaggio: 1260 | non riuscite: 0 | errori di caricamento: 0 
+PASS: tprog.js
+
+PROVA bot.js fuzz 300
+prove casuali: 300 partite, 630000 passi, 85.4 microsecondi a passo | mattoncini provati 889 di 1343 | tipi di evento 92
+PASS: bot.js fuzz 300
+
+PROVA bot.js missioni 12
+missioni (10 minuti a partita, 12 partite): fama media 214 | cadute medie 0.2
+   Consegna                     riuscite 26  fallite 0
+   Ripetitori                   riuscite 29  fallite 0
+   Corsa                        riuscite 39  fallite 0
+   Pubblico                     riuscite 31  fallite 0
+   Scorta                       riuscite 36  fallite 1
+   Caccia                       riuscite 31  fallite 2
+   !L'anima non ce l'ha fatta   1
+   !Sei caduto                  2
+PASS: bot.js missioni 12
+
+PROVA bot.js boss 3
+boss, bot che schiva:
+   malacoda   Il Seg 3/3  70s c 0 | Brace  3/3  63s c13 | Brina  2/3 104s c11 | Tenebr 1/3 144s c19 | Mefite 1/3  67s c11 | Aureol 3/3  96s c12 | Cremis 3/3  67s c12 | Maestr 0/3      c 8 |
+   cerbero    Il Seg 2/3 113s c13 | Brace  2/3  73s c 8 | Brina  3/3 117s c 8 | Tenebr 2/3 177s c19 | Mefite 3/3  80s c 6 | Aureol 3/3 105s c 6 | Cremis 3/3  72s c10 | Maestr 3/3 106s c10 |
+   gerione    Il Seg 3/3  89s c10 | Brace  3/3  91s c15 | Brina  2/3 119s c16 | Tenebr 1/3 196s c26 | Mefite 2/3 100s c15 | Aureol 3/3 112s c 8 | Cremis 3/3 105s c21 | Maestr 1/3 120s c10 |
+boss, bot che resta fermo sui colpi:
+   malacoda   Il Seg 0/3      c 4 | Brace  0/3      c 6 | Brina  0/3      c 4 | Tenebr 0/3      c 8 | Mefite 0/3      c 4 | Aureol 3/3  96s c18 | Cremis 2/3  50s c16 | Maestr 0/3      c 4 |
+   cerbero    Il Seg 0/3      c 4 | Brace  0/3      c 5 | Brina  0/3      c 5 | Tenebr 0/3      c 5 | Mefite 0/3      c 4 | Aureol 2/3 106s c25 | Cremis 3/3  53s c17 | Maestr 0/3      c 4 |
+   gerione    Il Seg 0/3      c14 | Brace  0/3      c 4 | Brina  0/3      c 9 | Tenebr 0/3      c10 | Mefite 0/3      c15 | Aureol 0/3      c40 | Cremis 2/3  60s c40 | Maestr 0/3      c11 |
+PASS: bot.js boss 3
+
+PROVA tmec.js
+  ok  tentacolo afferra  distanza 3.3
+  ok  tentacolo scaglia e ferisce  vite 432 432 ricarica 6.0
+  ok  scambio di posto
+  ok  pozzo risucchia  vita 453
+  ok  boomerang colpisce andata e ritorno  colpi 5
+  ok  riavvolgi riporta al campione storico  da 15.4 a 13.0
+  ok  riavvolgi si attiva e consuma la ricarica
+  ok  levitazione solleva e fa cadere
+  ok  fenice rialza  vita 40
+  ok  razzo esplode anche sul vicino  456 483
+  ok  ancora riporta al segno
+  ok  polimorfo
+  ok  gabbia blocca
+  ok  singolarita risucchia ed esplode  tolti 599
+      innesto esplosivo    bersaglio 185 vicino 74 risonanza 12 chiazze 0   (senza: 185 0 8 0)
+      innesto rimbalzo     bersaglio 185 vicino 100 risonanza 13 chiazze 0   (senza: 185 0 8 0)
+      innesto critico      bersaglio 230 vicino 0 risonanza 10 chiazze 0   (senza: 185 0 8 0)
+      innesto possente     bersaglio 107 vicino 112 risonanza 10 chiazze 0   (senza: 185 0 8 0)
+      innesto rapido       bersaglio 202 vicino 21 risonanza 10 chiazze 0   (senza: 185 0 8 0)
+      innesto risonante    bersaglio 185 vicino 0 risonanza 16 chiazze 0   (senza: 185 0 8 0)
+      innesto persistente  bersaglio 222 vicino 66 risonanza 13 chiazze 1   (senza: 185 0 8 0)
+      innesto falciante    bersaglio 237 vicino 0 risonanza 11 chiazze 0   (senza: 185 0 8 0)
+PASS: tmec.js
+
+PROVA tnuove.js
+ok parser normalizza tutte le combo storiche e rifiuta op sconosciuti anche annidati
+ok assorbimento intercetta, limita banca e non ferisce il giocatore
+ok rilascio conserva la somma, consuma la banca e fallisce se vuota
+ok magnete attrae e repelle mantenendo la velocita
+ok trasmutazione converte squadra oppure risorse, senza doppio consumo
+ok legame propaga una sola volta il danno effettivo e non il danno in eccesso
+ok debito registra danni reali, scade, non si autoalimenta
+ok disarmo lascia camminare e impedisce attacchi base
+ok silenzio sopprime i tiratori e non finge un effetto sui semplici melee
+ok purificazione elimina debuff e pozze, conserva annunci boss
+ok contagio fa danno, si propaga per prossimita e ha limiti di generazione
+ok portali trasportano senza rimbalzo e scadono
+ok vincolo tira verso ancoraggio e si spezza oltre il limite
+ok barriera blocca fisicamente e consuma resistenza con i colpi
+ok barriera adiacente a un solido non incastra la creatura nel prop
+ok barriera riflettente cambia velocita e squadra
+ok mimesi cambia davvero primario, mantiene sorgente originale e la ripristina
+ok riavvolgimento nemico ripristina posizione senza guarirlo
+ok resurrezione richiede e consuma cadaveri, produce alleati temporanei
+ok comando raduna e seleziona davvero un bersaglio diverso dal piu vicino
+ok boss resistono ai controlli forti, silenzio conserva attacchi gia annunciati
+ok fallimento primo operatore non consuma ricarica o Risonanza
+ok limiti persistenti e cleanup su cambio ricetta
+ok morte pulisce prima del respawn e non lascia danni differiti
+24 prove semantiche superate
+PASS: tnuove.js
+
+PROVA tcorpo.js
+ok taglia modifica raggio, camera, danno e portata del cono
+ok taglia cambia velocita e collisione nei passaggi stretti
+ok ingrandimento fallisce se manca spazio e non consuma il cast
+ok fase attraversa ostacoli, spegne fuoco e altre abilita, poi torna al sicuro
+ok fase annulla danni e ripristina collisione alla scadenza
+ok volo sale e scende con pitch/movimento, resta limitato e atterra con lo stesso tasto
+ok volo evita pozze e melee ma non attraversa edifici
+ok proiettili in volo hanno quota e possono colpire a terra
+ok colpi alti mancano bersagli bassi, nemici possono mirare verso il volo
+ok possesso muove ospite lasciando corpo fermo e camera segue
+ok possesso spara dal tiratore e colpisce con melee dello sgherro
+ok possesso mantiene vulnerabile il corpo e blocca altri cast
+ok possesso rilascia alla morte ospite e alla scadenza
+ok forme sono incompatibili e pesanti/boss resistono al possesso e stasi
+ok patto movimento punisce una sola volta dopo la soglia
+ok patto attacco distingue attacchi reali da attesa e scade senza danno
+ok patto su boss limita danno e non lo immobilizza
+ok stasi sospende AI, danni, stati e contagio; rilascio infligge danno reale
+ok stasi nested usa bersaglio each e non la mira esterna
+ok stasi scaglia alla scadenza, vieta una seconda cattura e toggle non paga due volte
+ok cambio ricetta pulisce forme e restituisce captive senza danni
+ok morte del corpo libera possesso e stasi prima del respawn
+ok fase resta nei bordi del mondo e la scadenza dentro un ostacolo torna sicura
+ok Eco prenotata non genera attacchi durante fase o possesso
+ok volo evita attacchi al suolo ma non pioggia dall'alto
+ok proiettili fissano quota alla nascita e non cambiano traiettoria cambiando mira
+ok taglia scala anche il cono continuo dei primari originali
+ok rampino originale non introduce uno scatto durante il volo
+28 prove corpo superate
+PASS: tcorpo.js
+
+PROVA tcloni.js
+ok compatibilita esplicita e fallimento senza consumo per primario non replicabile
+ok due copie emettono due attacchi per ogni primario da origini distinte
+ok cloni sono corpi vulnerabili scelti come bersagli dai nemici
+ok cloni seguono il movimento ma non combattono in autonomia
+ok cap, parametri e durata sono limitati anche con dati avversariali
+ok repliche non duplicano buff costi evocazioni o callback dei proiettili
+ok uccisione da copia non attiva reazioni kill ne clona altre copie
+ok proiettili delle copie conservano stati diretti ma escludono innesti e callback
+ok cono diretto colpisce dalla posizione del clone e non dal corpo
+ok primario raggio e melee originali vengono replicati con danno proporzionale
+ok catena diretta parte dalla copia ma richiede portata e vista
+ok stordimento disarmo e silenzio impediscono le emissioni appropriate
+ok scan rivela attraverso muri senza abilitare mira o danno attraverso essi
+ok scan segue il giocatore, aggiorna entrate e uscite, esclude alleati e captive
+ok scan comprende boss e limita sessantaquattro contatti
+ok scansione vuota e scadenza hanno stato esplicito, senza effetti nascosti
+ok cambio ricetta e morte ripuliscono copie e scansione
+ok copie non colpiscono oltre muri con forme dirette
+ok attacchi annidati di reazione non diventano nuove emissioni dei cloni
+19 prove copie e sensi superate
+PASS: tcloni.js
+
+PROVA tcatalogo.js
+catalogo: 1343 poteri, 25 famiglie, 336 novita, 6 ricette introduttive; copertura e ricerca OK
+PASS: tcatalogo.js
+
+PROVA tespansione.js
+Catalogo: verificati 72 casi.
+Catalogo: verificati 144 casi.
+Catalogo: verificati 216 casi.
+Catalogo: verificati 288 casi.
+Catalogo: verificati 360 casi.
+Catalogo: verificati 432 casi.
+Catalogo: verificati 504 casi.
+Catalogo: verificati 576 casi.
+Catalogo: verificati 648 casi.
+Catalogo: verificati 720 casi.
+Catalogo: verificati 792 casi.
+Catalogo: verificati 864 casi.
+Catalogo: verificati 936 casi.
+Catalogo: verificati 1008 casi.
+Catalogo: 1008 casi verdi con controllo differenziale; 0 fixture alternative.
+Fuzz espansione: 150 ricette, 90000 passi, limiti e cleanup verdi; copie in 23 ricette, contatti in 5.
+PASS: tespansione.js
+
+Suite node: 15 prove verdi.
